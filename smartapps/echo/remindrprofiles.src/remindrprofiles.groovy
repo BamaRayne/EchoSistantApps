@@ -106,7 +106,7 @@ page name: "mainProfilePage"
                 section ("Tap here to see available &variables", hideable: true, hidden: true) {    
                     if (actionType != "Ad-Hoc Report") {
                         paragraph 	"CUSTOM MESSAGES: \n"+
-                                    "&device, &action, &event, &time &date and &profile \n"
+                                    "&device, &action, &event, &time, &date, &last and &profile \n"
                         if (actionType != "Custom Text with Weather") href "variables", title: "View sample data for your Location", description: ">> 		Click Here <<", state: "complete"                                             
                     }
                     if(actionType == "Custom Text with Weather" || actionType == "Ad-Hoc Report" ){
@@ -223,6 +223,7 @@ page name: "variables"
                                 "&event = 	<< Capability Type: switch, contact, motion, lock, etc >>,\n"+
                                 "&time = $stamp,\n"+
                                 "&date = $today,\n"+
+                                "&last = $state.lastEvent, \n"+
                                 "&profile = $profile"
                 }  
              }
@@ -342,107 +343,107 @@ page name: "triggers"
                 }
             }   
             if(actionType != "Default"){
-                section ("Location Event", hideWhenEmpty: true) {
-                    input "myMode", "enum", title: "Choose Modes...", options: location.modes.name.sort(), multiple: true, required: false 
+                section ("Choose Location Event", hideWhenEmpty: true) {
+                    input "myMode", "enum", title: "Modes", options: location.modes.name.sort(), multiple: true, required: false 
                     if (actionType != "Ad-Hoc Report") {
-                    	input "myRoutine", "enum", title: "Choose Routines...", options: actions, multiple: true, required: false            
-                    	input "mySunState", "enum", title: "Choose Sunrise or Sunset...", options: ["Sunrise", "Sunset"], multiple: false, required: false, submitOnChange: true
+                    	input "myRoutine", "enum", title: "Routines", options: actions, multiple: true, required: false            
+                    	input "mySunState", "enum", title: "Sunrise or Sunset...", options: ["Sunrise", "Sunset"], multiple: false, required: false, submitOnChange: true
                         	if(mySunState) input "offset", "number", range: "*..*", title: "Offset trigger this number of minutes (+/-)", required: false
                 	}
                 }
 			}                       
-            section ("Device State", , hideWhenEmpty: true) {
-                input "mySwitch", "capability.switch", title: "Choose Switch(es)...", required: false, multiple: true, submitOnChange: true
+            section ("Choose Device State", , hideWhenEmpty: true) {
+                input "mySwitch", "capability.switch", title: "Switches", required: false, multiple: true, submitOnChange: true
                     if (mySwitch && actionType != "Ad-Hoc Report") {
                     	input "mySwitchS", "enum", title: "Notify when state changes to...", options: ["on", "off", "both"], required: false, submitOnChange: true
-                        if (mySwitchS != "both") input "minutes", "number", title: "And continues to be ${mySwitchS} for... (optional)", required: false, description: "minutes"
+                        if (mySwitchS != "both") input "minutes", "number", title: "... and continues to be ${mySwitchS} for (minutes) - OPTIONAL", required: false, description: "minutes"
                 	}
                 if(actionType != "Default") {
-                input "myPower", "capability.powerMeter", title: "Choose Power Meters...", required: false, multiple: false, submitOnChange: true
+                input "myPower", "capability.powerMeter", title: "Power Meters", required: false, multiple: false, submitOnChange: true
                     if (myPower && actionType != "Ad-Hoc Report") input "myPowerS", "enum", title: "Notify when power is...", options: ["above threshold", "below threshold"], required: false, submitOnChange: true
                         if (myPowerS) input "threshold", "number", title: "Wattage Threshold...", required: false, description: "in watts", submitOnChange: true
                         if (threshold) input "minutes", "number", title: "Threshold Delay", required: false, description: "in minutes (optional)"
-                        if (threshold) input "thresholdStop", "number", title: "...but not above/below this value", required: false, description: "in watts"
+                        if (threshold) input "thresholdStop", "number", title: "...but not ${myPowerS} this value", required: false, description: "in watts"
                 }
-                input "myLocks", "capability.lock", title: "Choose Locks..", required: false, multiple: true, submitOnChange: true
+                input "myLocks", "capability.lock", title: "Locks", required: false, multiple: true, submitOnChange: true
                     if (myLocks && actionType != "Ad-Hoc Report") {
                     	input "myLocksS", "enum", title: "Notify when state changes to...", options: ["locked", "unlocked", "both"], required: false, submitOnChange: true
-                        if (myLocksS != "both") input "minutes", "number", title: "And continues to be ${myLocksS} for... (optional)", required: false, description: "minutes"
+                        if (myLocksS != "both") input "minutes", "number", title: "... and continues to be ${myLocksS} for (minutes) - OPTIONAL", required: false, description: "minutes"
                     }
                     if(myLocksS == "unlocked") input "myLocksSCode", "number", title: "With this user code...", required: false, description: "user code number (optional)"
                 if(actionType != "Default"){
-                input "myTstat", "capability.thermostat", title: "Choose Thermostats...", required: false, multiple: true, submitOnChange: true
+                input "myTstat", "capability.thermostat", title: "Thermostats", required: false, multiple: true, submitOnChange: true
                     if (myTstat && actionType != "Ad-Hoc Report") input "myTstatS", "enum", title: "Notify when set point changes for...", options: ["cooling", "heating", "both"], required: false
                     if (myTstat && actionType != "Ad-Hoc Report") input "myTstatM", "enum", title: "Notify when mode changes to...", options: ["auto", "cool", " heat", "emergency heat", "off", "every mode"], required: false
                     if (myTstat && actionType != "Ad-Hoc Report") input "myTstatOS", "enum", title: "Notify when Operating State changes to...", options: ["cooling", "heating", " idle", "every state"], required: false
             	}
-                input "myShades", "capability.windowShade", title: "Choose Window Covering Devices...", multiple: true, required: false, submitOnChange: true              
+                input "myShades", "capability.windowShade", title: "Window Covering Devices", multiple: true, required: false, submitOnChange: true              
 					if (myShades && actionType != "Ad-Hoc Report") input "myShadesS", "enum", title: "Notify when state changes to...", options: ["open", "closed", "both"], required: false
-                input "myGarage", "capability.garageDoorControl", title: "Choose Garage Door(s)...", multiple: false, required: false, submitOnChange: true
+                input "myGarage", "capability.garageDoorControl", title: "Garage Doors", multiple: false, required: false, submitOnChange: true
 					if (myGarage && actionType != "Ad-Hoc Report") {
                     	input "myGarageS", "enum", title: "Notify when state changes to...", options: ["open", "closed", "both"], required: false, submitOnChange: true
-                        if (myGarageS != "both") input "minutes", "number", title: "And continues to be ${myGarageS} for... (optional)", required: false, description: "minutes"
+                        if (myGarageS != "both") input "minutes", "number", title: "... and continues to be ${myGarageS} for (minutes) - OPTIONAL", required: false, description: "minutes"
                 	}
-                input "myRelay", "capability.switch", title: "Choose Garage Door Relay(s)...", multiple: false, required: false, submitOnChange: true
-                    if (myRelay) input "myRelayContact", "capability.contactSensor", title: "Choose a Contact Sensor to Monitor the Garage Door Relay(s)...", multiple: false, required: false
+                input "myRelay", "capability.switch", title: "Relays used as Garage Doors", multiple: false, required: false, submitOnChange: true
+                    if (myRelay) input "myRelayContact", "capability.contactSensor", title: "Select a Contact Sensor that monitors the relay", multiple: false, required: false
             		if (myRelayContact && actionType != "Ad-Hoc Report") {
                     	input "myRelayContactS", "enum", title: "Notify when state changes to...", options: ["open", "closed", "both"], required: false, submitOnChange: true
-                        if (myRelayContactS != "both") input "minutes", "number", title: "And continues to be ${myRelayContactS}' for... (optional)", required: false, description: "minutes"
+                        if (myRelayContactS != "both") input "minutes", "number", title: "... and continues to be ${myRelayContactS} for (minutes) - OPTIONAL", required: false, description: "minutes"
             		}
-                input "myValve", "capability.valve", title: "Choose Water Valve(s)...", required: false, multiple: true, submitOnChange: true
+                input "myValve", "capability.valve", title: "Water Valves", required: false, multiple: true, submitOnChange: true
                     if (myValve && actionType != "Ad-Hoc Report") {
                     	input "myValveS", "enum", title: "Notify when state changes to...", options: ["open", "closed", "both"], required: false, submitOnChange: true
-                        if (myValveS != "both") input "minutes", "number", title: "And continues to be ${myValveS} for... (optional)", required: false, description: "minutes"
+                        if (myValveS != "both") input "minutes", "number", title: "... and continues to be ${myValveS} for (minutes) - OPTIONAL", required: false, description: "minutes"
 					}
             }
-            section ("Sensor Status", hideWhenEmpty: true) {
-                input "myContact", "capability.contactSensor", title: "Choose Generic Contact Sensor(s)..", required: false, multiple: true, submitOnChange: true
+            section ("Choose Sensor Status", hideWhenEmpty: true) {
+                input "myContact", "capability.contactSensor", title: "Contact", required: false, multiple: true, submitOnChange: true
                     if (myContact && actionType != "Ad-Hoc Report") {
                     	input "myContactS", "enum", title: "Notify when state changes to...", options: ["open", "closed", "both"], required: false, submitOnChange: true
-                        if (myContactS != "both") input "minutes", "number", title: "And continues to be ${myContactS} for... (optional)", required: false, description: "minutes"
+                        if (myContactS != "both") input "minutes", "number", title: "... and continues to be ${myContactS} for (minutes) - OPTIONAL", required: false, description: "minutes"
 					}
-				input "myDoor", "capability.contactSensor", title: "Choose Door(s) Contact Sensors...", required: false, multiple: true, submitOnChange: true
-                    if (myDoor && actionType != "Ad-Hoc Report") {
-                    	input "myDoorS", "enum", title: "Notify when state changes to...", options: ["open", "closed", "both"], required: false, submitOnChange: true
-                        //if (myDoorS != "both") input "minutes", "number", title: "And stays '${myDoorS}' for minutes (optional)", required: false, description: "minutes"
-					}
-				input "myWindow", "capability.contactSensor", title: "Choose Window(s) Contact Sensors...", required: false, multiple: true, submitOnChange: true
-                    if (myWindow && actionType != "Ad-Hoc Report") {
-                    	input "myWindowS", "enum", title: "Notify when state changes to...", options: ["open", "closed", "both"], required: false, submitOnChange: true
-                        //if (myWindowS != "both") input "minutes", "number", title: "And stays '${myWindowS}' for minutes (optional)", required: false, description: "minutes"
-					}                
-                input "myAcceleration", "capability.accelerationSensor", title: "Choose Acceleration Sensors..", required: false, multiple: true, submitOnChange: true
+				if (actionType == "Ad-Hoc Report") {
+                	input "myDoor", "capability.contactSensor", title: "Contact Sensors used on doors", required: false, multiple: true, submitOnChange: true
+                    	if (myDoor && actionType != "Ad-Hoc Report") {
+                    		input "myDoorS", "enum", title: "Notify when state changes to...", options: ["open", "closed", "both"], required: false, submitOnChange: true
+						}
+					input "myWindow", "capability.contactSensor", title: "Contact Sensors used on windows", required: false, multiple: true, submitOnChange: true
+                    	if (myWindow && actionType != "Ad-Hoc Report") {
+                    		input "myWindowS", "enum", title: "Notify when state changes to...", options: ["open", "closed", "both"], required: false, submitOnChange: true
+						}
+                }
+                input "myAcceleration", "capability.accelerationSensor", title: "Acceleration", required: false, multiple: true, submitOnChange: true
                     if (myAcceleration && actionType != "Ad-Hoc Report") input "myAccelerationS", "enum", title: "Notify when state changes to...", options: ["active", "inactive", "both"], required: false                   
-                input "myMotion", "capability.motionSensor", title: "Choose Motion Sensors..", required: false, multiple: true, submitOnChange: true
+                input "myMotion", "capability.motionSensor", title: "Motion" , required: false, multiple: true, submitOnChange: true
                     if (myMotion && actionType != "Ad-Hoc Report") {
                     	input "myMotionS", "enum", title: "Notify when state changes to...", options: ["active", "inactive", "both"], required: false
-                        if (myMotionS != "both") input "minutes", "number", title: "And continues to be ${myMotionS} for... (optional)", required: false, description: "minutes"
+                        if (myMotionS != "both") input "minutes", "number", title: "... and continues to be ${myMotionS} for (minutes) - OPTIONAL", required: false, description: "minutes"
                 	}
-                input "myPresence", "capability.presenceSensor", title: "Choose Presence Sensors...", required: false, multiple: true, submitOnChange: true
+                input "myPresence", "capability.presenceSensor", title: "Presence", required: false, multiple: true, submitOnChange: true
                     if (myPresence && actionType != "Ad-Hoc Report") input "myPresenceS", "enum", title: "Notify when state changes to...", options: ["present", "not present", "both"], required: false
-                input "mySmoke", "capability.smokeDetector", title: "Choose Smoke Detectors...", required: false, multiple: true, submitOnChange: true
+                input "mySmoke", "capability.smokeDetector", title: "Smoke", required: false, multiple: true, submitOnChange: true
                     if (mySmoke && actionType != "Ad-Hoc Report") input "mySmokeS", "enum", title: "Notify when state changes to...", options: ["detected", "clear", "both"], required: false
-                input "myWater", "capability.waterSensor", title: "Choose Water Sensors...", required: false, multiple: true, submitOnChange: true
+                input "myWater", "capability.waterSensor", title: "Water", required: false, multiple: true, submitOnChange: true
                     if (myWater && actionType != "Ad-Hoc Report") input "myWaterS", "enum", title: "Notify when state changes to...", options: ["wet", "dry", "both"], required: false		
-                input "myTemperature", "capability.temperatureMeasurement", title: "Choose Temperature Sensors...", required: false, multiple: true, submitOnChange: true
+                input "myTemperature", "capability.temperatureMeasurement", title: "Temperature", required: false, multiple: true, submitOnChange: true
 					if (myTemperature && actionType != "Ad-Hoc Report") input "myTemperatureS", "enum", title: "Notify when temperature is...", options: ["above", "below"], required: false, submitOnChange: true
                         if (myTemperatureS) input "temperature", "number", title: "Temperature...", required: true, description: "degrees", submitOnChange: true
                         if (temperature) input "temperatureStop", "number", title: "...but not ${myTemperatureS} this temperature", required: false, description: "degrees"
-                input "myCO2", "capability.carbonDioxideMeasurement", title: "Choose CO2 (Carbon Dioxide) Sensor...", required: false, submitOnChange: true
+                input "myCO2", "capability.carbonDioxideMeasurement", title: "Carbon Dioxide (CO2)", required: false, submitOnChange: true
                     if (myCO2 && actionType != "Ad-Hoc Report") input "myCO2S", "enum", title: "Notify when CO2 is...", options: ["above", "below"], required: false, submitOnChange: true            
                     if (myCO2S) input "CO2", "number", title: "Carbon Dioxide Level...", required: true, description: "number", submitOnChange: true              
-                input "myCO", "capability.carbonMonoxideDetector", title: "Choose CO (Carbon Monoxide) Sensor...", required: false, submitOnChange: true
+                input "myCO", "capability.carbonMonoxideDetector", title: "Carbon Monoxide (CO)", required: false, submitOnChange: true
                     if (myCO && actionType != "Ad-Hoc Report") input "myCOS", "enum", title: "Notify when ...", options: ["detected", "tested", "both"], required: false	            
-                input "myHumidity", "capability.relativeHumidityMeasurement", title: "Choose Relative Humidity Sensor...", required: false, submitOnChange: true
+                input "myHumidity", "capability.relativeHumidityMeasurement", title: "Relative Humidity", required: false, submitOnChange: true
                     if (myHumidity && actionType != "Ad-Hoc Report") input "myHumidityS", "enum", title: "Notify when Relative Humidity is...", options: ["above", "below"], required: false, submitOnChange: true            
-                    if (myHumidityS) input "humidity", "number", title: "Relative Humidity...", required: true, description: "percent", submitOnChange: true            
-                input "mySound", "capability.soundPressureLevel", title: "Choose Noise Sensor...", required: false, submitOnChange: true
+                    if (myHumidityS) input "humidity", "number", title: "Relative Humidity Level...", required: true, description: "percent", submitOnChange: true            
+                input "mySound", "capability.soundPressureLevel", title: "Sound Pressure (noise level)", required: false, submitOnChange: true
                     if (mySound && actionType != "Ad-Hoc Report") input "mySoundS", "enum", title: "Notify when Noise is...", options: ["above", "below"], required: false, submitOnChange: true            
                     if (mySoundS) input "noise", "number", title: "Noise Level...", required: true, description: "number", submitOnChange: true              
             }
             if(actionType != "Default" && actionType != "Ad-Hoc Report"){
-                section ("Weather Events") {
-                    input "myWeatherAlert", "enum", title: "Choose Weather Alerts...", required: false, multiple: true, submitOnChange: true,
+                section ("Choose Weather Events") {
+                    input "myWeatherAlert", "enum", title: "Weather Alerts", required: false, multiple: true, submitOnChange: true,
                             options: [
                             "TOR":	"Tornado Warning",
                             "TOW":	"Tornado Watch",
@@ -457,9 +458,9 @@ page name: "triggers"
                             "VOL":	"Volcanic Activity Statement",
                             "HWW":	"Hurricane Wind Warning"
                             ]          
-                    input "myWeather", "enum", title: "Choose Hourly Weather Forecast Updates...", required: false, multiple: false, submitOnChange: true,
+                    input "myWeather", "enum", title: "Hourly Weather Forecast Updates", required: false, multiple: false, submitOnChange: true,
                             options: ["Weather Condition Changes", "Chance of Precipitation Changes", "Wind Speed Changes", "Humidity Changes", "Any Weather Updates"]   
-					input "myWeatherTriggers", "enum", title: "Choose Weather Element as Trigger...", required: false, multiple: false, submitOnChange: true,
+					input "myWeatherTriggers", "enum", title: "Weather Elements", required: false, multiple: false, submitOnChange: true,
 						options: ["Chance of Precipitation (in/mm)", "Wind Gust (MPH/kPH)", "Humidity (%)", "Temperature (F/C)"]   
                         if (myWeatherTriggers) input "myWeatherTriggersS", "enum", title: "Notify when Weather Element changes...", 
                         	options: ["above", "below"], required: false, submitOnChange: true
@@ -569,17 +570,19 @@ def updated() {
 	log.debug "Updated with settings: ${settings}, current app version: ${release()}"
 	state.NotificationRelease = "Notification: " + release()
     state.lastPlayed = null
+    state.lastEvent
     state.sound
     state.speechSound
+	state.lastTime
+    state.lastWeather
+    state.lastWeatherCheck
+    state.lastAlert
 	unschedule()
     unsubscribe()
     initialize()
 }
 def initialize() {
 	unschedule()
-	state.lastTime
-    state.lastWeatherCheck
-    state.lastAlert
     state.cycleOnH = false
     state.cycleOnL = false
     state.cycleOnA = false
@@ -593,7 +596,6 @@ def initialize() {
     state.cycleHl = false    
     state.cycleCO2h = false
     state.cycleCO2l = false    
-    state.lastWeather
 	state.message = null
     state.occurrences = 0
     if (mySunState == "Sunset") {
@@ -779,15 +781,17 @@ def runProfile(profile) {
 		def device = "<< Device Label >>"
         def action = " << Action (on/off, open/closed, locked/unlocked) >>"
         def event =  " << Capability (switch, contact, motion, lock, etc) >>"
-		result = message ? "$message".replace("&date", "${getVar("date")}").replace("&time", "${getVar("time")}").replace("&profile", "${getVar("profile")}") : null  
-    	result = result ? "$result".replace("&device", "${device}").replace("&action", "${action}").replace("&event", "${event}") : null 
+		def last =  " << Time of last event (only available when used with pending actions) >>"
+        result = message ? "$message".replace("&date", "${getVar("date")}").replace("&time", "${getVar("time")}").replace("&profile", "${getVar("profile")}") : null  
+    	result = result ? "$result".replace("&device", "${device}").replace("&action", "${action}").replace("&event", "${event}").replace("&last", "${last}") : null 
     }
     if(message && actionType == "Custom Text with Weather"){
 		def device = "<< Device Label >>"
         def action = " << Action (on/off, open/closed, locked/unlocked) >>"
         def event =  " << Capability (switch, contact, motion, lock, etc) >>"
-		result = message ? "$message".replace("&date", "${getVar("date")}").replace("&time", "${getVar("time")}").replace("&profile", "${getVar("profile")}") : null  
-    	result = result ? "$result".replace("&device", "${device}").replace("&action", "${action}").replace("&event", "${event}") : null
+		def last =  " << Time of last event (only available when used with pending actions) >>"
+        result = message ? "$message".replace("&date", "${getVar("date")}").replace("&time", "${getVar("time")}").replace("&profile", "${getVar("profile")}") : null  
+    	result = result ? "$result".replace("&device", "${device}").replace("&action", "${action}").replace("&event", "${event}").replace("&last", "${last}")  : null
        	result = getWeatherVar(result) 
     }
     if(message && profile == "test") {
@@ -1131,7 +1135,6 @@ def meterHandler(evt) {
         int thresholdStopValue = thresholdStop == null ? 0 : thresholdStop as int
         def cycleOnHigh = state.cycleOnH
         def cycleOnLow = state.cycleOnL
-        //log.warn "meterValue = $meterValue , cycleOnLow = $cycleOnLow"
         if(myPowerS == "above threshold"){
             thresholdStopValue = thresholdStopValue == 0 ? 9999 :  thresholdStopValue as int
             if (meterValue >= thresholdValue && meterValue <= thresholdStopValue ) {
@@ -1395,13 +1398,11 @@ def alertsHandler(evt) {
     def eTxt = eDisplayN + " is " + eVal //evt.descriptionText 
     if(parent.debug) log.info "event received: event = $event, eVal = $eVal, eName = $eName, eDev = $eDev, eDisplayN = $eDisplayN, eDisplayT = $eDisplayT, eTxt = $eTxt"
     if(parent.debug) log.warn "version number = ${release()}"
-    //TO DO add -- myRelayContact, myDoor, myWindow --
     def dCapability = eName == "switch" ? "mySwitch" : eName == "motion" ? "myMotion" : eName == "contact" ? "myContact" : eName == "valve" ? "myValve" :  eName == "lock" ? "myLocks" : eName == "garageDoorControl" ? "myGarage" : null
-        if(parent.debug) log.warn "minutes = $minutes for capability $eName, type:$dCapability "
-    
     if(dCapability && minutes && eName != "delay"){
     	def data =[deviceName: eDev.label,attributeName: eVal, capabilityName:"${eName}", type: dCapability ]
         log.warn "scheduling delay with data: $data"
+       	state.lastEvent = new Date(now()).format("h:mm aa", location.timeZone)     
         runIn(minutes*60, checkEvent, [data: data])
 	}
     else {
@@ -1431,7 +1432,7 @@ def alertsHandler(evt) {
                 def nRoutine = false
                 def stamp = state.lastTime = new Date(now()).format("h:mm aa", location.timeZone)     
                 def today = new Date(now()).format("EEEE, MMMM d, yyyy", location.timeZone)
-
+                def last = state.lastEvent
                 if (getDayOk()==true && getModeOk()==true && getTimeOk()==true && getFrequencyOk()==true && getConditionOk()==true) {	
                     if(eName == "time of day" && message){
                             eTxt = message ? "$message".replace("&device", "${eDisplayN}").replace("&event", "time").replace("&action", "executed").replace("&date", "${today}").replace("&time", "${stamp}").replace("&profile", "${eProfile}") : null
@@ -1481,7 +1482,7 @@ def alertsHandler(evt) {
                         else {
                             if (message || actionType == "Triggered Report"){      
                                 if(message){
-                                eTxt = message ? "$message".replace("&device", "${eDev}").replace("&event", "${eName}").replace("&action", "${eVal}").replace("&date", "${today}").replace("&time", "${stamp}").replace("&profile", "${eProfile}") : null
+                                eTxt = message ? "$message".replace("&device", "${eDev}").replace("&event", "${eName}").replace("&action", "${eVal}").replace("&date", "${today}").replace("&time", "${stamp}").replace("&profile", "${eProfile}").replace("&last", "${last}") : null
                                 if(actionType == "Custom Text with Weather") eTxt = getWeatherVar(eTxt)
                                 }
                                 if(eTxt){
@@ -1651,15 +1652,19 @@ private takeAction(eTxt) {
               }
         }      
         if(retrigger){
+        	def endSchedule = state.occurrences + 1 
         	if(state.occurrences == 1) {
             	if(parent.debug) log.warn "scheduling reminders"
         		"${retrigger}"(retriggerHandler)
                 state.message = eTxt
+                parent.childInitialized(eTxt)
         	}
-        	else if (state.occurrences >= howManyTimes) {
+        	else if (state.occurrences >= endSchedule) { //howManyTimes 5/30/17
             	unschedule("retriggerHandler")
                 state.message = null
                 state.occurrences = 0
+                def pMessage = null
+                parent.childInitialized(pMessage)
                 if(parent.debug) log.warn "canceling reminders"
         	}
         }
@@ -1685,9 +1690,10 @@ def sonosFirstDelayedMessage() {
 /***********************************************************************************************************************
     RETRIGGER
 ***********************************************************************************************************************/
-def retriggerHandler () {
+def retriggerHandler() {
 	def message = "In case you misssed it " + state.message
     state.occurrences =  state.occurrences + 1
+    def occurrenceTrig = state.occurrences
     if(continueOnChange == true) {
 		if(parent.debug) log.info "processing retrigger with message = $message"
 		if(recipients?.size()>0 || sms?.size()>0 || push) {
@@ -1697,15 +1703,36 @@ def retriggerHandler () {
     	takeAction(message)
    	}
     else { 
-   		if (getDayOk()==true && getModeOk()==true && getTimeOk()==true && getFrequencyOk()==true && getConditionOk()==true) {
-			if(parent.debug) log.info "processing retrigger with message = $message"
-            if(recipients?.size()>0 || sms?.size()>0 || push) {
-				sendtxt(message)
+        if(occurrenceTrig == 2){
+        	log.info "skipping the randomly generated message by ST scheduler"
+        }
+        else {
+            if (getDayOk()==true && getModeOk()==true && getTimeOk()==true && getFrequencyOk()==true && getConditionOk()==true) {
+                if(parent.debug) log.info "processing retrigger with message = $message"
+                if(recipients?.size()>0 || sms?.size()>0 || push) {
+                    sendtxt(message)
+                }
+                if(tv) tv.deviceNotification(message)
+                takeAction(message)
             }
-			if(tv) tv.deviceNotification(message)
-            takeAction(message)
-    	}
-   	}
+   		}
+    }
+}
+/***********************************************************************************************************************
+    CANCEL RETRIGGER
+***********************************************************************************************************************/
+def retriveMessage(){
+    state.message
+}
+def cancelRetrigger() {
+def result = "successful"
+            	unschedule("retriggerHandler")
+                state.message = null
+                state.occurrences = 0
+                def pMessage = null
+                parent.childInitialized(pMessage)
+                if(parent.debug) log.warn "canceling retrigger as requested by other app"
+	return result
 }
 /***********************************************************************************************************************
     CUSTOM WEATHER VARIABLES
@@ -2209,6 +2236,8 @@ def getConditionOk() {
 		unschedule("retriggerHandler")
         state.message = null
         state.occurrences = 0
+        def pMessage = null
+        parent.childInitialized(pMessage)
         log.warn "canceling reminders"
     }
 	if(rSwitchS || rMotionS || rContactS || rPresenceS){

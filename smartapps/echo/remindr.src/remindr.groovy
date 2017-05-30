@@ -1,6 +1,7 @@
 /* 
  * RemindR - An EchoSistant Smart App 
  *
+ *	5/30/2017		Version:1.0 R.0.0.5		app touch cancelation
  *	5/24/2017		Version:1.0 R.0.0.2		ad-hoc triggering
  *
  *
@@ -31,7 +32,7 @@ private def textVersion() {
 	def text = "1.0"
 }
 private release() {
-    def text = "R.0.0.2"
+    def text = "R.0.0.5"
 }
 /**********************************************************************************************************************************************/
 
@@ -55,7 +56,12 @@ preferences {
                             app(name: "profiles", appName: "RemindRProfiles", namespace: "Echo", title: "Create a new Reminder", multiple: true,  uninstall: false)
                         }
                     }
-					section("Settings",  uninstall: false, hideable: true, hidden: true){
+					if (state.activeRetrigger) {
+                    	section("Active Retrigger"){
+                        	paragraph ("${state.activeRetrigger}")
+						}
+                    }
+                    section("Settings",  uninstall: false, hideable: true, hidden: true){
 						input "debug", "bool", title: "Enable Debug Logging", default: true, submitOnChange: true
             			input "wZipCode", "text", title: "Zip Code (If Location Not Set)", required: "false"
                         paragraph ("Version: ${textVersion()} | Release: ${release()}")
@@ -77,10 +83,16 @@ def updated() {
     initialize()
 }
 def initialize() {
-        //Other Apps
+		subscribe(app, appHandler)
+        //Other Apps Events
         state.esEvent = [:]
+        state.activeRetrigger
         subscribe(location, "echoSistant", echoSistantHandler)
 		state.esProfiles = state.esProfiles ? state.esProfiles : []
+        //CoRE and other 3rd party apps
+        sendLocationEvent(name: "remindR", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
+        def children = getChildApps()
+
 
 }
 /************************************************************************************************************
@@ -100,6 +112,16 @@ log.warn "child requesting esProfiles"
 	return state.esProfiles = state.esProfiles ? state.esProfiles : []
 }
 
+def getProfileList(){
+		return getChildApps()*.label
+}
+def childUninstalled() {
+	if (debug) log.debug "Refreshing Profiles for 3rd party apps, ${getChildApps()*.label}"
+    sendLocationEvent(name: "remindR", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
+} 
+def childInitialized(message) {
+	state.activeRetrigger = message
+}
 /***********************************************************************************************************************
     RUN ADHOC REPORT
 ***********************************************************************************************************************/
@@ -113,4 +135,24 @@ def result
 						}
             	}
                 return result
+}
+/***********************************************************************************************************************
+    CANCEL RETRIGGER
+***********************************************************************************************************************/
+def cancelRetrigger() {
+def result
+           		childApps.each {child ->
+                        def ch = child.label
+                		def chMessage = child.retriveMessage()
+                        if (chMessage == state.activeRetrigger) { 
+                    		if (debug) log.debug "Found a profile for the retrigger = $ch"
+                            result = child.cancelRetrigger()
+						}
+            	}
+                //return result
+                log.warn "retrigger cancelation was $result"
+}
+def appHandler(evt) {
+    cancelRetrigger()
+    log.debug "app event ${evt.name}:${evt.value} received"
 }
