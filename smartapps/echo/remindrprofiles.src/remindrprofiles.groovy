@@ -192,17 +192,22 @@ page name: "mainProfilePage"
 				def sProfile = actionType != "Triggered Report" ? "EchoSistant Profile" : "Ad-Hoc Report"
         		section ("Run actions for this ${sProfile}") {
 					if(actionType != "Triggered Report") {
-                    	if(!parent.listEchoSistantProfiles()) {
-							paragraph "NOTE: Looks like your EchoSistant Profiles are not available. \n \nIf you have any EchoSistant Profiles, please open the EchoSistant app and then click 'Done' to refresh the list"
+                        if(parent.app.label == "EchoSistant"){
+                    		input "myProfile", "enum", title: "Choose Profile...", options: getProfileList(), multiple: false, required: false 
                         }
-                        else {
-                        	input "myProfile", "enum", title: "Choose Profile...", options: parent.listEchoSistantProfiles() , multiple: false, required: false 
-                		}
+                        else{
+                            if(!parent.listEchoSistantProfiles()) {
+                                paragraph "NOTE: Looks like your EchoSistant Profiles are not available. \n \nIf you have any EchoSistant Profiles, please open the EchoSistant app and then click 'Done' to refresh the list"
+                            }
+                            else {
+                                input "myProfile", "enum", title: "Choose Profile...", options: parent.listEchoSistantProfiles() , multiple: false, required: false 
+                            }
+                    	}
                     }
                     else {
                     	input "myAdHocReport", "enum", title: "Choose Ad-Hoc Report...", options: getAdHocReports() , multiple: false, required: false 
                 	}
-                }  
+                }    
                 section ("Using these Restrictions") {
                     href "pRestrict", title: "Use these restrictions...", description: pRestComplete(), state: pRestSettings()
                 }
@@ -735,21 +740,6 @@ def initialize() {
                 if (myAccelerationS == "both")		subscribe(myAcceleration, "acceleration", alertsHandler)
     		}
     }
-}
-/******************************************************************************************************
-   PARENT STATUS CHECKS
-******************************************************************************************************/
-def checkRelease() {
-	return state.NotificationRelease
-}
-/******************************************************************************************************
-   SEND TO ECHOSISTANT MAILBOX
-******************************************************************************************************/
-def sendEvent(message) {
-    def profile = myProfile
-    def data = [:]
-	data = [profile:profile, message:message]
-	sendLocationEvent(name: "EchoMailbox", value: "execute", data: data, displayed: true, isStateChange: true, descriptionText: "RemindR is asking to execute '${myProfile}' Profile")
 }
 /************************************************************************************************************
    RUNNING ADD-HOC REPORT
@@ -2429,23 +2419,6 @@ private void sendText(number, message) {
     }
 }
 /***********************************************************************************************************************
-    RUNNING Ad-Hoc Reports
-***********************************************************************************************************************/
-def getAdHocReports() {
-log.warn "looking for as-hoc reports"
-	def childList = []
-           		parent.childApps.each {child ->
-                        def ch = child.label
-                        log.warn "child $ch has actionType = $actionType"
-                		if (child.actionType == "Ad-Hoc Report") { 
-        					String children  = (String) ch
-            				childList += children
-						}
-            	}
-	log.warn "finished looking and found: $childList"
-    return childList
-}
-/***********************************************************************************************************************
     CUSTOM SOUNDS HANDLER
 ***********************************************************************************************************************/
 private loadSound() {
@@ -2555,3 +2528,72 @@ def pTimeComplete() {def text = "Tap here to configure settings"
     	text = "Configured"}
     	else text = "Tap to Configure"
 		text}
+
+/******************************************************************************************************
+
+
+			ONLY ADD-ON FUNCTIONS 
+
+
+******************************************************************************************************/
+/******************************************************************************************************
+   Run Profile Actions
+******************************************************************************************************/
+def runProfileActions() {
+              	def String pintentName = (String) null
+                def String pContCmdsR = (String) null
+                def String ptts = (String) null
+        		def pContCmds = false
+        		def pTryAgain = false
+        		def dataSet = [:]
+           		parent.childApps.each {child ->
+                        def ch = child.label
+                		if (ch == settings.myProfile) { 
+                    		if (debug) log.debug "Matched the profile"
+                            pintentName = child.label
+                    		ptts = "Running Profile actions from the Notification Add-on"
+                            dataSet = [ptts:ptts, pintentName:pintentName]
+                            child.profileEvaluate(dataSet)
+						}
+            	}
+                
+}
+/******************************************************************************************************
+
+
+			ONLY REMINDr FUNCTIONS 
+
+
+******************************************************************************************************/
+/***********************************************************************************************************************
+    RUNNING Ad-Hoc Reports
+***********************************************************************************************************************/
+def getAdHocReports() {
+log.warn "looking for as-hoc reports"
+	def childList = []
+           		parent.childApps.each {child ->
+                        def ch = child.label
+                        log.warn "child $ch has actionType = $actionType"
+                		if (child.actionType == "Ad-Hoc Report") { 
+        					String children  = (String) ch
+            				childList += children
+						}
+            	}
+	log.warn "finished looking and found: $childList"
+    return childList
+}
+/******************************************************************************************************
+   PARENT STATUS CHECKS
+******************************************************************************************************/
+def checkRelease() {
+	return state.NotificationRelease
+}
+/******************************************************************************************************
+   SEND TO ECHOSISTANT MAILBOX
+******************************************************************************************************/
+def sendEvent(message) {
+    def profile = myProfile
+    def data = [:]
+	data = [profile:profile, message:message]
+	sendLocationEvent(name: "EchoMailbox", value: "execute", data: data, displayed: true, isStateChange: true, descriptionText: "RemindR is asking to execute '${myProfile}' Profile")
+}
