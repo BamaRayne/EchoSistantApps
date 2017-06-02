@@ -1,7 +1,7 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
  *
- *	5/25/2017		Version:1.0 R.0.0.6		trigger stays delay, added doors, windows and valves, ad-hoc reporting message
+ *	5/25/2017		Version:1.0 R.0.0.6a		trigger stays delay, added doors, windows and valves, ad-hoc reporting message
  *	5/24/2017		Version:1.0 R.0.0.4		ad-hoc triggering
  *
  *
@@ -29,7 +29,7 @@ definition(
 	iconX3Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.6"
+	def text = "R.0.0.6a"
 }
 
 preferences {
@@ -851,7 +851,7 @@ private getVar(var) {
     	}	
     }
     if (var == "doors"){
-    	if (myDoors){
+    	if (myDoor){
             if (myDoor?.latestValue("contact")?.contains("open")) {
                 myDoor?.each { deviceName ->
                     if (deviceName.latestValue("contact")=="open") {
