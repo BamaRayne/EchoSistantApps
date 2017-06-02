@@ -851,7 +851,7 @@ private getVar(var) {
     	}	
     }
     if (var == "doors"){
-    	if (myContact){
+    	if (myDoors){
             if (myDoor?.latestValue("contact")?.contains("open")) {
                 myDoor?.each { deviceName ->
                     if (deviceName.latestValue("contact")=="open") {
