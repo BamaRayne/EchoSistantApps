@@ -1,7 +1,7 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
  *
- *	5/25/2017		Version:1.0 R.0.0.5		trigger stays delay, added doors, windows and valves
+ *	5/25/2017		Version:1.0 R.0.0.6		trigger stays delay, added doors, windows and valves, ad-hoc reporting message
  *	5/24/2017		Version:1.0 R.0.0.4		ad-hoc triggering
  *
  *
@@ -29,7 +29,7 @@ definition(
 	iconX3Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.5"
+	def text = "R.0.0.6"
 }
 
 preferences {
@@ -1424,7 +1424,7 @@ def alertsHandler(evt) {
                 def today = new Date(now()).format("EEEE, MMMM d, yyyy", location.timeZone)
                 def last = state.lastEvent
                 if (getDayOk()==true && getModeOk()==true && getTimeOk()==true && getFrequencyOk()==true && getConditionOk()==true) {	
-                    if(eName == "time of day" && message){
+                    if(eName == "time of day" && message && actionType != "Triggered Report"){
                             eTxt = message ? "$message".replace("&device", "${eDisplayN}").replace("&event", "time").replace("&action", "executed").replace("&date", "${today}").replace("&time", "${stamp}").replace("&profile", "${eProfile}") : null
                                 if(actionType == "Custom Text with Weather") eTxt = getWeatherVar(eTxt)
                     }
@@ -1432,7 +1432,7 @@ def alertsHandler(evt) {
                         eVal = evt.value.toFloat()
                         eVal = Math.round(eVal)
                     }
-                    if(eName == "routineExecuted" && myRoutine) {
+                    if(eName == "routineExecuted" && myRoutine && actionType != "Triggered Report") {
                         def deviceMatch = myRoutine?.find {r -> r == eDisplayN}  
                         if (deviceMatch){
                             eTxt = message ? "$message".replace("&device", "${eDisplayN}").replace("&event", "routine").replace("&action", "executed").replace("&date", "${today}").replace("&time", "${stamp}").replace("&profile", "${eProfile}") : null
@@ -1451,7 +1451,7 @@ def alertsHandler(evt) {
                         }
                     }
                     else {
-                        if(eName == "mode" && myMode) {
+                        if(eName == "mode" && myMode && actionType != "Triggered Report") {
                             def deviceMatch = myMode?.find {m -> m == eVal}  
                             if (deviceMatch){
                                 eTxt = message ? "$message".replace("&device", "${eVal}").replace("&event", "${eName}").replace("&action", "changed").replace("&date", "${today}").replace("&time", "${stamp}").replace("&profile", "${eProfile}") : null
