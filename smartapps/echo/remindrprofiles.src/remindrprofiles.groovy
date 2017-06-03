@@ -17,6 +17,7 @@
  *  for the specific language governing permissions and limitations under the License.
  *
 /**********************************************************************************************************************************************/
+//DO NOT MERGE INTO NOTIFICATION ADD_ON
 definition(
 	name			: "RemindRProfiles",
     namespace		: "Echo",
@@ -27,6 +28,8 @@ definition(
 	iconUrl			: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR.png",
 	iconX2Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png",
 	iconX3Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
+/**********************************************************************************************************************************************/
+//MERGE INTO NOTIFICATION ADD_ON FROM HERE DOWN!!!!!!
 /**********************************************************************************************************************************************/
 private release() {
 	def text = "R.0.0.6b"
