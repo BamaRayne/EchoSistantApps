@@ -1,8 +1,8 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
  *
- *	5/25/2017		Version:1.0 R.0.0.6a		trigger stays delay, added doors, windows and valves, ad-hoc reporting message
- *	5/24/2017		Version:1.0 R.0.0.4		ad-hoc triggering
+ *	6/3/2017		Version:1.0 R.0.0.6b		trigger stays delay, added doors, windows and valves, ad-hoc reporting message
+ *	5/24/2017		Version:1.0 R.0.0.4			ad-hoc triggering
  *
  *
  *  Copyright 2016 Jason Headley & Bobby Dobrescu
@@ -29,7 +29,7 @@ definition(
 	iconX3Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.6a"
+	def text = "R.0.0.6b"
 }
 
 preferences {
@@ -603,6 +603,7 @@ def initialize() {
     state.cycleCO2l = false    
 	state.message = null
     state.occurrences = 0
+    
     if (mySunState == "Sunset") {
     subscribe(location, "sunsetTime", sunsetTimeHandler)
 	sunsetTimeHandler(location.currentValue("sunsetTime"))
@@ -1416,7 +1417,18 @@ def alertsHandler(evt) {
         }
         else {
                 if (actionType == "Triggered Report" && myAdHocReport) {
-                    eTxt = parent.runReport(myAdHocReport)
+                	eTxt = null
+					if (eName == "routineExecuted" || eName == "mode"){
+                        if(eName == "routineExecuted" && myRoutine) {
+                            def deviceMatch = myRoutine?.find {r -> r == eDisplayN} 
+                            if (deviceMatch != null) {eTxt = parent.runReport(myAdHocReport)}
+                        }
+                        if (eName == "mode" && myMode) {
+                            def deviceMatch = myMode?.find {m -> m == eVal}  
+                            if (deviceMatch) eTxt = parent.runReport(myAdHocReport)
+                        }
+                    }
+                    else eTxt = parent.runReport(myAdHocReport)
                 }
                 def eProfile = app.label
                 def nRoutine = false
