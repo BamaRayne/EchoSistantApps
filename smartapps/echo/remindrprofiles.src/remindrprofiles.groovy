@@ -1,6 +1,7 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
  *
+ *	6/5/2017		Version:1.0 R.0.0.7			cron fix for weekdays
  *	6/3/2017		Version:1.0 R.0.0.6b		trigger stays delay, added doors, windows and valves, ad-hoc reporting message
  *	5/24/2017		Version:1.0 R.0.0.4			ad-hoc triggering
  *
@@ -32,7 +33,7 @@ definition(
 //MERGE INTO NOTIFICATION ADD_ON FROM HERE DOWN!!!!!!
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.6b"
+	def text = "R.0.0.7"
 }
 
 preferences {
@@ -320,8 +321,8 @@ page name: "triggers"
                                     input "xHours", "number", title: "Every X hour(s) - maximum 24", range: "1..23", submitOnChange: true, required: false
                                 }	
                                 if(frequency == "Daily"){
-                                    input "xDays", "number", title: "Every X day(s) - maximum 31", range: "1..31", submitOnChange: true, required: false
-                                    input "xDaysWeekDay", "bool", title: "OR Every Week Day (MON-FRI)", required: false, defaultValue: false
+                                    if (!xDaysWeekDay) input "xDays", "number", title: "Every X day(s) - maximum 31", range: "1..31", submitOnChange: true, required: false
+                                    input "xDaysWeekDay", "bool", title: "OR Every Week Day (MON-FRI)", required: false, defaultValue: false, submitOnChange: true
                                     if(xDays || xDaysWeekDay){input "xDaysStarting", "time", title: "starting at time...", submitOnChange: true, required: true}
                                 }   
                                 if(frequency == "Weekly"){
@@ -2131,7 +2132,8 @@ def cronHandler(var) {
                 schedule(result, "scheduledTimeHandler")
             }
             else if(xDaysWeekDay && xDaysStarting) {
-            	result = "0 $mn $hr 1/${xDays} * MON-FRI *"
+            	//0 13 2 ? * MON-FRI *
+            	result = "0 $mn $hr ? * MON-FRI *"
                 schedule(result, "scheduledTimeHandler")
 			}
             else log.error " unable to schedule your reminder due to missing required variables"
