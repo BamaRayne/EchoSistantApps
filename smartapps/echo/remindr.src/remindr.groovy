@@ -41,7 +41,6 @@ preferences {
     page(name: "profiles")
     page(name: "advanced")
 }
-
 		page name: "main"
             def main() {
                 dynamicPage (name: "main", title: "Reminders and Notifications (${childApps?.size()})", install: true, uninstall: true) {

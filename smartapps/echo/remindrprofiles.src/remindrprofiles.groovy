@@ -1,7 +1,7 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
  *
- *	6/8/2017		Version:1.0 R.0.0.8			added soft intro for reminders
+ *	6/8/2017		Version:1.0 R.0.0.8a			added soft intro for reminders
  *	6/5/2017		Version:1.0 R.0.0.7			cron fix for weekdays
  *	6/3/2017		Version:1.0 R.0.0.6b		trigger stays delay, added doors, windows and valves, ad-hoc reporting message
  *	5/24/2017		Version:1.0 R.0.0.4			ad-hoc triggering
@@ -34,7 +34,7 @@ definition(
 //MERGE INTO NOTIFICATION ADD_ON FROM HERE DOWN!!!!!!
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.8"
+	def text = "R.0.0.8a"
 }
 
 preferences {
@@ -97,11 +97,10 @@ page name: "mainProfilePage"
         		}
 			}            
        	}
-        if (actionType == "Custom Text" || actionType == "Custom Text with Weather" || actionType == "Ad-Hoc Report") {
-            section ("Play this message text...") {
-                input "message", "text", title: "Message Text (tip: include &variables here)", required:false, multiple: false, defaultValue: "", submitOnChange: true
-				input "introSound", "bool", title: "Play Intro Sound", default: false, submitOnChange: true
-
+        if (actionType == "Custom Text" || actionType == "Custom Text with Weather" || actionType == "Ad-Hoc Report" || actionType == "Triggered Report") {
+            section ("Play this...") {
+                if (actionType != "Triggered Report") input "message", "text", title: "Play TTS Message (tip: include &variables here)", required:false, multiple: false, defaultValue: "", submitOnChange: true
+				if(actionType != "Ad-Hoc Report") input "introSound", "bool", title: "Play Intro Sound", default: false, submitOnChange: true
             }
             if(message) {
 				def report
@@ -162,7 +161,9 @@ page name: "mainProfilePage"
        	}
         *********************************************************************************/
         if (actionType != "Ad-Hoc Report"){
-			section ("Retrigger" ) {    
+        	log.info "actionType = $actionType"
+			 if(actionType != "Default" && actionType != null ) {
+             	section ("Retrigger" ) {    
                     input "retrigger", "enum", title: "Retrigger event", multiple: false, required: false, submitOnChange: true,
 						options: [
 							"runEvery1Minute": "Every Minute",
@@ -174,18 +175,19 @@ page name: "mainProfilePage"
                             "runEvery3Hours": "Every 3 Hours",
                 			//"runEvery1Day": "Every Day"
                             ]
-            	if (retrigger) {
-                	input "howManyTimes", "number", title: "...how many times to retrigger", required: true, description: "number of reminders"
-                    input "continueOnChange", "bool", title: "Continue to deliver reminders after condition changes", required: false, defaultValue: false
-            	}
-            }         
+                    if (retrigger) {
+                        input "howManyTimes", "number", title: "...how many times to retrigger", required: true, description: "number of reminders"
+                        input "continueOnChange", "bool", title: "Continue to deliver reminders after condition changes", required: false, defaultValue: false
+                    }	
+            	}         
+            }
             section ("Output Methods" , hideWhenEmpty: true) {    
                 input "sonos", "capability.musicPlayer", title: "Play on this Music Player", required: false, multiple: true, submitOnChange: true
                     if (sonos) {
                         input "sonosVolume", "number", title: "Temporarily change volume", description: "0-100%", required: false
                     	input "resumePlaying", "bool", title: "Resume currently playing music after notification", required: false, defaultValue: false
-                        input "sonosDelayFirst", "decimal", title: "(Optional) Delay delivery of first message by...", description: "seconds", required: false
-                        input "sonosDelay", "decimal", title: "(Optional) Delay delivery of second message by...", description: "seconds", required: false
+                        if(actionType != "Default") input "sonosDelayFirst", "decimal", title: "(Optional) Delay delivery of first message by...", description: "seconds", required: false
+                        if(actionType != "Default") input "sonosDelay", "decimal", title: "(Optional) Delay delivery of second message by...", description: "seconds", required: false
                     }
                 input "speechSynth", "capability.speechSynthesis", title: "Play on this Speech Synthesis Device", required: false, multiple: true, submitOnChange: true
                         if (speechSynth) {
@@ -200,17 +202,12 @@ page name: "mainProfilePage"
 				def sProfile = actionType != "Triggered Report" ? "EchoSistant Profile" : "Ad-Hoc Report"
         		section ("Run actions for this ${sProfile}") {
 					if(actionType != "Triggered Report") {
-                        if(parent.app.label == "EchoSistant"){
-                    		input "myProfile", "enum", title: "Choose Profile...", options: getProfileList(), multiple: false, required: false 
+                    	if(!parent.listEchoSistantProfiles()) {
+                        	paragraph "NOTE: Looks like your EchoSistant Profiles are not available. \n \nIf you have any EchoSistant Profiles, please open the EchoSistant app and then click 'Done' to refresh the list"
                         }
-                        else{
-                            if(!parent.listEchoSistantProfiles()) {
-                                paragraph "NOTE: Looks like your EchoSistant Profiles are not available. \n \nIf you have any EchoSistant Profiles, please open the EchoSistant app and then click 'Done' to refresh the list"
-                            }
-                            else {
-                                input "myProfile", "enum", title: "Choose Profile...", options: parent.listEchoSistantProfiles() , multiple: false, required: false 
-                            }
-                    	}
+                       	else {
+                       		input "myProfile", "enum", title: "Choose Profile...", options: parent.listEchoSistantProfiles() , multiple: false, required: false 
+                        }
                     }
                     else {
                     	input "myAdHocReport", "enum", title: "Choose Ad-Hoc Report...", options: getAdHocReports() , multiple: false, required: false 
@@ -369,7 +366,7 @@ page name: "triggers"
                 input "mySwitch", "capability.switch", title: "Switches", required: false, multiple: true, submitOnChange: true
                     if (mySwitch && actionType != "Ad-Hoc Report") {
                     	input "mySwitchS", "enum", title: "Notify when state changes to...", options: ["on", "off", "both"], required: false, submitOnChange: true
-                        if (mySwitchS != "both") input "minutes", "number", title: "... and continues to be ${mySwitchS} for (minutes) - OPTIONAL", required: false, description: "minutes"
+                        if (mySwitchS != "both" && actionType != "Default") input "minutes", "number", title: "... and continues to be ${mySwitchS} for (minutes) - OPTIONAL", required: false, description: "minutes"
                 	}
                 if(actionType != "Default") {
                 input "myPower", "capability.powerMeter", title: "Power Meters", required: false, multiple: false, submitOnChange: true
@@ -381,7 +378,7 @@ page name: "triggers"
                 input "myLocks", "capability.lock", title: "Locks", required: false, multiple: true, submitOnChange: true
                     if (myLocks && actionType != "Ad-Hoc Report") {
                     	input "myLocksS", "enum", title: "Notify when state changes to...", options: ["locked", "unlocked", "both"], required: false, submitOnChange: true
-                        if (myLocksS != "both") input "minutes", "number", title: "... and continues to be ${myLocksS} for (minutes) - OPTIONAL", required: false, description: "minutes"
+                        if (myLocksS != "both" && actionType != "Default") input "minutes", "number", title: "... and continues to be ${myLocksS} for (minutes) - OPTIONAL", required: false, description: "minutes"
                     }
                     if(myLocksS == "unlocked") input "myLocksSCode", "number", title: "With this user code...", required: false, description: "user code number (optional)"
                 if(actionType != "Default"){
@@ -395,25 +392,25 @@ page name: "triggers"
                 input "myGarage", "capability.garageDoorControl", title: "Garage Doors", multiple: false, required: false, submitOnChange: true
 					if (myGarage && actionType != "Ad-Hoc Report") {
                     	input "myGarageS", "enum", title: "Notify when state changes to...", options: ["open", "closed", "both"], required: false, submitOnChange: true
-                        if (myGarageS != "both") input "minutes", "number", title: "... and continues to be ${myGarageS} for (minutes) - OPTIONAL", required: false, description: "minutes"
+                        if (myGarageS != "both" && actionType != "Default") input "minutes", "number", title: "... and continues to be ${myGarageS} for (minutes) - OPTIONAL", required: false, description: "minutes"
                 	}
-                input "myRelay", "capability.switch", title: "Relays used as Garage Doors", multiple: false, required: false, submitOnChange: true
+                input "myRelay", "capability.switch", title: "Relay used as Garage Doors", multiple: false, required: false, submitOnChange: true
                     if (myRelay) input "myRelayContact", "capability.contactSensor", title: "Select a Contact Sensor that monitors the relay", multiple: false, required: false
             		if (myRelayContact && actionType != "Ad-Hoc Report") {
                     	input "myRelayContactS", "enum", title: "Notify when state changes to...", options: ["open", "closed", "both"], required: false, submitOnChange: true
-                        if (myRelayContactS != "both") input "minutes", "number", title: "... and continues to be ${myRelayContactS} for (minutes) - OPTIONAL", required: false, description: "minutes"
+                        if (myRelayContactS != "both" && actionType != "Default") input "minutes", "number", title: "... and continues to be ${myRelayContactS} for (minutes) - OPTIONAL", required: false, description: "minutes"
             		}
                 input "myValve", "capability.valve", title: "Water Valves", required: false, multiple: true, submitOnChange: true
                     if (myValve && actionType != "Ad-Hoc Report") {
                     	input "myValveS", "enum", title: "Notify when state changes to...", options: ["open", "closed", "both"], required: false, submitOnChange: true
-                        if (myValveS != "both") input "minutes", "number", title: "... and continues to be ${myValveS} for (minutes) - OPTIONAL", required: false, description: "minutes"
+                        if (myValveS != "both" && actionType != "Default") input "minutes", "number", title: "... and continues to be ${myValveS} for (minutes) - OPTIONAL", required: false, description: "minutes"
 					}
             }
             section ("Choose Sensor Status", hideWhenEmpty: true) {
                 input "myContact", "capability.contactSensor", title: "Contact", required: false, multiple: true, submitOnChange: true
                     if (myContact && actionType != "Ad-Hoc Report") {
                     	input "myContactS", "enum", title: "Notify when state changes to...", options: ["open", "closed", "both"], required: false, submitOnChange: true
-                        if (myContactS != "both") input "minutes", "number", title: "... and continues to be ${myContactS} for (minutes) - OPTIONAL", required: false, description: "minutes"
+                        if (myContactS != "both" && actionType != "Default") input "minutes", "number", title: "... and continues to be ${myContactS} for (minutes) - OPTIONAL", required: false, description: "minutes"
 					}
 				if (actionType == "Ad-Hoc Report") {
                 	input "myDoor", "capability.contactSensor", title: "Contact Sensors used on doors", required: false, multiple: true, submitOnChange: true
@@ -430,7 +427,7 @@ page name: "triggers"
                 input "myMotion", "capability.motionSensor", title: "Motion" , required: false, multiple: true, submitOnChange: true
                     if (myMotion && actionType != "Ad-Hoc Report") {
                     	input "myMotionS", "enum", title: "Notify when state changes to...", options: ["active", "inactive", "both"], required: false
-                        if (myMotionS != "both") input "minutes", "number", title: "... and continues to be ${myMotionS} for (minutes) - OPTIONAL", required: false, description: "minutes"
+                        if (myMotionS != "both" && actionType != "Default") input "minutes", "number", title: "... and continues to be ${myMotionS} for (minutes) - OPTIONAL", required: false, description: "minutes"
                 	}
                 input "myPresence", "capability.presenceSensor", title: "Presence", required: false, multiple: true, submitOnChange: true
                     if (myPresence && actionType != "Ad-Hoc Report") input "myPresenceS", "enum", title: "Notify when state changes to...", options: ["present", "not present", "both"], required: false
@@ -2534,12 +2531,6 @@ private loadSound() {
 			state?.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/bell1.mp3", duration: "10"]
 			break;
 	}
-}
-/************************************************************************************************************
-   PROFILES 
-************************************************************************************************************/       
-def getProfileList(){        
-		return parent.getChildApps()*.label.sort()
 }
 /***********************************************************************************************************************
     RUNNING Ad-Hoc Reports
