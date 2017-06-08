@@ -1,6 +1,7 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
  *
+ *	6/8/2017		Version:1.0 R.0.0.8			added soft intro for reminders
  *	6/5/2017		Version:1.0 R.0.0.7			cron fix for weekdays
  *	6/3/2017		Version:1.0 R.0.0.6b		trigger stays delay, added doors, windows and valves, ad-hoc reporting message
  *	5/24/2017		Version:1.0 R.0.0.4			ad-hoc triggering
@@ -33,7 +34,7 @@ definition(
 //MERGE INTO NOTIFICATION ADD_ON FROM HERE DOWN!!!!!!
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.7"
+	def text = "R.0.0.8"
 }
 
 preferences {
@@ -85,7 +86,8 @@ page name: "mainProfilePage"
 				"There is motion",
 				"Smartthings detected a flood",
 				"Smartthings detected smoke",
-				"Someone is arriving",
+				"Soft Chime",
+                "Someone is arriving",
 				"Piano",
 				"Lightsaber"
                 ]
@@ -98,6 +100,8 @@ page name: "mainProfilePage"
         if (actionType == "Custom Text" || actionType == "Custom Text with Weather" || actionType == "Ad-Hoc Report") {
             section ("Play this message text...") {
                 input "message", "text", title: "Message Text (tip: include &variables here)", required:false, multiple: false, defaultValue: "", submitOnChange: true
+				input "introSound", "bool", title: "Play Intro Sound", default: false, submitOnChange: true
+
             }
             if(message) {
 				def report
@@ -581,6 +585,7 @@ def updated() {
     state.lastPlayed = null
     state.lastEvent
     state.sound
+    state.soundIntro
     state.speechSound
 	state.lastTime
     state.lastWeather
@@ -1420,6 +1425,14 @@ def alertsHandler(evt) {
             }
         }
         else {
+            if(introSound) {    
+        		def lastPlay = state.lastPlayed ?: now()
+                def elapsed = now() - lastPlay
+                log.warn "last play elapsed = $elapsed"
+                def sVolume = settings.sonosVolume ?: 20
+        		state.soundIntro =  [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "20", volume: sVolume ]
+        			playIntro() //sonos?.playTrackAndResume(state.soundIntro.uri, state.soundIntro.duration, sVolume)
+                }                
                 if (actionType == "Triggered Report" && myAdHocReport) {
                 	eTxt = null
 					if (eName == "routineExecuted" || eName == "mode"){
@@ -1522,7 +1535,10 @@ def alertsHandler(evt) {
             }
 	}
 }
-
+def playIntro() {
+	log.info "playing intro"
+	sonos?.playTrackAndRestore(state.soundIntro.uri, state.soundIntro.duration, state.soundIntro.volume)
+}
 def checkEvent(data) {
     def deviceName = data.deviceName
     def deviceAttribute = data.attributeName
@@ -1621,14 +1637,24 @@ private takeAction(eTxt) {
                 def sCommand = resumePlaying == true ? "playTrackAndResume" : "playTrackAndRestore"
                 if (!state.lastPlayed) {
                 	if(!sonosDelayFirst){
-                        if(parent.debug) log.info "playing first message"
-                        sonos?."${sCommand}"(sTxt.uri, Math.max((sTxt.duration as Integer),2), sVolume)
-                        state.lastPlayed = now()
-                        state.sound.command = sCommand
-                        state.sound.volume = sVolume
-                	}
+                    	if(introSound){
+                        	int sDelayFirst = 3
+							if(parent.debug) log.info "delaying first message to play intro by $sDelayFirst"
+                        	state.sound.command = sCommand
+                        	state.sound.volume = sVolume
+                        	state.lastPlayed = now()
+                        	runIn(sDelayFirst , sonosFirstDelayedMessage)                
+						}
+                        else {
+                            if(parent.debug) log.info "playing first message"
+                            sonos?."${sCommand}"(sTxt.uri, Math.max((sTxt.duration as Integer),2), sVolume)
+                            state.lastPlayed = now()
+                            state.sound.command = sCommand
+                            state.sound.volume = sVolume
+                		}
+                    }
                     else {
-                    	if(parent.debug) log.info "playing first message with delay $sonosDelayFirst"
+                    	if(parent.debug) log.info "delaying first message by $sonosDelayFirst"
                         state.sound.command = sCommand
                         state.sound.volume = sVolume
                         state.lastPlayed = now()
@@ -1649,12 +1675,22 @@ private takeAction(eTxt) {
                         runIn(delayNeeded , delayedMessage)
                 	}
                     else {
-                    	if(parent.debug) log.info "playing message without delay"
-                		sonos?."${sCommand}"(sTxt.uri, Math.max((sTxt.duration as Integer),2), sVolume)
-                        state.lastPlayed = now()
-						state.sound.command = sCommand
-                        state.sound.volume = sVolume
-                	}
+						if(introSound){
+                        	int sDelayFirst = 3
+							if(parent.debug) log.info "delaying first message to play intro by $sDelayFirst"
+                        	state.sound.command = sCommand
+                        	state.sound.volume = sVolume
+                        	state.lastPlayed = now()
+                        	runIn(sDelayFirst , sonosFirstDelayedMessage)                
+						}
+						else {
+                    		if(parent.debug) log.info "playing message without delay"
+                			sonos?."${sCommand}"(sTxt.uri, Math.max((sTxt.duration as Integer),2), sVolume)
+                        	state.lastPlayed = now()
+							state.sound.command = sCommand
+                        	state.sound.volume = sVolume
+                		}
+              		}
               }
         }      
         if(retrigger){
@@ -1675,7 +1711,6 @@ private takeAction(eTxt) {
         	}
         }
 }
-
 def delayedMessage() {
 	def sTxt = state.sound
 	sonos?."${sTxt.command}"(sTxt.uri, Math.max((sTxt.duration as Integer),2), sTxt.volume)
@@ -1834,7 +1869,6 @@ def mGetWeatherTrigger(){
 	log.error t
 	return result
 	}  
-
 }
 /***********************************************************************************************************************
     WEATHER ALERTS
@@ -2488,6 +2522,9 @@ private loadSound() {
 		case "Alexa: Open Sesame":
 			state.sound = [uri: "https://images-na.ssl-images-amazon.com/images/G/01/mobile-apps/dex/ask-customskills/audio/speechcons/open_sesame._TTH_.mp3", duration: "10"]
 			break;         
+		case "Soft Chime":
+			state.sound = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "10"]
+			break;          
         case "Custom Sound":
         	if(!cDuration) def fDuration = cDuration ?: "10"
             log.info "Duration = f $fDuration, c $cDuration "
@@ -2503,6 +2540,38 @@ private loadSound() {
 ************************************************************************************************************/       
 def getProfileList(){        
 		return parent.getChildApps()*.label.sort()
+}
+/***********************************************************************************************************************
+    RUNNING Ad-Hoc Reports
+***********************************************************************************************************************/
+def getAdHocReports() {
+log.warn "looking for as-hoc reports"
+	def childList = []
+           		parent.childApps.each {child ->
+                        def ch = child.label
+                        log.warn "child $ch has actionType = $actionType"
+                		if (child.actionType == "Ad-Hoc Report") { 
+        					String children  = (String) ch
+            				childList += children
+						}
+            	}
+	log.warn "finished looking and found: $childList"
+    return childList
+}
+/******************************************************************************************************
+   PARENT STATUS CHECKS
+******************************************************************************************************/
+def checkRelease() {
+	return state.NotificationRelease
+}
+/******************************************************************************************************
+   SEND TO ECHOSISTANT MAILBOX
+******************************************************************************************************/
+def sendEvent(message) {
+    def profile = myProfile
+    def data = [:]
+	data = [profile:profile, message:message]
+	sendLocationEvent(name: "EchoMailbox", value: "execute", data: data, displayed: true, isStateChange: true, descriptionText: "RemindR is asking to execute '${myProfile}' Profile")
 }
 /************************************************************************************************************
    Page status and descriptions 
@@ -2545,72 +2614,3 @@ def pTimeComplete() {def text = "Tap here to configure settings"
     	text = "Configured"}
     	else text = "Tap to Configure"
 		text}
-
-/******************************************************************************************************
-
-
-			ONLY ADD-ON FUNCTIONS 
-
-
-******************************************************************************************************/
-/******************************************************************************************************
-   Run Profile Actions
-******************************************************************************************************/
-def runProfileActions() {
-              	def String pintentName = (String) null
-                def String pContCmdsR = (String) null
-                def String ptts = (String) null
-        		def pContCmds = false
-        		def pTryAgain = false
-        		def dataSet = [:]
-           		parent.childApps.each {child ->
-                        def ch = child.label
-                		if (ch == settings.myProfile) { 
-                    		if (debug) log.debug "Matched the profile"
-                            pintentName = child.label
-                    		ptts = "Running Profile actions from the Notification Add-on"
-                            dataSet = [ptts:ptts, pintentName:pintentName]
-                            child.profileEvaluate(dataSet)
-						}
-            	}
-                
-}
-/******************************************************************************************************
-
-
-			ONLY REMINDr FUNCTIONS 
-
-
-******************************************************************************************************/
-/***********************************************************************************************************************
-    RUNNING Ad-Hoc Reports
-***********************************************************************************************************************/
-def getAdHocReports() {
-log.warn "looking for as-hoc reports"
-	def childList = []
-           		parent.childApps.each {child ->
-                        def ch = child.label
-                        log.warn "child $ch has actionType = $actionType"
-                		if (child.actionType == "Ad-Hoc Report") { 
-        					String children  = (String) ch
-            				childList += children
-						}
-            	}
-	log.warn "finished looking and found: $childList"
-    return childList
-}
-/******************************************************************************************************
-   PARENT STATUS CHECKS
-******************************************************************************************************/
-def checkRelease() {
-	return state.NotificationRelease
-}
-/******************************************************************************************************
-   SEND TO ECHOSISTANT MAILBOX
-******************************************************************************************************/
-def sendEvent(message) {
-    def profile = myProfile
-    def data = [:]
-	data = [profile:profile, message:message]
-	sendLocationEvent(name: "EchoMailbox", value: "execute", data: data, displayed: true, isStateChange: true, descriptionText: "RemindR is asking to execute '${myProfile}' Profile")
-}

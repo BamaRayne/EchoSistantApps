@@ -99,13 +99,19 @@ def initialize() {
 		3RD Party Integrations
 ************************************************************************************************************/
 def echoSistantHandler(evt) {
+	def result
 	if (!evt) return
     log.warn "received event from EchoSistant with data: $evt.data"
 	switch (evt.value) {
 		case "refresh":
 		state.esProfiles = evt.jsonData && evt.jsonData?.profiles ? evt.jsonData.profiles : []
 			break
-	}
+		case "runReport":
+			def profile = evt.jsonData
+            	result = runReport(profile)
+            break	
+    }
+    return result
 }
 def listEchoSistantProfiles() {
 log.warn "child requesting esProfiles"
