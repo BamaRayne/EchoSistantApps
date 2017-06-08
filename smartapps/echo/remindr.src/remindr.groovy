@@ -92,8 +92,6 @@ def initialize() {
         //CoRE and other 3rd party apps
         sendLocationEvent(name: "remindR", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
         def children = getChildApps()
-
-
 }
 /************************************************************************************************************
 		3RD Party Integrations
