@@ -42,7 +42,8 @@ preferences {
     page name:"ThermostatandDoors"
     page name:"ThermostatAway"
     page name:"reporting"
-    page name: "report"
+    page name:"notification"
+	page name: "report"
     page name:"Settings"
 
 }
@@ -67,8 +68,10 @@ def pageSetup() {
             href "ThermostatandDoors", title: "Disabled Mode", description: ThermostatandDoorsParams(), state: greyedOutDoors()
             href "ThermostatAway", title: "Away Mode", description: ThermostatAwayParams(), state: greyedOutAway()
 			href "Settings", title: "Restrictions", description: SettingsParams(), state: greyedOutSettings()
-            href "reporting", title: "Notifications and Reporting", description: "", state: null
-         }
+			href "notification", title: "Audio and Text Notifications", description: pNotifComplete(), state: pNotifSettings() 
+            href "reporting", title: "Available Reports", description: "", state: null
+
+		}
     }
 }
 
@@ -349,24 +352,8 @@ metadata:   [values:["auto", "heat", "cool", "off"]]
 def reporting(){
 	def report
 		return dynamicPage(name: "reporting",title: "", install: false, uninstall: false){ 		
-            section ("Notifications" , hideWhenEmpty: true) {    
-                    input "sonos", "capability.musicPlayer", title: "On this Music Player", required: false, multiple: true, submitOnChange: true
-                        if (sonos) {
-                            input "sonosVolume", "number", title: "Temporarily change volume", description: "0-100%", required: false
-                            input "resumePlaying", "bool", title: "Resume currently playing music after notification", required: false, defaultValue: false
-                            input "sonosDelay", "number", title: "(Optional) Delay second delivery of second message by...", description: "seconds", required: false
-                        }
-                    input "speechSynth", "capability.speechSynthesis", title: "On this Speech Synthesis Device", required: false, multiple: true, submitOnChange: true
-                            if (speechSynth) {
-                                input "speechVolume", "number", title: "Temporarily change volume", description: "0-100%", required: false
-                        }
-                    href "SMS", title: "Send SMS & Push Messages...", description: pSendComplete(), state: pSendSettings() 
-                    
-                    input "detailed", "bool", title: "Send Detailed Notifications", required: false, defaultValue: false
-        			input "info", "bool", title: "Display Messages in Live Logging", required: false, defaultValue: false
-            }
-			section("Reports"){
-            input "useReports", "bool", title: "Enable utilization Reporting", required: false, defaultValue: false, submitOnChange: true
+			section(){
+            input "useReports", "bool", title: "Enable Utilization Reporting", required: false, defaultValue: false, submitOnChange: true
             	if(useReports){
                 report = "General Settings"
    				href( "report"
@@ -401,6 +388,31 @@ def reporting(){
             }
    }
 }
+// Show "Reporting" page
+def notification(){
+		return dynamicPage(name: "notification",title: "", install: false, uninstall: false){ 		
+            section (hideWhenEmpty: true) {    
+                    input "sonos", "capability.musicPlayer", title: "On this Music Player", required: false, multiple: true, submitOnChange: true
+                        if (sonos) {
+                            input "sonosVolume", "number", title: "Temporarily change volume", description: "0-100%", required: false
+                            input "resumePlaying", "bool", title: "Resume currently playing music after notification", required: false, defaultValue: false
+                            input "sonosDelay", "number", title: "(Optional) Delay second delivery of second message by...", description: "seconds", required: false
+                        }
+                    input "speechSynth", "capability.speechSynthesis", title: "On this Speech Synthesis Device", required: false, multiple: true, hideWhenEmpty: true, submitOnChange: true
+                            if (speechSynth) {
+                                input "speechVolume", "number", title: "Temporarily change volume", description: "0-100%", required: false
+                        }
+                    href "SMS", title: "Send SMS & Push Messages...", description: pSendComplete(), state: pSendSettings() 
+                    
+                    input "detailed", "bool", title: "Send Detailed Notifications", required: false, defaultValue: false
+        			input "info", "bool", title: "Display Messages in Live Logging", required: false, defaultValue: false
+            }
+   }
+}
+
+
+
+
 def report(params){
 	def reportName = params.rptName
     def reportDetails
@@ -681,6 +693,8 @@ def temperatureHandler(evt) {
                          	if(speechSynth || sonos ) playMessage(msg)
                             if (info) log.info msg
 							state.firstCheck = true
+                        
+                        //detailed // info
                         }
                      	else if  (currentHSP < SetHeatingLow) {
                             def msg = "Adjusting ${thermostat} setpoints because temperature is below ${setLow}"
@@ -693,7 +707,7 @@ def temperatureHandler(evt) {
 								state.firstCheck = true
                         }
                      	else if  (currentHSP >= SetHeatingLow && state.firstCheck == true) {
-                            def msg = "Your room temperature ${thermostat} has reached $currentTemp, but your Heat is set to $currentHSP, you may consider turning up the heat to be more comfortable"
+                            def msg = "Your room temperature ${thermostat} has reached $currentTemp, but your heating is set to $currentHSP, you may consider turning up the heat to be more comfortable"
                            	if(recipients?.size()>0 || sms?.size()>0 || push) sendtxt(msg) //sendMessage(msg)
                          	if(speechSynth || sonos ) playMessage(msg)
                         		if (info) log.info msg
@@ -726,7 +740,7 @@ def temperatureHandler(evt) {
 								state.firstCheck = true
                        	}
                         else if (currentCSP <= SetCoolingHigh && state.firstCheck == true) {
-                            def msg = "Your room temperature ${thermostat} has reached $currentTemp, but your AC is set to $currentCSP, you may consider turning the AC to be more comfortable"
+                            def msg = "Your room temperature ${thermostat} has reached $currentTemp, but your cooling is set to $currentCSP, you may consider turning down the cooling to be more comfortable"
                            	if(recipients?.size()>0 || sms?.size()>0 || push) sendtxt(msg) //sendMessage(msg)
                          	if(speechSynth || sonos ) playMessage(msg)  
                             	if (info) log.info msg
@@ -1100,24 +1114,24 @@ def getReport(rptName){
         reports = "Main system:\n\tstart: ${stime}\n\tend: ${etime}\n\tstart temp: ${sTemp}\n\tend temp: ${eTemp}\n\toperating state: ${mStateP}\n\tduration: ${rtm}\n\n"
     }
     if (rptName == "Historical results"){
-        def dailyH = "N/A"
-        def monthlyH = "N/A"
-        def dailyC = "N/A"
-        def monthlyC = "N/A"
+        def dailyHstring = "N/A"
+        	double dailyH = state.dailyUseH ?: 0
+        def monthlyHstring = "N/A"
+        	double monthlyH = state.monthlyUseH ?: 0
+        def dailyCstring = "N/A"
+			def dailyC = state.dailyUseC.toFloat() ?: 0
+		def monthlyCstring = "N/A"
+        	def monthlyC = state.monthlyUseC.toFloat() ?: 0
         if (state.dailyUseH > 0 && state.monthlyUseH > 0){
-			dailyH = state.dailyUseH < 60 ? state.dailyUseH + " minutes" : state.dailyUseH/60 + " hours"
-         	monthlyH = state.monthlyUseH < 60 ? state.monthlyUseH + " minutes" : state.monthlyUseH/60 + " hours"
+			dailyHstring = dailyH.round() < 60 ? dailyH.round() + " minutes" : dailyH.round()/60 + " hours"
+         	monthlyHstring = monthlyH < 60 ? monthlyH + " minutes" : monthlyH/60 + " hours"
         }
         if (state.dailyUseC > 0 && state.monthlyUseC > 0){
-			dailyC = state.dailyUseC < 60 ? state.dailyUseC + " minutes" : state.dailyUseC/60 + " hours"
-         	monthlyC = state.monthlyUseC < 60 ? state.monthlyUseC + " minutes" : state.monthlyUseC/60 + " hours"
-        }
-        if (state.dailyUseC > 0 && state.monthlyUseC > 0){
-			dailyC = state.dailyUseC < 60 ? state.dailyUseC + " minutes" : state.dailyUseC/60 + " hours"
-         	monthlyC = state.monthlyUseC < 60 ? state.monthlyUseC + " minutes" : state.monthlyUseC/60 + " hours"
+			dailyCstring = dailyC < 60 ? dailyC.round(2) + " minutes" : (dailyC/60).round(2) + " hours"
+         	monthlyCstring = monthlyC.round(0) < 60 ? monthlyC.round(0) + " minutes" : monthlyC.round(0)/60 + " hours"
         }		
-        reports = "Main system:\n\tCooling (operating time):\n\t\tToday: ${dailyC}\n\t\tThis month: ${monthlyC}\n\n"
-        reports = reports + "\tHeating (operating time):\n\t\tToday: ${dailyH}\n\t\tThis month: ${monthlyH}"
+        reports = "Main system:\n\tCooling (operating time):\n\t\tToday: ${dailyCstring}\n\t\tThis month: ${monthlyCstring}\n\n"
+        reports = reports + "\tHeating (operating time):\n\t\tToday: ${dailyHstring}\n\t\tThis month: ${monthlyHstring}"
     }    
 		return reports
 }
@@ -1144,7 +1158,6 @@ def getStatusReport() {
     }
     return result
 }
-
 def greyedOut(){
     //state.var ? "complete": ""   
     def result = ""
@@ -1153,8 +1166,6 @@ def greyedOut(){
     }
     result
 }
-
-
 def TemperatureSettingsParams() {
     def text = "Tap here to configure settings"
     if (thermostat) {
@@ -1162,8 +1173,6 @@ def TemperatureSettingsParams() {
     }
     text
 }
-
-
 def greyedOutDoors(){
 	def result = ""
     if (doors) {
@@ -1171,7 +1180,6 @@ def greyedOutDoors(){
     }
     result
 }
-
 def ThermostatandDoorsParams() {
     def text = "Tap here to configure settings"
     if (doors) {
@@ -1200,8 +1208,6 @@ def reportingParam() {
     }
     text
 }
-
-
 def greyedOutSettings(){
 	def result = ""
     if (starting || ending || days || modes) {
@@ -1209,7 +1215,6 @@ def greyedOutSettings(){
     }
     result
 }
-
 def SettingsParams() {
     def text = "Tap here to configure settings"
     if (starting || ending || days || modes) {
@@ -1217,8 +1222,6 @@ def SettingsParams() {
     }
     text
 }
-
-
 def greyedOutTime(starting, ending){
 	def result = ""
     if (starting || ending) {
@@ -1226,26 +1229,12 @@ def greyedOutTime(starting, ending){
     }
     result
 }
-
-private anyoneIsHome() {
-  def result = false
-  if(people.findAll { it?.currentPresence == "present" }) {
-    result = true
-  }
-
-	 if(debug) log.debug("anyoneIsHome: ${result}")
-
-  return result
-}
-
-
 page(name: "timeIntervalInput", title: "Only during a certain time", refreshAfterSelection:true) {
 		section {
 			input "starting", "time", title: "Starting (both are required)", required: false 
 			input "ending", "time", title: "Ending (both are required)", required: false 
 		}
 }
-
 def pSendSettings() {def result = ""
     if (sendContactText || sendText || push) {
     	result = "complete"}
@@ -1256,7 +1245,17 @@ def pSendComplete() {def text = "Tap here to configure settings"
     	text = "Configured"}
     	else text = "Tap to Configure"
 		text}
-        
+
+def pNotifSettings() {def result = ""
+    if (sonos  ||  speechSynth || pSendSettings() == "complete") {
+    	result = "complete"}
+   		result}
+
+def pNotifComplete() {def text = "Tap here to configure settings" 
+    if (pNotifSettings() == "complete" ) {
+    	text = "Configured"}
+    	else text = "Tap to Configure"
+		text}  
 /******************************************************************************************************
    PARENT STATUS CHECKS
 ******************************************************************************************************/

@@ -59,7 +59,21 @@ preferences {
                         	paragraph ("${state.filterNotif}")
 						}
                     }
-					if(filter) section ("HVAC Filter(s) Replacement Reminders Options", hideWhenEmpty: true, hideable: false, hidden: false) {
+					section("Settings",  uninstall: false, hideable: true, hidden: true){
+						input "debug", "bool", title: "Enable Debug Logging", default: true, submitOnChange: true
+                        input "filter", "bool", title: "Enable Filter Replacement Reminders", default: false, submitOnChange: true
+						 if(filter){
+                         	href "sFilters", title: "Filter Replacement Settings" , description: pFiltersComplete(), state: pFiltersSettings()
+                        }
+                        if(filter==false && state.filterNotif != null) scheduleHandler()
+                        paragraph ("Version: ${textVersion()} | Release: ${release()}")
+					}
+             	}
+	        }
+page name: "sFilters"
+	def sFilters(){
+		dynamicPage(name: "sFilters", title: "", uninstall: false){    
+					section ("HVAC Filter(s) Replacement Reminders Options", hideWhenEmpty: true, hideable: false, hidden: false) {
 						input "cFilterReplacement", "number", title: "Remind me to replace the HVAC filter(s) in this many days", defaultValue: 90, required: false                        
                     	input "cFilterContact", "capability.contactSensor", title: "Use this contact sensor to schedule reminder (OPTIONAL)", multiple: false, required: false
                         input "speechSynth", "capability.speechSynthesis", title: "Play reminder on Speech Synthesis Type Device(s)", multiple: true, required: false
@@ -77,15 +91,12 @@ preferences {
                         		paragraph "You may enter multiple phone numbers separated by comma (E.G. 8045551122,8046663344)"
                             input "push", "bool", title: "Send Push Notification too?", required: false, defaultValue: false
                         }
-                    }
-					section("Settings",  uninstall: false, hideable: true, hidden: true){
-						input "debug", "bool", title: "Enable Debug Logging", default: true, submitOnChange: true
-                        input "filter", "bool", title: "Filter Replacement Reminders Settings", default: false, submitOnChange: true
-                        if(filter==false && state.filterNotif != null) scheduleHandler()
-                        paragraph ("Version: ${textVersion()} | Release: ${release()}")
-					}
-             	}
-	        }       
+                    } 
+	}
+}            
+           
+            
+            
 /************************************************************************************************************
 		Base Process
 ************************************************************************************************************/
@@ -102,6 +113,7 @@ def updated() {
 }
 def initialize() {
 		subscribe(app, appHandler)
+        subscribe(cFilterContact, "contact.closed", appHandler)
         //Other Apps Events
         state.esEvent = [:]
         subscribe(location, "echoSistant", echoSistantHandler)
@@ -164,7 +176,7 @@ def scheduleHandler(){
 		def schDate = tDays.format("EEEE, MMMM d")
        		runOnce(new Date() + xDays , "filtersHandler")
         	result = "Ok, scheduled reminder to replace the filters on " + schDate + " at " + schTime
-        	state.filterNotif = "The filters need to be changed on  ${schDate}"
+        	state.filterNotif = "Filters are scheduled to be changed on ${schDate}"
 	}
    	else {
 		state.filterNotif = null
@@ -227,3 +239,14 @@ private void sendText(number, message) {
         }
     }
 }
+
+def pFiltersSettings() {def result = ""
+    if (cFilterReplacement || cFilterContact || speechSynth || sonos || recipients || sms) {
+    	result = "complete"}
+    	result}
+def pFiltersComplete() {def text = "Tap here to Configure" 
+    if (pFiltersSettings()== "complete") {
+    	text = "Configured"}
+        else text = "Tap here to Configure"
+        text
+        }
