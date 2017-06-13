@@ -1,7 +1,8 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
  *
- *	6/8/2017		Version:1.0 R.0.0.8a			added soft intro for reminders
+ *	6/13/2017		Version:1.0 R.0.0.9			added Ask Alexa integration and fine-tuned the intro sound
+ *	6/8/2017		Version:1.0 R.0.0.8a		added soft intro for reminders
  *	6/5/2017		Version:1.0 R.0.0.7			cron fix for weekdays
  *	6/3/2017		Version:1.0 R.0.0.6b		trigger stays delay, added doors, windows and valves, ad-hoc reporting message
  *	5/24/2017		Version:1.0 R.0.0.4			ad-hoc triggering
@@ -34,7 +35,7 @@ definition(
 //MERGE INTO NOTIFICATION ADD_ON FROM HERE DOWN!!!!!!
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.8a"
+	def text = "R.0.0.9"
 }
 
 preferences {
@@ -197,6 +198,11 @@ page name: "mainProfilePage"
                 input "tv", "capability.notification", title: "Display on this Notification Capable Device(s)", required: false, multiple: true, submitOnChange: true
                 href "SMS", title: "Send SMS & Push Messages...", description: pSendComplete(), state: pSendSettings()
 				input "alexa", "bool", title: "Send to Echo Mailbox", default: false, submitOnChange: true
+				input "askAlexa", "bool", title: "Send to Ask Alexa", default: false, submitOnChange: true
+                if(askAlexa) {
+                	input "listOfMQs", "enum", title: "Choose Ask Alexa Message Queue(s)", options: parent.listaskAlexaMQHandler(), multiple: true, required: false, submitOnChange: true
+					if(listOfMQs) input "expiration", "number", title: "Remove message from Ask Alexa Message Queue in...", description: "minutes", required: false 
+            	}
             }
             if(actionType != "Default" && actionType != null){
 				def sProfile = actionType != "Triggered Report" ? "EchoSistant Profile" : "Ad-Hoc Report"
@@ -1427,7 +1433,7 @@ def alertsHandler(evt) {
                 def elapsed = now() - lastPlay
                 log.warn "last play elapsed = $elapsed"
                 def sVolume = settings.sonosVolume ?: 20
-        		state.soundIntro =  [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "20", volume: sVolume ]
+        		state.soundIntro =  [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume ]
         			playIntro() //sonos?.playTrackAndResume(state.soundIntro.uri, state.soundIntro.duration, sVolume)
                 }                
                 if (actionType == "Triggered Report" && myAdHocReport) {
@@ -1595,6 +1601,7 @@ private takeAction(eTxt) {
     if(state.sound) prevDuration = state.sound.duration as Double
     if(sonosDelay && prevDuration)	prevDuration = prevDuration + sonosDelay
     if(myProfile && actionType != "Triggered Report") sendEvent(eTxt)   
+    if(askAlexa && listOfMQs ) sendToAskAlexa(eTxt)
     if (actionType == "Custom Text" || actionType == "Custom Text with Weather" || actionType == "Triggered Report") {
         if (speechSynth || sonos) sTxt = textToSpeech(eTxt instanceof List ? eTxt[0] : eTxt)
         state.sound = sTxt
@@ -1635,7 +1642,7 @@ private takeAction(eTxt) {
                 if (!state.lastPlayed) {
                 	if(!sonosDelayFirst){
                     	if(introSound){
-                        	int sDelayFirst = 3
+                        	int sDelayFirst = 2
 							if(parent.debug) log.info "delaying first message to play intro by $sDelayFirst"
                         	state.sound.command = sCommand
                         	state.sound.volume = sVolume
@@ -1673,7 +1680,7 @@ private takeAction(eTxt) {
                 	}
                     else {
 						if(introSound){
-                        	int sDelayFirst = 3
+                        	int sDelayFirst = 2
 							if(parent.debug) log.info "delaying first message to play intro by $sDelayFirst"
                         	state.sound.command = sCommand
                         	state.sound.volume = sVolume
@@ -2563,6 +2570,28 @@ def sendEvent(message) {
     def data = [:]
 	data = [profile:profile, message:message]
 	sendLocationEvent(name: "EchoMailbox", value: "execute", data: data, displayed: true, isStateChange: true, descriptionText: "RemindR is asking to execute '${myProfile}' Profile")
+}
+/******************************************************************************************************
+   SEND TO ASK ALEXA
+******************************************************************************************************/
+def sendToAskAlexa(message) {
+    def profile = app.label
+    def data = [:]
+    log.debug "sending to Ask Alexa: $message"
+    sendLocationEvent(
+        name: "AskAlexaMsgQueue", 
+        value: profile, 
+        isStateChange: true, 
+        descriptionText: message, 
+        data:[
+            queues: listOfMQs,
+            overwrite: false,
+            expires: expiration*60,
+            notifyOnly: true,
+            suppressTimeDate: false,
+            trackDelete: false
+        ]
+    )
 }
 /************************************************************************************************************
    Page status and descriptions 
