@@ -101,7 +101,21 @@ page name: "mainProfilePage"
         if (actionType == "Custom Text" || actionType == "Custom Text with Weather" || actionType == "Ad-Hoc Report" || actionType == "Triggered Report") {
             section ("Play this...") {
                 if (actionType != "Triggered Report") input "message", "text", title: "Play TTS Message (tip: include &variables here)", required:false, multiple: false, defaultValue: "", submitOnChange: true
-				if(actionType != "Ad-Hoc Report") input "introSound", "bool", title: "Play Intro Sound", default: false, submitOnChange: true
+				if(actionType != "Ad-Hoc Report") {
+                	input "introSound", "bool", title: "Play Intro Sound", default: false, submitOnChange: true
+					if(introSound) {
+                    	input "custIntroSound", "enum", title: "Choose a Sound", required: false, defaultValue: "Soft Chime", submitOnChange: true, 
+                            options: [
+                            "Custom URI",
+                            "Soft Chime",
+                            "Water Droplet" 
+                            ]
+                    }
+                    if(custIntroSound == "Custom URI") {
+                        input "iSound", "text", title: "Use this URI", required:false, multiple: false, defaultValue: "", submitOnChange: true
+                        if(iSound) input "iDuration", "text", title: "Track Duration", required:true, multiple: false, defaultValue: "10", submitOnChange: true
+                    }                    
+             	}       
             }
             if(message) {
 				def report
@@ -1433,8 +1447,9 @@ def alertsHandler(evt) {
                 def elapsed = now() - lastPlay
                 log.warn "last play elapsed = $elapsed"
                 def sVolume = settings.sonosVolume ?: 20
-        		state.soundIntro =  [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume ]
-        			playIntro() //sonos?.playTrackAndResume(state.soundIntro.uri, state.soundIntro.duration, sVolume)
+        		loadIntro()
+                //state.soundIntro =  [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume ]
+        		playIntro() //sonos?.playTrackAndResume(state.soundIntro.uri, state.soundIntro.duration, sVolume)
                 }                
                 if (actionType == "Triggered Report" && myAdHocReport) {
                 	eTxt = null
@@ -1537,10 +1552,6 @@ def alertsHandler(evt) {
                 }
             }
 	}
-}
-def playIntro() {
-	log.info "playing intro"
-	sonos?.playTrackAndRestore(state.soundIntro.uri, state.soundIntro.duration, state.soundIntro.volume)
 }
 def checkEvent(data) {
     def deviceName = data.deviceName
@@ -2529,14 +2540,35 @@ private loadSound() {
 		case "Soft Chime":
 			state.sound = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "10"]
 			break;          
-        case "Custom Sound":
-        	if(!cDuration) def fDuration = cDuration ?: "10"
-            log.info "Duration = f $fDuration, c $cDuration "
+        case "Custom URI":
+        	def fDuration = cDuration ?: "10"
 			state.sound = [uri: "${cSound}", duration: "${fDuration}"]
 			break;        
         default:
 			state?.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/bell1.mp3", duration: "10"]
 			break;
+	}
+}
+def playIntro() {
+	log.info "playing intro"
+	sonos?.playTrackAndRestore(state.soundIntro.uri, state.soundIntro.duration, state.soundIntro.volume)
+}
+private loadIntro() {
+	log.info "loading intro $custIntroSound"
+	switch (custIntroSound) {
+		case "Soft Chime":
+			state.soundIntro = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3"]
+			break;          
+		case "Water Droplet" :
+			state.soundIntro = [uri: "http://soundbible.com/mp3/Single Water Droplet-SoundBible.com-425249738.mp3", duration: "5"]
+			break;          
+        case "Custom URI":
+        	def fDuration = iDuration ?: "10"
+			state.soundIntro = [uri: "${iSound}", duration: "${fDuration}"]
+			break;        
+        default:
+			state.soundIntro = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3"]
+			break;  
 	}
 }
 /***********************************************************************************************************************
