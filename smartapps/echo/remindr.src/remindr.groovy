@@ -1,6 +1,7 @@
 /* 
  * RemindR - An EchoSistant Smart App 
  
+ *	6/20/2017		Version:1.0 R.0.0.10	added webCoRE integration
  *	6/13/2017		Version:1.0 R.0.0.9		added Ask Alexa integration and fine-tuned the intro sound
  *	5/30/2017		Version:1.0 R.0.0.5		app touch cancelation
  *	5/24/2017		Version:1.0 R.0.0.2		ad-hoc triggering
@@ -33,7 +34,7 @@ private def textVersion() {
 	def text = "1.0"
 }
 private release() {
-    def text = "R.0.0.9"
+    def text = "R.0.0.10"
 }
 /**********************************************************************************************************************************************/
 
@@ -84,6 +85,7 @@ def updated() {
 }
 def initialize() {
 		subscribe(app, appHandler)
+        webCoRE_init()
         subscribe(location, "askAlexaMQ", askAlexaMQHandler)
         //Other Apps Events
         state.esEvent = [:]
@@ -92,7 +94,8 @@ def initialize() {
 		state.esProfiles = state.esProfiles ? state.esProfiles : []
         //CoRE and other 3rd party apps
         sendLocationEvent(name: "remindR", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
-        def children = getChildApps()
+		sendLocationEvent(name: "echoSistant", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
+        //def children = getChildApps()
 }
 /************************************************************************************************************
 		3RD Party Integrations
@@ -103,9 +106,6 @@ private webCoRE_poll(){sendLocationEvent([name: webCoRE_handle(),value:'poll',is
 public  webCoRE_execute(pistonIdOrName,Map data=[:]){def i=(state.webCoRE?.pistons?:[]).find{(it.name==pistonIdOrName)||(it.id==pistonIdOrName)}?.id;if(i){sendLocationEvent([name:i,value:app.label,isStateChange:true,displayed:false,data:data])}}
 public  webCoRE_list(mode){def p=state.webCoRE?.pistons;if(p)p.collect{mode=='id'?it.id:(mode=='name'?it.name:[id:it.id,name:it.name])}}
 public  webCoRE_handler(evt){switch(evt.value){case 'pistonList':List p=state.webCoRE?.pistons?:[];Map d=evt.jsonData?:[:];if(d.id&&d.pistons&&(d.pistons instanceof List)){p.removeAll{it.iid==d.id};p+=d.pistons.collect{[iid:d.id]+it}.sort{it.name};state.webCoRE = [updated:now(),pistons:p];};break;case 'pistonExecuted':def cbk=state.webCoRE?.cbk;if(cbk&&evt.jsonData)"$cbk"(evt.jsonData);break;}}
-
-
-
 
 def echoSistantHandler(evt) {
 	def result

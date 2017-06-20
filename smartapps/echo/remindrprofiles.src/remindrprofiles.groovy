@@ -1,6 +1,7 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
- *
+ 
+ *	6/13/2017		Version:1.0 R.0.0.10		added webCoRE integration
  *	6/13/2017		Version:1.0 R.0.0.9			added Ask Alexa integration and fine-tuned the intro sound
  *	6/8/2017		Version:1.0 R.0.0.8a		added soft intro for reminders
  *	6/5/2017		Version:1.0 R.0.0.7			cron fix for weekdays
@@ -35,7 +36,7 @@ definition(
 //MERGE INTO NOTIFICATION ADD_ON FROM HERE DOWN!!!!!!
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.9"
+	def text = "R.0.0.10"
 }
 
 preferences {
@@ -232,7 +233,12 @@ page name: "mainProfilePage"
                     else {
                     	input "myAdHocReport", "enum", title: "Choose Ad-Hoc Report...", options: getAdHocReports() , multiple: false, required: false 
                 	}
-                }    
+                }
+        		section ("Run actions for this webCoRE Piston") {
+					if(actionType != "Triggered Report") {
+						input "myPiston", "enum", title: "Choose Piston...", options:  parent.webCoRE_list('name'), multiple: false, required: false
+                	}
+                }
                 section ("Using these Restrictions") {
                     href "pRestrict", title: "Use these restrictions...", description: pRestComplete(), state: pRestSettings()
                 }
@@ -1611,7 +1617,11 @@ private takeAction(eTxt) {
     double prevDuration
     if(state.sound) prevDuration = state.sound.duration as Double
     if(sonosDelay && prevDuration)	prevDuration = prevDuration + sonosDelay
-    if(myProfile && actionType != "Triggered Report") sendEvent(eTxt)   
+    if(myProfile && actionType != "Triggered Report") sendEvent(eTxt)
+    if(myPiston && actionType != "Triggered Report" ) {
+    	log.warn "executing piston name = $myPiston"
+    	webCoRE_execute(myPiston)
+    }
     if(askAlexa && listOfMQs ) sendToAskAlexa(eTxt)
     if (actionType == "Custom Text" || actionType == "Custom Text with Weather" || actionType == "Triggered Report") {
         if (speechSynth || sonos) sTxt = textToSpeech(eTxt instanceof List ? eTxt[0] : eTxt)
@@ -2625,6 +2635,12 @@ def sendToAskAlexa(message) {
         ]
     )
 }
+/************************************************************************************************************
+CoRE Integration
+************************************************************************************************************/
+public  webCoRE_execute(pistonIdOrName,Map data=[:]){def i=(state.webCoRE?.pistons?:[]).find{(it.name==pistonIdOrName)||(it.id==pistonIdOrName)}?.id;if(i){sendLocationEvent([name:i,value:app.label,isStateChange:true,displayed:false,data:data])}}
+public  webCoRE_list(mode){def p=state.webCoRE?.pistons;if(p)p.collect{mode=='id'?it.id:(mode=='name'?it.name:[id:it.id,name:it.name])}}
+public  webCoRE_handler(evt){switch(evt.value){case 'pistonList':List p=state.webCoRE?.pistons?:[];Map d=evt.jsonData?:[:];if(d.id&&d.pistons&&(d.pistons instanceof List)){p.removeAll{it.iid==d.id};p+=d.pistons.collect{[iid:d.id]+it}.sort{it.name};state.webCoRE = [updated:now(),pistons:p];};break;case 'pistonExecuted':def cbk=state.webCoRE?.cbk;if(cbk&&evt.jsonData)"$cbk"(evt.jsonData);break;}}
 /************************************************************************************************************
    Page status and descriptions 
 ************************************************************************************************************/       
