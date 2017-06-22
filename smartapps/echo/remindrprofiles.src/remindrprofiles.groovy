@@ -1,7 +1,7 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
  
- *	6/22/2017		Version:1.0 R.0.0.10		added ground work for upcoming webCoRE integration, button capability
+ *	6/22/2017		Version:1.0 R.0.0.10a		added ground work for upcoming webCoRE integration, button capability
  *	6/13/2017		Version:1.0 R.0.0.9			added Ask Alexa integration and fine-tuned the intro sound
  *	6/8/2017		Version:1.0 R.0.0.8a		added soft intro for reminders
  *	6/5/2017		Version:1.0 R.0.0.7			cron fix for weekdays
@@ -36,7 +36,7 @@ definition(
 //MERGE INTO NOTIFICATION ADD_ON FROM HERE DOWN!!!!!!
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.10"
+	def text = "R.0.0.10a"
 }
 
 preferences {
@@ -1277,8 +1277,9 @@ def buttonNumHandler(evt) {
 		def buttonNumUsed = evt.data.replaceAll("\\D+","")
         buttonNumUsed = buttonNumUsed.toInteger()
        	int butNum = buttonNumUsed 
-		log.warn "button = $butNum"
-		if(buttonNum == butNum){
+		log.warn "button num = $butNum, value = $eVal"
+		bTN = settings.buttonNum ?: 1
+        if(bTN == butNum){
 			eTxt = message ? "$message".replace("&device", "${eDisplayN}").replace("&event", "time").replace("&action", "executed").replace("&date", "${today}").replace("&time", "${stamp}").replace("&profile", "${eProfile}") : eDisplayT
 			data = [value:eVal, name:eName, device:eDisplayN]
 			alertsHandler(data)
