@@ -1,7 +1,7 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
  
- *	6/13/2017		Version:1.0 R.0.0.10		added webCoRE integration
+ *	6/22/2017		Version:1.0 R.0.0.10		added ground work for upcoming webCoRE integration, button capability
  *	6/13/2017		Version:1.0 R.0.0.9			added Ask Alexa integration and fine-tuned the intro sound
  *	6/8/2017		Version:1.0 R.0.0.8a		added soft intro for reminders
  *	6/5/2017		Version:1.0 R.0.0.7			cron fix for weekdays
@@ -394,6 +394,11 @@ page name: "triggers"
                     	input "mySwitchS", "enum", title: "Notify when state changes to...", options: ["on", "off", "both"], required: false, submitOnChange: true
                         if (mySwitchS != "both" && actionType != "Default") input "minutes", "number", title: "... and continues to be ${mySwitchS} for (minutes) - OPTIONAL", required: false, description: "minutes"
                 	}
+                input "myButton", "capability.button", title: "Button", required: false, multiple: true, submitOnChange: true
+                	if (myButton && actionType != "Ad-Hoc Report") {
+                    	input "myButtonS", "enum", title: "Notify when button is...", options: ["pushed", "held"], required: false, submitOnChange: true
+						if (myButtonS) input "buttonNum", "number", title: "Button Number", range: "1..20", required: false, description: "number (optional - max 20)"
+                	}
                 if(actionType != "Default") {
                 input "myPower", "capability.powerMeter", title: "Power Meters", required: false, multiple: false, submitOnChange: true
                     if (myPower && actionType != "Ad-Hoc Report") input "myPowerS", "enum", title: "Notify when power is...", options: ["above threshold", "below threshold"], required: false, submitOnChange: true
@@ -671,7 +676,12 @@ def initialize() {
             if (mySwitchS == "off")				subscribe(mySwitch, "switch.off", alertsHandler)
             if (mySwitchS == "both" || mySwitchS == null )			subscribe(mySwitch, "switch", alertsHandler)
         }    
-        if (myContact) {
+        if (myButton) {
+            if (myButtonS == "held")				subscribe(myButton, "button.held", buttonNumHandler)
+            if (myButtonS == "pushed")				subscribe(myButton, "button.pushed", buttonNumHandler)
+        }    
+
+		if (myContact) {
             if (myContactS == "open")			subscribe(myContact, "contact.open", alertsHandler)
             if (myContactS == "closed")			subscribe(myContact, "contact.closed", alertsHandler)
             if (myContactS == "both" || myContactS == null)			subscribe(myContact, "contact", alertsHandler)
@@ -1150,6 +1160,7 @@ def meterHandler(evt) {
         def eName = evt.name
         def eDev = evt.device
         def eDisplayN = evt.displayName
+            if(eDisplayN == null) eDisplayN = eDev // 5/28/2017 eName
         int delay = minutes ?: 0
             delay = delay ?: 0 as int
         int meterValueRaw = evt.value as double
@@ -1235,7 +1246,7 @@ def unlockedWithCodeHandler(evt) {
     def eDisplayN = evt.displayName
     def eDisplayT = evt.descriptionText
 	def data = [:]
-    def eTxt = eDisplayN + " is " + eVal //evt.descriptionText 
+    def eTxt = eDisplayN + " was " + eVal //evt.descriptionText 
      if(parent) log.info "unlocked event received: event = $event, eVal = $eVal, eName = $eName, eDev = $eDev, eDisplayN = $eDisplayN, eDisplayT = $eDisplayT, eTxt = $eTxt"
 			if(eVal == "unlocked" && myLocksSCode && event) {
                 def userCode = evt.data.replaceAll("\\D+","")
@@ -1248,6 +1259,32 @@ def unlockedWithCodeHandler(evt) {
 				} 
             }
 }
+/************************************************************************************************************
+   Button NUMBER
+************************************************************************************************************/
+def buttonNumHandler(evt) {
+	def event = evt.data
+    def eVal = evt.value
+    def eName = evt.name
+    def eDev = evt.device
+    def eDisplayN = evt.displayName
+        if(eDisplayN == null) eDisplayN = eDev // 5/28/2017 eName
+    def eDisplayT = evt.descriptionText
+	def data = [:]
+    def eTxt = eDisplayN + " is " + eVal //evt.descriptionText 
+    if(parent) log.info "button event received: event = $event, eVal = $eVal, eName = $eName, eDev = $eDev, eDisplayN = $eDisplayN, eDisplayT = $eDisplayT, eTxt = $eTxt"
+    if(eVal == "pushed" || eVal == "held") {
+		def buttonNumUsed = evt.data.replaceAll("\\D+","")
+        buttonNumUsed = buttonNumUsed.toInteger()
+       	int butNum = buttonNumUsed 
+		log.warn "button = $butNum"
+		if(buttonNum == butNum){
+			eTxt = message ? "$message".replace("&device", "${eDisplayN}").replace("&event", "time").replace("&action", "executed").replace("&date", "${today}").replace("&time", "${stamp}").replace("&profile", "${eProfile}") : eDisplayT
+			data = [value:eVal, name:eName, device:eDisplayN]
+			alertsHandler(data)
+		} 
+	}
+}              
 /***********************************************************************************************************************
     TEMPERATURE HANDLER
 ***********************************************************************************************************************/
@@ -1257,6 +1294,7 @@ def tempHandler(evt) {
         def eName = evt.name
         def eDev = evt.device
         def eDisplayN = evt.displayName
+            if(eDisplayN == null) eDisplayN = eDev // 5/28/2017 eName
 		 if(parent) log.info "event received: event = $event, eVal = $eVal, eName = $eName, eDev = $eDev, eDisplayN = $eDisplayN"
         def tempAVG = myTemperature ? getAverage(myTemperature, "temperature") : "undefined device"          
         def cycleThigh = state.cycleTh
@@ -1307,7 +1345,8 @@ def humidityHandler(evt){
         def eName = evt.name
         def eDev = evt.device
         def eDisplayN = evt.displayName
-		if(parent.debug) log.info "event received: event = $event, eVal = $eVal, eName = $eName, eDev = $eDev, eDisplayN = $eDisplayN"
+		    if(eDisplayN == null) eDisplayN = eDev // 5/28/2017 eName
+        if(parent.debug) log.info "event received: event = $event, eVal = $eVal, eName = $eName, eDev = $eDev, eDisplayN = $eDisplayN"
         if(myHumidityS == "above"){
             if (eVal >= humidity) {
                 if (state.cycleHh == false){
@@ -1344,6 +1383,8 @@ def soundHandler(evt){
         def eName = evt.name
         def eDev = evt.device
         def eDisplayN = evt.displayName
+    	if(eDisplayN == null) eDisplayN = eDev // 5/28/2017 eName
+
 		if(parent.debug) log.info "event received: event = $event, eVal = $eVal, eName = $eName, eDev = $eDev, eDisplayN = $eDisplayN"
         if(mySoundS == "above"){
             if (eVal >= noise) {
@@ -1380,6 +1421,7 @@ def CO2Handler(evt){
         def eName = evt.name
         def eDev = evt.device
         def eDisplayN = evt.displayName
+            if(eDisplayN == null) eDisplayN = eDev // 5/28/2017 eName
 		if(parent.debug) log.info "event received: event = $event, eVal = $eVal, eName = $eName, eDev = $eDev, eDisplayN = $eDisplayN"
         if(myCO2S == "above"){
             if (eVal >= CO2) {
@@ -1433,8 +1475,6 @@ def alertsHandler(evt) {
         if(actionType == "Default"){
             if(speechSynth) {
             speechSynth.playTextAndResume(eTxt)
-            sendtxt(eTxt)
-            if(tv) tv.deviceNotification(message)
             }
             else{
                 if(sonos) {
@@ -1442,10 +1482,10 @@ def alertsHandler(evt) {
                     def sTxt = textToSpeech(eTxt instanceof List ? eTxt[0] : eTxt)
                     def sVolume = settings.sonosVolume ?: 20
                     sonos."${sCommand}"(sTxt.uri, sTxt.duration, sVolume)
-                    sendtxt(eTxt)
-                    if(tv) tv.deviceNotification(message)
                 }
             }
+			if(recipients?.size()>0 || sms?.size()>0 || push) sendtxt(eTxt)
+            if(tv) tv.deviceNotification(message)
         }
         else {
             if(introSound) {    
@@ -2654,7 +2694,7 @@ def pSendComplete() {def text = "Tap here to configure settings"
     	else text = "Tap to Configure"
 		text}
 def triggersSettings() {def result = ""
-    if (myWeatherTriggers || myWeather || myTemperature || myShades || myGarage || myCO2 || myCO ||  myAcceleration || myHumidity || myWindow || myDoor || myValve || mySound || myWeatherAlert || myWater || mySmoke || myPresence || myMotion || myContact || mySwitch || myPower || myLocks || myTstat || myMode || myRoutine || frequency || xFutureTime ) {
+    if (myWeatherTriggers || myWeather || myButton || myTemperature || myShades || myGarage || myCO2 || myCO ||  myAcceleration || myHumidity || myWindow || myDoor || myValve || mySound || myWeatherAlert || myWater || mySmoke || myPresence || myMotion || myContact || mySwitch || myPower || myLocks || myTstat || myMode || myRoutine || frequency || xFutureTime ) {
     	result = "complete"}
    		result}
 def triggersComplete() {def text = "Tap here to configure settings" 
