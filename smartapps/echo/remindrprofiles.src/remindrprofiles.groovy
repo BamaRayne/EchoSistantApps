@@ -1,6 +1,7 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
  
+ *	6/26/2017		Version:1.0 R.0.0.10b		enabled send to Ask Alexa for default messages
  *	6/22/2017		Version:1.0 R.0.0.10a		added ground work for upcoming webCoRE integration, button capability
  *	6/13/2017		Version:1.0 R.0.0.9			added Ask Alexa integration and fine-tuned the intro sound
  *	6/8/2017		Version:1.0 R.0.0.8a		added soft intro for reminders
@@ -36,7 +37,7 @@ definition(
 //MERGE INTO NOTIFICATION ADD_ON FROM HERE DOWN!!!!!!
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.10a"
+	def text = "R.0.0.10b"
 }
 
 preferences {
@@ -1487,6 +1488,7 @@ def alertsHandler(evt) {
             }
 			if(recipients?.size()>0 || sms?.size()>0 || push) sendtxt(eTxt)
             if(tv) tv.deviceNotification(message)
+            if(askAlexa && listOfMQs ) sendToAskAlexa(eTxt)
         }
         else {
             if(introSound) {    
