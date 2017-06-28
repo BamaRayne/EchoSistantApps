@@ -1,6 +1,7 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
  
+ *	6/26/2017		Version:1.0 R.0.0.10c		fixed a bug with send to Ask Alexa
  *	6/26/2017		Version:1.0 R.0.0.10b		enabled send to Ask Alexa for default messages
  *	6/22/2017		Version:1.0 R.0.0.10a		added ground work for upcoming webCoRE integration, button capability
  *	6/13/2017		Version:1.0 R.0.0.9			added Ask Alexa integration and fine-tuned the intro sound
@@ -37,7 +38,7 @@ definition(
 //MERGE INTO NOTIFICATION ADD_ON FROM HERE DOWN!!!!!!
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.10b"
+	def text = "R.0.0.10c"
 }
 
 preferences {
@@ -2661,6 +2662,7 @@ def sendEvent(message) {
 ******************************************************************************************************/
 def sendToAskAlexa(message) {
     def profile = app.label
+    def del = expiration ? expiration*60 : null
     def data = [:]
     log.debug "sending to Ask Alexa: $message"
     sendLocationEvent(
@@ -2671,7 +2673,7 @@ def sendToAskAlexa(message) {
         data:[
             queues: listOfMQs,
             overwrite: false,
-            expires: expiration*60,
+            expires: del,
             notifyOnly: true,
             suppressTimeDate: false,
             trackDelete: false
