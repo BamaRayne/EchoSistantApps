@@ -922,20 +922,17 @@ def panicHandler(evt) {
 def chimeHandler(evt) {
 	chimeKeypad.beep()
     }
-//////////////////////////////////////////////////////////////////////////////
-/////////// VIRTUAL PERSON HANDLER  
-//////////////////////////////////////////////////////////////////////////////            
 //// CREATE VIRTUAL PRESENCE
 def virtualPerson() {
-    log.trace "Creating EchoSistant Virtual Person Device"
+    log.trace "Creating KeyPad Coordinator Virtual Person Device"
     def deviceId = "${app.label}" 
     def d = getChildDevice("${app.label}")
     if(!d) {
-        d = addChildDevice("EchoSistant", "EchoSistant Simulated Presence Sensor", deviceId, null, [label:"${app.label}"])
-        log.trace "Echosistant Virtual Person Device - Created ${app.label} "
+        d = addChildDevice("KeyPad Coordinator", "KeyPad Coordinator Simulated Presence Sensor", deviceId, null, [label:"${app.label}"])
+        log.trace "KeyPad Coordinator Virtual Person Device - Created ${app.label} "
     }
     else {
-        log.trace "NOTICE!!! Found that the EVPD ${d.displayName} already exists. Only one device per profile permitted"
+        log.trace "NOTICE!!! Found that the KVPD ${d.displayName} already exists. Only one device per profile permitted"
     }
 } 
 //// DELETE VIRTUAL PRESENCE
