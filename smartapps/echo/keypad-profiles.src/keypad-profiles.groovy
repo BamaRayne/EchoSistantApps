@@ -567,9 +567,124 @@ def updated() {
 }
 
 def initialize() {
+		if (sLocksGarage) { subscribe(sLocksGarage, "codeEntered", codeEntryHandler) 
+        log.info "garage doors subscribed to"}
+        
 		if (tempKeypad) { subscribe(tempKeypad, "codeEntered", tempHandler) }
         if (chimeContact) { subscribe (chimeContact, "contact.open", chimeHandler) }
 		if (panicKeypad) { subscribe (panicKeypad, "contact.open", panicHandler) }
+}
+def codeEntryHandler(evt) {
+//	log.info "codeEntered = ${evt.value} and the data is ${evt.data}, doorCode1 is ${doorCode1}"
+  //do stuff
+//  log.debug "Caught code entry event! ${evt.value.value}"
+  def codeEntered = evt.value as String
+  def data = evt.data as String
+  def armMode = ''
+  def currentarmMode = sLocksGarage.currentValue("armMode")
+  def changedMode = 0  
+  	def message = " "
+    def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone) 
+	if ("${codeEntered}" == "${doorCode1}" ||"${codeEntered}" == "${doorCode2}" || "${codeEntered}" == "${doorCode3}") {
+    	if ("${data}" == "0") {
+        	if (sDoor1 != null) {
+            	sDoor1.close() 
+                message = "The ${sDoor1} was closed by ${app.label} using the ${evt.displayName} at ${stamp}"
+                }
+        	if (sDoor2 != null) {
+            	sDoor2.close() 
+                message = "The ${sDoor2} was closed by ${app.label} using the ${evt.displayName} at ${stamp}"
+                }
+        	if (sDoor3 != null) {
+            	sDoor3.close() 
+                message = "The ${sDoor3} was closed by ${app.label} using the ${evt.displayName} at ${stamp}"
+                }
+            }
+    	if ("${data}" == "3") {
+        	if (sDoor1 != null) {
+            	sDoor1.open() 
+                message = "The ${sDoor1} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
+                }
+        	if (sDoor2 != null) {
+            	sDoor2.open() 
+                message = "The ${sDoor2} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
+                }
+        	if (sDoor3 != null) {
+            	sDoor3.open() 
+                message = "The ${sDoor3} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
+                }
+            }
+            log.info "${message}"
+       }     
+   						                    
+	if ("${codeEntered}" != "${doorCode1}" && "${codeEntered}" != "${doorCode2}" && "${codeEntered}" != "${doorCode3}" ) {
+  if (data == '0') {
+    armMode = 'off'
+  }
+  else if (data == '3') {
+    armMode = 'away'
+  }
+  else if (data == '1') {
+    armMode = 'stay'
+  }
+	else {
+    log.error "${app.label}: Unexpected arm mode sent by keypad!: "+data
+    return []
+  }
+  def i = settings.maxUsers
+//  def message = " "
+  while (i > 0) {
+    log.debug "i =" + i
+    def correctCode = settings."userCode${i}" as String
+    if (codeEntered == correctCode) {
+      log.debug "User Enabled: " + state."userState${i}".enabled
+      if (state."userState${i}".enabled == true) {
+        log.debug "Correct PIN entered. Change SHM state to ${armMode}"
+       def unlockUserName = settings."userName${i}"
+        if (data == "0") {
+          runIn(0, "sendDisarmCommand")
+          message = "${evt.displayName} was disarmed by ${unlockUserName}"
+        }
+        else if (data == "1") {
+          if(armDelay && keypadstatus) {
+            keypad?.each() { it.setExitDelay(armDelay) }
+          }
+          runIn(armDelay, "sendStayCommand")
+          message = "${evt.displayName} was armed to 'Stay' by ${unlockUserName}"
+        }
+        else if (data == "3") {
+          //log.debug "sendArmCommand"
+          if(armDelay && keypadstatus) {
+            keypad?.each() { it.setExitDelay(armDelay) }
+          }
+          runIn(armDelay, "sendArmCommand")
+          message = "${evt.displayName} was armed to 'Away' by ${unlockUserName}"
+        }
+        if(settings."burnCode${i}") {
+          state."userState${i}".enabled = false
+          message += ".  Now burning code."
+        }
+
+        log.debug "${message}"
+        state."userState${i}".usage = state."userState${i}".usage + 1
+        send(message)
+        i = 0
+      } else if (state."userState${i}".enabled == false){
+        log.debug "PIN Disabled"
+      }
+    }
+    changedMode = 1
+    i--
+  }
+  if (changedMode == 1 && i == 0) {
+    def errorMsg = "Incorrect Code Entered: ${codeEntered}"
+    if (notifyIncorrectPin) {
+      log.debug "Incorrect PIN"
+      send(errorMsg)
+    }
+    keypad.sendInvalidKeycodeResponse()
+		}
+	}
 }
 /***********************************************************************************************************************
     RESTRICTIONS HANDLER
