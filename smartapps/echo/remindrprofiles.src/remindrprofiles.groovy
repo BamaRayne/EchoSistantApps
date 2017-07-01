@@ -2662,8 +2662,8 @@ def sendEvent(message) {
 ******************************************************************************************************/
 def sendToAskAlexa(message) {
     def profile = app.label
-    def expire = expiration ? expiration as int : 0
-	def del= expire * 60
+    def expire = expiration ? expiration * 60 : 0
+	//def del= expire * 60
     def data = [:]
     log.debug "sending to Ask Alexa: $message"
     sendLocationEvent(
@@ -2672,12 +2672,12 @@ def sendToAskAlexa(message) {
         isStateChange: true, 
         descriptionText: message, 
         data:[
-            queues: listOfMQs[0],
-            overwrite: false,
-            expires: del,
-            notifyOnly: false,
-            suppressTimeDate: false,
-            trackDelete: false
+            queues: listOfMQs,
+            //overwrite: false,
+            expires: expire,
+            //notifyOnly: false,
+            //suppressTimeDate: false,
+            //trackDelete: false
         ]
     )
     log.warn "Ask Alexa event details: name = AskAlexaMsgQueue, value = $profile, isStateChange = true, descriptionText = $message, queues: $listOfMQs"
