@@ -924,17 +924,18 @@ def chimeHandler(evt) {
     }
 //// CREATE VIRTUAL PRESENCE
 def virtualPerson() {
-    log.trace "Creating KeyPad Coordinator Virtual Person Device"
-    def deviceId = "${app.label}" 
-    def d = getChildDevice("${app.label}")
-    if(!d) {
-        d = addChildDevice("KeyPad Coordinator", "KeyPad Coordinator Simulated Presence Sensor", deviceId, null, [label:"${app.label}"])
-        log.trace "KeyPad Coordinator Virtual Person Device - Created ${app.label} "
-    }
-    else {
-        log.trace "NOTICE!!! Found that the KVPD ${d.displayName} already exists. Only one device per profile permitted"
-    }
-} 
+log.trace "Creating Virtual Presence Device for Keypad Coordinator"
+	def deviceId = "${app.label}" 
+	def d = getChildDevice("${app.label}")
+        if(!d) {
+	            d = addChildDevice("EchoSistant", "EchoSistant Simulated Presence Sensor", deviceId, null, [label:"${app.label}"])
+	            log.trace "Keypad Coordinator Virtual Presence Device - Created ${app.label} "
+            }
+         else {
+            log.trace "NOTICE!!! Found that the EVPD ${d.displayName} already exists. Only one device per profile permitted"
+        }
+	}  
+ 
 //// DELETE VIRTUAL PRESENCE
 page name: "pPersonDelete"
 def pPersonDelete(){
@@ -947,11 +948,11 @@ def pPersonDelete(){
     }
 }
 private removeChildDevices(delete) {
-    log.debug "The Virtual Person Device '${app.label}' has been deleted from your SmartThings environment"
+log.debug "The Virtual Person Device '${app.label}' has been deleted from your SmartThings environment"
     delete.each {
         deleteChildDevice(it.deviceNetworkId)
     }
-}  
+}               
 
 /************************************************************************************************************
    Page status and descriptions 
