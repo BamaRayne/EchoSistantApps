@@ -661,11 +661,11 @@ def temperatureHandler(evt) {
             	def tempAVG = sensor ? getAverage(sensor, "temperature") : "undefined device"
             	currentTemp = tempAVG
                 //currentTemp = sensor.latestValue("temperature")
-                if (parent.debug) log.debug "Data check (avg temp: ${currentTemp}, num of sensors:${sensors}, app status: ${lastStatus})"
+                if (parent.debug) log.debug "Data check (avg temp: ${currentTemp}, num of sensors:${sensors}, app status: ${state.lastStatus})"
             }
             else {
             	currentTemp = thermostat.latestValue("temperature")
-                if (parent.debug) log.debug "Thermostat data (curr temp: ${currentTemp},status: ${lastStatus}"
+                if (parent.debug) log.debug "Thermostat data (curr temp: ${currentTemp},status: ${state.lastStatus}"
             }        
             if(setLow > setHigh){
                 def temp = setLow
@@ -678,8 +678,8 @@ def temperatureHandler(evt) {
                 def currentHSP = thermostat.latestValue("heatingSetpoint") 
                 def currentCSP = thermostat.latestValue("coolingSetpoint") 	
                 	if (parent.debug) log.debug "App data (curr temp: ${currentTemp},curr mode: ${currentMode}, currentHSP: ${currentHSP},"+
-                    						" currentCSP: ${currentCSP}, last status: ${lastStatus}"
-                
+                    						" currentCSP: ${currentCSP}, last status: ${state.lastStatus}"
+                //lastStatus = "one" - the current temp is less than setLow//
                 if (currentTemp < setLow) {
                     if (state.lastStatus == "one" || state.lastStatus == "two" || state.lastStatus == "three" || state.lastStatus == null){
                         state.lastStatus = "one" 
@@ -714,7 +714,8 @@ def temperatureHandler(evt) {
 								state.firstCheck = false
                         }                        
                     }
-                }                                     
+                }
+                 //lastStatus = "one" - the current temp is greater than setHigh//
                 if (currentTemp > setHigh) {
                     if (state.lastStatus == "one" || state.lastStatus == "two" || state.lastStatus == "three" || state.lastStatus == null){
                         state.lastStatus = "two"
