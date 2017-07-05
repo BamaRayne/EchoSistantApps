@@ -120,22 +120,22 @@ def mainProfilePage() {
         	href "pGenSettings", title: "Configure the General Settings for ${app.label}"
         		}
         section("General Restrictions for ${app.label}") {
-            href "pRestrict", title: "Does ${app.label} need to restricted?", description: pRestrictComplete(), state: pRestrictSettings()
+            href "pRestrict", title: "Does ${app.label} need to be restricted?", description: pRestrictComplete(), state: pRestrictSettings()
 			}
         }
     }   
 }
 
-//////////////////////////////////////////////////////////////////////////////
-/////////// ACTIONS NOTIFICATIONS PAGES
-//////////////////////////////////////////////////////////////////////////////
+/************************************************************************************************************
+		Notifications pages
+************************************************************************************************************/    
 page name: "pVPNotifyPage"
 def pVPNotifyPage() {
     dynamicPage(name: "pVPNotifyPage", title: "Notification Settings") {
         section {
             input "vpPhone", "phone", title: "Text This Number", description: "Phone number", required: false, submitOnChange: true
             paragraph "For multiple SMS recipients, separate phone numbers with a comma"
-            input "vpNotification", "bool", title: "Send A Push Notification", description: "Notification", required: false, submitOnChange: true
+            input "vpPush", "bool", title: "Send A Push Notification", description: "Notification", required: false, submitOnChange: true
         }
     }
 }    
@@ -155,19 +155,19 @@ page name: "pGarageDoorNotify"
 def pGarageDoorNotify() {
     dynamicPage(name: "pGarageDoorNotify", title: "Notification Settings") {
         section {
-            input(name: "garagePhone", type: "text", title: "Text This Number", description: "Phone number", required: false, submitOnChange: true)
+            input(name: "g1Phone", type: "text", title: "Text This Number", description: "Phone number", required: false, submitOnChange: true)
             paragraph "For multiple SMS recipients, separate phone numbers with a semicolon(;)"
-            input(name: "garagePush", type: "bool", title: "Send A Push Notification", description: "Notification", required: false, submitOnChange: true)
-            if (phone != null || notification) {
-                input(name: "notifyGdoorOpen", title: "Notify when opening", type: "bool", required: false)
-                input(name: "notifyGdoorClose", title: "Notify when closing", type: "bool", required: false)
+            input(name: "g1Push", type: "bool", title: "Send A Push Notification", description: "Notification", required: false, submitOnChange: true)
+            if (phone != null || garagePush) {
+                input(name: "notifyG1doorOpen", title: "Notify when opening", type: "bool", required: false)
+                input(name: "notifyG1doorClose", title: "Notify when closing", type: "bool", required: false)
             }
         }
     }
 }
-//////////////////////////////////////////////////////////////////////////////
-/////////// VIRTUAL PRESENCE PAGES       
-//////////////////////////////////////////////////////////////////////////////
+/************************************************************************************************************
+		Virtual Presence Pages
+************************************************************************************************************/    
 page name: "pPerson"
 def pPerson(){
     dynamicPage(name: "pPerson", title: "", uninstall: false){
@@ -187,9 +187,9 @@ def pPersonCreate(){
         virtualPerson()
     }
 }
-//////////////////////////////////////////////////////////////////////////////
-/////////// GENERAL SETTINGS PAGE      
-//////////////////////////////////////////////////////////////////////////////
+/************************************************************************************************************
+		General Settings Page
+************************************************************************************************************/    
 page name: "pGenSettings"
 def pGenSettings() {
     dynamicPage(name: "pGenSettings", title: "Notification Settings") {
@@ -202,9 +202,9 @@ def pGenSettings() {
 			}
     	}
 	}    
-//////////////////////////////////////////////////////////////////////////////
-/////////// DEVICES SELECTION PAGE      
-//////////////////////////////////////////////////////////////////////////////
+/************************************************************************************************************
+		Devices Selections Page
+************************************************************************************************************/    
     page name: "mDevices"    
         def mDevices(){
             dynamicPage(name: "mDevices", title: "",install: false, uninstall: false) {
@@ -247,45 +247,10 @@ def pGenSettings() {
                 } 
          	}
     	}  
-//////////////////////////////////////////////////////////////////////////////
-/////////// NOTIFICATION OUTPUT PAGES       
-//////////////////////////////////////////////////////////////////////////////
-page name: "pSend"
-    def pSend(){
-        dynamicPage(name: "pSend", title: "", uninstall: false){
-             section ("Speakers", hideWhenEmpty: true){
-                input "synthDevice", "capability.speechSynthesis", title: "On this Speech Synthesis Type Devices", multiple: true, required: false
-                input "sonosDevice", "capability.musicPlayer", title: "On this Sonos Type Devices", required: false, multiple: true, submitOnChange: true    
-                if (sonosDevice) {
-                    input "volume", "number", title: "Temporarily change volume", description: "0-100% (default value = 30%)", required: false
-                }  
-            }
-            section ("Text Messages" ) {
-            	input "sendContactText", "bool", title: "Enable Text Notifications to Contact Book (if available)", required: false, submitOnChange: true   
-                if (sendContactText) input "recipients", "contact", title: "Send text notifications to (optional)", multiple: true, required: false
-           			input "sendText", "bool", title: "Enable Text Notifications to non-contact book phone(s)", required: false, submitOnChange: true     
-                if (sendText){      
-                    paragraph "You may enter multiple phone numbers separated by comma to deliver the Alexa message as a text and a push notification. E.g. 8045551122,8046663344"
-                    input name: "sms", title: "Send text notification to (optional):", type: "phone", required: false
-                }
-            }    
-            section ("Push Messages") {
-            	input "push", "bool", title: "Send Push Notification (optional)", required: false, defaultValue: false
-            	input "notify", "bool", title: "Send message to Mobile App Notifications Tab (optional)", required: false, defaultValue: false
-            }
-            section ("Remote Speaker Settings") {
-               	input "pRunMsg", "Text", title: "Play this predetermined message when this profile executes...", required: false
-                input "pPreMsg", "text", title: "Play this message before your spoken message...", defaultValue: none, submitOnChange: true, required: false 
-            }
-            section ("Text and Push Notification Output") {
-                input "pRunTextMsg", "Text", title: "Send this predetermined text when this profile executes...", required: false
-                input "pPreTextMsg", "text", title: "Append this text before the text message...", defaultValue: none, required: false 
-            }             
-		}                 
-    }   
-//////////////////////////////////////////////////////////////////////////////
-/////////// PROFILE ACTIONS PAGE       
-//////////////////////////////////////////////////////////////////////////////
+ 
+/************************************************************************************************************
+		Profile Actions Page
+************************************************************************************************************/    
 page name: "pActions"
     def pActions() {
         dynamicPage(name: "pActions", uninstall: false) {
@@ -310,9 +275,9 @@ page name: "pActions"
 			}
         }
     }
-//////////////////////////////////////////////////////////////////////////////
-/////////// DEVICES AND GROUPS CONTROL PAGES    
-//////////////////////////////////////////////////////////////////////////////
+/************************************************************************************************************
+		Devices and Groups Control Pages
+************************************************************************************************************/    
 page name: "pDeviceControl"
     def pDeviceControl() {
             dynamicPage(name: "pDeviceControl", title: "",install: false, uninstall: false) {
@@ -450,9 +415,9 @@ page name: "pDeviceControl"
                 }             
             }
       	}
-//////////////////////////////////////////////////////////////////////////////
-/////////// RESTRICTIONS PAGES       
-//////////////////////////////////////////////////////////////////////////////
+/************************************************************************************************************
+		Restrictions Page
+************************************************************************************************************/    
 page name: "pRestrict"
     def pRestrict(){
         dynamicPage(name: "pRestrict", title: "", uninstall: false) {
@@ -489,68 +454,6 @@ page name: "certainTime"
             }
         }
     }
-
-/************************************************************************************************************
-		Virtual Person Check In/Out Automatically Handler
-************************************************************************************************************/    
-// Check in VP when profile runs
-
-private pVirToggle() {
-	def vp = getChildDevice("${app.label}")
-     if(vp) {
-     if (vp?.currentValue('presence').contains('not')) {
-            vp.arrived()
-            }
-        else if (vp?.currentValue('presence').contains('present')) {
-            vp.departed()
-            }
-    	}
-	}
-/************************************************************************************************************
-		Smart Home Monitor Status Change when Profile Executes
-************************************************************************************************************/    
-def shmStateChange() {
-	if (shmState == "stay") {
-    	sendArmStayCommand()
-        }
-    if (shmState == "away") {
-    	sendArmAwayCommand()
-        }
-    if (shmState == "off") {
-    	sendDisarmCommand()
-        }
-    }    
-
-def sendArmAwayCommand() {
-	if (shmStateKeypads) {
-		shmStateKeypads?.each() { it.acknowledgeArmRequest(3) }
-		}
-		sendSHMEvent("away")
-	}
-    
-def sendDisarmCommand() {
-	if (shmStateKeypads) {
-		shmStateKeypads?.each() { it.acknowledgeArmRequest(0) }
-		}
-		sendSHMEvent("off")
-	}
-    
-def sendArmStayCommand() {
-	if (shmStateKeypads) {
-		shmStateKeypads?.each() { it.acknowledgeArmRequest(1) }
-		}
-		sendSHMEvent("stay")
-	}
-
-private sendSHMEvent(String shmState) {
-	def event = [
-		name:"alarmSystemStatus",
-		value: shmState,
-		displayed: true,
-		description: "System Status is ${shmState}"
-		]
-	sendLocationEvent(event)
-}
 /************************************************************************************************************
 		Base Process
 ************************************************************************************************************/    
@@ -568,57 +471,28 @@ def updated() {
 
 def initialize() {
 		if (sLocksGarage) { subscribe(sLocksGarage, "codeEntered", codeEntryHandler) 
-        log.info "garage doors subscribed to"}
-        
-		if (tempKeypad) { subscribe(tempKeypad, "codeEntered", tempHandler) }
+        if (tempKeypad) { subscribe(tempKeypad, "codeEntered", tempHandler) }
         if (chimeContact) { subscribe (chimeContact, "contact.open", chimeHandler) }
 		if (panicKeypad) { subscribe (panicKeypad, "contact.open", panicHandler) }
+	}
 }
+
 def codeEntryHandler(evt) {
-//	log.info "codeEntered = ${evt.value} and the data is ${evt.data}, doorCode1 is ${doorCode1}"
-  //do stuff
-//  log.debug "Caught code entry event! ${evt.value.value}"
-  def codeEntered = evt.value as String
-  def data = evt.data as String
-  def armMode = ''
-  def currentarmMode = sLocksGarage.currentValue("armMode")
-  def changedMode = 0  
-  	def message = " "
-    def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone) 
-	if ("${codeEntered}" == "${doorCode1}" ||"${codeEntered}" == "${doorCode2}" || "${codeEntered}" == "${doorCode3}") {
-    	if ("${data}" == "0") {
-        	if (sDoor1 != null) {
-            	sDoor1.close() 
-                message = "The ${sDoor1} was closed by ${app.label} using the ${evt.displayName} at ${stamp}"
-                }
-        	if (sDoor2 != null) {
-            	sDoor2.close() 
-                message = "The ${sDoor2} was closed by ${app.label} using the ${evt.displayName} at ${stamp}"
-                }
-        	if (sDoor3 != null) {
-            	sDoor3.close() 
-                message = "The ${sDoor3} was closed by ${app.label} using the ${evt.displayName} at ${stamp}"
-                }
-            }
-    	if ("${data}" == "3") {
-        	if (sDoor1 != null) {
-            	sDoor1.open() 
-                message = "The ${sDoor1} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
-                }
-        	if (sDoor2 != null) {
-            	sDoor2.open() 
-                message = "The ${sDoor2} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
-                }
-        	if (sDoor3 != null) {
-            	sDoor3.open() 
-                message = "The ${sDoor3} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
-                }
-            }
-            log.info "${message}"
-       }     
-   						                    
-	if ("${codeEntered}" != "${doorCode1}" && "${codeEntered}" != "${doorCode2}" && "${codeEntered}" != "${doorCode3}" ) {
-  if (data == '0') {
+	def codeEntered = evt.value as String
+	def data = evt.data as String
+  	def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone) 
+	if ("${codeEntered}" == "${vpCode}") {
+    	pVirToggle(data, codeEntered, evt)
+        }
+    if ("${codeEntered}" == "${doorCode1}" ||"${codeEntered}" == "${doorCode2}" || "${codeEntered}" == "${doorCode3}") {
+    	pGarage(data, codeEntered, evt)
+        }
+	if ("${codeEntered}" == "${shmCode}") {
+    	pSHM(data, codeEntered, evt)
+        }
+}
+/*if ("${codeEntered}" != "${doorCode1}" && "${codeEntered}" != "${doorCode2}" && "${codeEntered}" != "${doorCode3}" ) {
+if (data == '0') {
     armMode = 'off'
   }
   else if (data == '3') {
@@ -686,6 +560,125 @@ def codeEntryHandler(evt) {
 		}
 	}
 }
+*/
+/************************************************************************************************************
+		Virtual Person Check In/Out Automatically Handler
+************************************************************************************************************/    
+private pVirToggle(data, codeEntered, evt) {
+	def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone) 
+	def vp = getChildDevice("${app.label}")
+//    def vpValue = vp.currentValue("presence")
+    def message = ""
+    if(vp != null) {
+     	if (vp.currentValue("presence").contains("not") && data == "3") {
+            vp.arrived()
+            message = "${app.label} arrived via ${evt.displayName} at ${stamp}"
+            if (notifyVPArrive) { sendVPtxt(message) }
+            }
+        else if (vp.currentValue("presence").contains("present") && data == "0") {
+            vp.departed()
+            message = "${app.label} departed via ${evt.displayName} at ${stamp}"
+            if (notifyVPDepart) { sendVPtxt(message) }
+            }
+        }
+        if (parent.debug) { log.info "${message}" }
+     }
+/************************************************************************************************************
+		Garage Door Handler
+************************************************************************************************************/    
+private pGarage(data, codeEntered, evt) {
+log.info "data = ${data}, evt = ${evt}"
+	def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone) 
+    def message = ""
+    	if ("${data}" == "0") {
+        	if ("${codeEntered}" == "${doorCode1}") {
+        	if (sDoor1 != null) {
+            	sDoor1.close() 
+                message = "The ${sDoor1} was closed by ${app.label} using the ${evt.displayName} at ${stamp}"
+                sendG1txt(message)
+                }
+            }    
+    	if ("${codeEntered}" == "${doorCode2}") {
+        	if (sDoor2 != null) {
+            	sDoor2.close() 
+                message = "The ${sDoor2} was closed by ${app.label} using the ${evt.displayName} at ${stamp}"
+                sendG2txt(message)
+                }
+            }
+    	if ("${codeEntered}" == "${doorCode3}") {            
+        	if (sDoor3 != null) {
+            	sDoor3.close() 
+                message = "The ${sDoor3} was closed by ${app.label} using the ${evt.displayName} at ${stamp}"
+                sendG3txt(message)
+                }
+            }
+        }    
+    	if ("${data}" == "3") {
+        	if (sDoor1 != null) {
+            	sDoor1.open() 
+                message = "The ${sDoor1} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
+                sendG1txt(message)
+                }
+        	if (sDoor2 != null) {
+            	sDoor2.open() 
+                message = "The ${sDoor2} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
+                sendG2txt(message)
+                }
+        	if (sDoor3 != null) {
+            	sDoor3.open() 
+                message = "The ${sDoor3} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
+                sendG3txt(message)
+                }
+            }
+            log.info "${message}"
+       }     
+
+/************************************************************************************************************
+		Smart Home Monitor Status Change when Profile Executes
+************************************************************************************************************/    
+def shmStateChange() {
+	if (shmState == "stay") {
+    	sendArmStayCommand()
+        }
+    if (shmState == "away") {
+    	sendArmAwayCommand()
+        }
+    if (shmState == "off") {
+    	sendDisarmCommand()
+        }
+    }    
+
+def sendArmAwayCommand() {
+	if (shmStateKeypads) {
+		shmStateKeypads?.each() { it.acknowledgeArmRequest(3) }
+		}
+		sendSHMEvent("away")
+	}
+    
+def sendDisarmCommand() {
+	if (shmStateKeypads) {
+		shmStateKeypads?.each() { it.acknowledgeArmRequest(0) }
+		}
+		sendSHMEvent("off")
+	}
+    
+def sendArmStayCommand() {
+	if (shmStateKeypads) {
+		shmStateKeypads?.each() { it.acknowledgeArmRequest(1) }
+		}
+		sendSHMEvent("stay")
+	}
+
+private sendSHMEvent(String shmState) {
+	def event = [
+		name:"alarmSystemStatus",
+		value: shmState,
+		displayed: true,
+		description: "System Status is ${shmState}"
+		]
+	sendLocationEvent(event)
+}
+
 /***********************************************************************************************************************
     RESTRICTIONS HANDLER
 ***********************************************************************************************************************/
@@ -759,38 +752,103 @@ private timeIntervalLabel() {
 /***********************************************************************************************************************
     SMS HANDLER
 ***********************************************************************************************************************/
-private void sendtxt(message) {
+private void sendVPtxt(message) {
     if (parent.debug) log.debug "Request to send sms received with message: '${message}'"
     if (sendContactText) { 
         sendNotificationToContacts(message, recipients)
             if (parent.debug) log.debug "Sending sms to selected reipients"
     } 
-    else {
-    	if (push) { 
-    		sendPushMessage
+    if (vpPush) { 
+    		sendPushMessage(message)
             	if (parent.debug) log.debug "Sending push message to selected reipients"
         }
-    } 
-    if (notify) {
-        sendNotificationEvent(message)
-             	if (parent.debug) log.debug "Sending notification to mobile app"
-
-    }
-    if (sms) {
-        sendText(sms, message)
+    if (vpPhone) {
+        sendVPText(sms, message)
         if (parent.debug) log.debug "Processing message for selected phones"
 	}
 }
-private void sendText(number, message) {
-    if (sms) {
-        def phones = sms.split("\\,")
+private void sendG1txt(message) {
+    if (parent.debug) log.debug "Request to send sms received with message: '${message}'"
+    if (sendContactText) { 
+        sendNotificationToContacts(message, recipients)
+            if (parent.debug) log.debug "Sending sms to selected reipients"
+    } 
+    if (g1Push) { 
+    		sendPushMessage(message)
+            	if (parent.debug) log.debug "Sending push message to selected reipients"
+        }
+    if (g1Phone) {
+        sendG1Text(sms, message)
+        if (parent.debug) log.debug "Processing message for selected phones"
+	}
+}
+private void sendG2txt(message) {
+    if (parent.debug) log.debug "Request to send sms received with message: '${message}'"
+    if (sendContactText) { 
+        sendNotificationToContacts(message, recipients)
+            if (parent.debug) log.debug "Sending sms to selected reipients"
+    } 
+    if (g2Push) { 
+    		sendPushMessage(message)
+            	if (parent.debug) log.debug "Sending push message to selected reipients"
+        }
+    if (g2Phone) {
+        sendG2Text(sms, message)
+        if (parent.debug) log.debug "Processing message for selected phones"
+	}
+}
+private void sendG3txt(message) {
+    if (parent.debug) log.debug "Request to send sms received with message: '${message}'"
+    if (sendContactText) { 
+        sendNotificationToContacts(message, recipients)
+            if (parent.debug) log.debug "Sending sms to selected reipients"
+    } 
+    if (g3Push) { 
+    		sendPushMessage(message)
+            	if (parent.debug) log.debug "Sending push message to selected reipients"
+        }
+    if (g3Phone) {
+        sendG3Text(sms, message)
+        if (parent.debug) log.debug "Processing message for selected phones"
+	}
+}
+
+private void sendVPText(number, message) {
+    if (vpPhone) {
+        def phones = vpPhone.split("\\,")
         for (phone in phones) {
             sendSms(phone, message)
             if (parent.debug) log.debug "Sending sms to selected phones"
         }
     }
 }
-
+private void sendG1Text(number, message) {
+    if (g1Phone) {
+        def phones = g1Phone.split("\\,")
+        for (phone in phones) {
+            sendSms(phone, message)
+            if (parent.debug) log.debug "Sending sms to selected phones"
+        }
+    }
+}    
+private void sendG2Text(number, message) {
+    if (g2Phone) {
+        def phones = g2Phone.split("\\,")
+        for (phone in phones) {
+            sendSms(phone, message)
+            if (parent.debug) log.debug "Sending sms to selected phones"
+        }
+    }
+}
+private void sendG3Text(number, message) {
+	if (g3Phone) {
+        def phones = g3Phone.split("\\,")
+        for (phone in phones) {
+            sendSms(phone, message)
+            if (parent.debug) log.debug "Sending sms to selected phones"
+        }
+    }
+}
 /************************************************************************************************************
    Switch/Color/Dimmer/Toggle Handlers
 ************************************************************************************************************/
@@ -892,9 +950,9 @@ private flashLights() {
 		}
 	}
 }
-//////////////////////////////////////////////////////////////////////////////
-/////////// THERMOSTAT HANDLER       
-//////////////////////////////////////////////////////////////////////////////
+/************************************************************************************************************
+   Thermostat Handler
+************************************************************************************************************/
 def tempHandler(evt) {
 	def codeEntered = evt.value as String
 	    if (codeEntered.startsWith("01")) {
@@ -910,18 +968,21 @@ def tempHandler(evt) {
     	tempStat.setHeatingSetpoint("${newSetPoint}")
         }
 	}
-//////////////////////////////////////////////////////////////////////////////
-/////////// PANIC BUTTON HANDLER  
-//////////////////////////////////////////////////////////////////////////////   
+/************************************************************************************************************
+   Panic Button Handler
+************************************************************************************************************/
 def panicHandler(evt) {
 	log.info "The panic button was pressed on the ${evt.displayName}"
     }
-//////////////////////////////////////////////////////////////////////////////
-/////////// CONTACT CHIME HANDLER  
-//////////////////////////////////////////////////////////////////////////////
+/************************************************************************************************************
+   Contact Chime Handler
+************************************************************************************************************/
 def chimeHandler(evt) {
 	chimeKeypad.beep()
     }
+/************************************************************************************************************
+  Virtual Presence Handlers
+************************************************************************************************************/
 //// CREATE VIRTUAL PRESENCE
 def virtualPerson() {
 log.trace "Creating Virtual Presence Device for Keypad Coordinator"
