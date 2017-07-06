@@ -22,9 +22,9 @@ definition(
     author		: "JH/BD",
     description	: "A SmartApp to bring out the power of your KeyPad",
     category	: "My Apps",
-	iconUrl			: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-Echosistant.png",
-	iconX2Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-Echosistant@2x.png",
-	iconX3Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-Echosistant@2x.png")
+	iconUrl			: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/Keypad.png",
+	iconX2Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/Keypad@2x.png",
+	iconX3Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/Keypad@2x.png")
 
 /**********************************************************************************************************************************************/
 private def textVersion() {
@@ -56,7 +56,6 @@ page name: "main"
     }
     section("Settings",  uninstall: false, hideable: true, hidden: true){
     	input "debug", "bool", title: "Enable Debug Logging", default: true, submitOnChange: true
-    	input "wZipCode", "text", title: "Zip Code (If Location Not Set)", required: "false"
     	paragraph ("Version: ${textVersion()} | Release: ${release()}")
     	}
     }
@@ -83,8 +82,8 @@ def initialize() {
         subscribe(location, "echoSistant", echoSistantHandler)
 		state.esProfiles = state.esProfiles ? state.esProfiles : []
         //CoRE and other 3rd party apps
-        sendLocationEvent(name: "KeyPadCoOrdinator", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
-		sendLocationEvent(name: "echoSistant", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
+        sendLocationEvent(name: "KeypadCoordinator", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "Keypad Coordinator list refresh")
+//		sendLocationEvent(name: "echoSistant", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
         //def children = getChildApps()
 }
 /************************************************************************************************************
@@ -122,11 +121,11 @@ def getProfileList(){
 }
 def childUninstalled() {
 	if (debug) log.debug "Refreshing Profiles for 3rd party apps, ${getChildApps()*.label}"
-    sendLocationEvent(name: "remindR", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
+    sendLocationEvent(name: "KeypadCoordinator", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "Keypad Coordinator list refresh")
 } 
-def childInitialized(message) {
-	state.activeRetrigger = message
-}
+//def childInitialized(message) {
+//	state.activeRetrigger = message
+//}
 
 def askAlexaMQHandler(evt) {
    if (!evt) return
@@ -140,17 +139,3 @@ def listaskAlexaMQHandler() {
 log.warn "child requesting askAlexa Message Queues"
 	return state.askAlexaMQ
 }
-/***********************************************************************************************************************
-    RUN ADHOC REPORT
-***********************************************************************************************************************/
-/*def runReport(profile) {
-def result
-           		childApps.each {child ->
-                        def ch = child.label
-                		if (ch == profile) { 
-                    		if (debug) log.debug "Found a profile, $profile"
-                            result = child.runProfile(ch)
-						}
-            	}
-                return result
-}*/

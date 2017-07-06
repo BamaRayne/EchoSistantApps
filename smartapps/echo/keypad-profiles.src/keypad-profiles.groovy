@@ -23,9 +23,9 @@ definition(
 	description		: "KeyPad CoOrdinator Child App",
 	category		: "My Apps",
     parent			: "Echo:KeyPadCoOrdinator",
-	iconUrl			: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-Echosistant.png",
-	iconX2Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-Echosistant@2x.png",
-	iconX3Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-Echosistant@2x.png")
+	iconUrl			: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/Keypad.png",
+	iconX2Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/Keypad@2x.png",
+	iconX3Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/Keypad@2x.png")
 /**********************************************************************************************************************************************/
 private release() {
 	def text = "R.0.0.1"
@@ -53,6 +53,21 @@ def mainProfilePage() {
  		   	label title:"Profile Name", required:false, defaultValue: "New Profile", submitOnChange: true 
         }
         if (app.label != null) {
+        	def routines = location.helloHome?.getPhrases()*.label 
+            if (routines) {routines.sort()}
+        section("${app.label}'s Actions ") {
+        	input "pActions", "bool", title: "Does ${app.label} need to perform actions?", refreshAfterSelection: true
+            	def actions = location.helloHome?.getPhrases()*.label 
+                if (pActions) {
+                    actions.sort()
+                input "actionsKeypad","capability.lockCodes", title: "${app.label} can run actions using these keypads", required: true, multiple: true, submitOnChange: true
+                input "actionsCode", "number", title: "${app.label}'s actions code (4 digits)", required: false, refreshAfterSelection: true
+            	}
+                input "pRoutine", "enum", title: "Select an ST Routine to execute", required: false, options: actions, multiple: false, submitOnChange: true
+            	input "myProfile", "enum", title: "Select an EchoSistant Profile to execute", options: parent.listEchoSistantProfiles() , multiple: false, required: false 
+				input "myPiston", "enum", title: "Select a WebCoRE Piston to execute", options:  parent.webCoRE_list('name'), multiple: false, required: false
+                }
+            
         section("${app.label}'s Presence ") {
             input "kpVirPer", "bool", title: "Does ${app.label} need a virtual presence sensor?", refreshAfterSelection: true
             if (kpVirPer) {
@@ -94,6 +109,7 @@ def mainProfilePage() {
             if (SHMConfigure) {
                 input "sLocksSHM","capability.lockCodes", title: "Select Keypads", required: true, multiple: true, submitOnChange: true
                 input "shmCode", "number", title: "Code (4 digits)", required: false, refreshAfterSelection: true
+                input "armDelay", "number", title: "Input delay in seconds", required: false, refreshAfterSelection: true
                 input "keypadstatus", "bool", title: "Send status to keypad?", required: true, defaultValue: false
                 href "pShmNotifyPage", title: "SHM Profile Notification Settings"//, description: notificationPageDescription(), state: notificationPageDescription() ? "complete" : "")
             }
@@ -105,7 +121,7 @@ def mainProfilePage() {
                 input "armRoutine", "enum", title: "Arm/Away routine", options: hhPhrases, required: false
                 input "disarmRoutine", "enum", title: "Disarm routine", options: hhPhrases, required: false
                 input "stayRoutine", "enum", title: "Arm/Stay routine", options: hhPhrases, required: false
-                input "armDelay", "number", title: "Arm Delay (in seconds)", required: false
+           //     input "armDelay", "number", title: "Arm Delay (in seconds)", required: false
                 input "notifyIncorrectPin", "bool", title: "Notify you when incorrect code is used?", required: false, defaultValue: false, submitOnChange: true
             }
 		}
@@ -488,7 +504,10 @@ def codeEntryHandler(evt) {
     	pGarage(data, codeEntered, evt)
         }
 	if ("${codeEntered}" == "${shmCode}") {
-    	pSHM(data, codeEntered, evt)
+    	pSHM(data, codeEntered, evt, armMode)
+        }
+	if ("${codeEntered}" == "${actionsCode}" && data == "3") {
+    	takeAction(data, codeEntered, evt)
         }
 }
 /*if ("${codeEntered}" != "${doorCode1}" && "${codeEntered}" != "${doorCode2}" && "${codeEntered}" != "${doorCode3}" ) {
@@ -561,13 +580,32 @@ if (data == '0') {
 	}
 }
 */
+/***********************************************************************************************************************
+    TAKE ACTIONS HANDLER
+***********************************************************************************************************************/
+private takeAction(data, codeEntered, evt) {
+    //Sending Data to 3rd parties
+//    def data = [args: eTxt ]
+	sendLocationEvent(name: "KeypadCoordinator", value: app.label, data: data, displayed: true, isStateChange: true, descriptionText: "KeypadCoordinator ${app.label} Profile was active")
+	if (parent.debug) log.debug "sendNotificationEvent sent to 3rd party as ${app.label} was active"
+    if(myProfile) sendEvent(eTxt)
+    if(myPiston) {
+    	log.warn "executing piston name = $myPiston"
+    	webCoRE_execute(myPiston)
+        }
+    
+    if(askAlexa && listOfMQs ) sendToAskAlexa(eTxt)
+    if (actionType == "Custom Text" || actionType == "Custom Text with Weather" || actionType == "Triggered Report") {
+        if (speechSynth || sonos) sTxt = textToSpeech(eTxt instanceof List ? eTxt[0] : eTxt)
+        state.sound = sTxt
+    }
+}    
 /************************************************************************************************************
 		Virtual Person Check In/Out Automatically Handler
 ************************************************************************************************************/    
 private pVirToggle(data, codeEntered, evt) {
 	def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone) 
 	def vp = getChildDevice("${app.label}")
-//    def vpValue = vp.currentValue("presence")
     def message = ""
     if(vp != null) {
      	if (vp.currentValue("presence").contains("not") && data == "3") {
@@ -587,7 +625,6 @@ private pVirToggle(data, codeEntered, evt) {
 		Garage Door Handler
 ************************************************************************************************************/    
 private pGarage(data, codeEntered, evt) {
-log.info "data = ${data}, evt = ${evt}"
 	def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone) 
     def message = ""
     	if ("${data}" == "0") {
@@ -612,71 +649,96 @@ log.info "data = ${data}, evt = ${evt}"
                 sendG3txt(message)
                 }
             }
+            log.info "${message}"
         }    
     	if ("${data}" == "3") {
+    		if ("${codeEntered}" == "${doorCode1}") {            
         	if (sDoor1 != null) {
             	sDoor1.open() 
                 message = "The ${sDoor1} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
                 sendG1txt(message)
                 }
-        	if (sDoor2 != null) {
+        	}
+    	if ("${codeEntered}" == "${doorCode2}") {            
+            if (sDoor2 != null) {
             	sDoor2.open() 
                 message = "The ${sDoor2} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
                 sendG2txt(message)
                 }
-        	if (sDoor3 != null) {
+        	}
+    	if ("${codeEntered}" == "${doorCode3}") {            
+         	if (sDoor3 != null) {
             	sDoor3.open() 
                 message = "The ${sDoor3} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
                 sendG3txt(message)
                 }
             }
             log.info "${message}"
-       }     
-
+		}     
+	}
 /************************************************************************************************************
-		Smart Home Monitor Status Change when Profile Executes
+		Smart Home Monitor Handler
 ************************************************************************************************************/    
-def shmStateChange() {
-	if (shmState == "stay") {
-    	sendArmStayCommand()
+private pSHM(data, codeEntered, evt, armMode) {
+	def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone)
+    def message = ""
+	log.debug "data == ${data}, codeEntered == ${codeEntered}, evt == ${evt}, armMode == ${armMode}"
+        if (data == "0") {
+          if(keypadstatus) {
+            sLocksSHM?.each() { it.acknowledgeArmRequest(0) }
+          }        
+          runIn(0, "sendDisarmCommand")
+          message = "${app.label} disarmed SHM using ${evt.displayName} at ${stamp} "
         }
-    if (shmState == "away") {
-    	sendArmAwayCommand()
+        else if (data == "1") {
+          if(armDelay && keypadstatus) {
+            sLocksSHM?.each() { it.setExitDelay(armDelay) }
+          }
+          runIn(armDelay, "sendStayCommand")
+          message = "${app.label} set SHM to Armed-Stay using ${evt.displayName} at ${stamp} "
         }
-    if (shmState == "off") {
-    	sendDisarmCommand()
+        else if (data == "3") {
+          if(armDelay && keypadstatus) {
+            sLocksSHM?.each() { it.setExitDelay(armDelay) }
+          }
+          runIn(armDelay, "sendArmAwayCommand")
+          message = "${app.label} set SHM to Armed-Away using ${evt.displayName} at ${stamp} "
+		}
+        log.info "${message}"
         }
-    }    
-
 def sendArmAwayCommand() {
-	if (shmStateKeypads) {
-		shmStateKeypads?.each() { it.acknowledgeArmRequest(3) }
-		}
-		sendSHMEvent("away")
-	}
-    
+  log.debug "Sending Armed-Away Command."
+  if (keypadstatus) {
+    sLocksSHM?.each() { it.acknowledgeArmRequest(3) }
+  }
+  sendSHMEvent("away")
+//  execRoutine("away")
+}
 def sendDisarmCommand() {
-	if (shmStateKeypads) {
-		shmStateKeypads?.each() { it.acknowledgeArmRequest(0) }
-		}
-		sendSHMEvent("off")
-	}
-    
-def sendArmStayCommand() {
-	if (shmStateKeypads) {
-		shmStateKeypads?.each() { it.acknowledgeArmRequest(1) }
-		}
-		sendSHMEvent("stay")
-	}
-
+  log.debug "Sending Disarm Command."
+  if (keypadstatus) {
+    sLocksSHM?.each() { it.acknowledgeArmRequest(0) }
+  }
+  sendSHMEvent("off")
+//  execRoutine("off")
+}
+def sendStayCommand() {
+  log.debug "Sending Armed-Stay Command."
+  if (keypadstatus) {
+    sLocksSHM?.each() { it.acknowledgeArmRequest(1) }
+  }
+  sendSHMEvent("stay")
+//  execRoutine("stay")
+}
 private sendSHMEvent(String shmState) {
-	def event = [
-		name:"alarmSystemStatus",
-		value: shmState,
-		displayed: true,
-		description: "System Status is ${shmState}"
-		]
-	sendLocationEvent(event)
+  def event = [
+        name:"alarmSystemStatus",
+        value: shmState,
+        displayed: true,
+        description: "System Status is ${shmState}"
+      ]
+  log.debug "test ${event}"
+  sendLocationEvent(event)
 }
 
 /***********************************************************************************************************************
@@ -1014,6 +1076,13 @@ log.debug "The Virtual Person Device '${app.label}' has been deleted from your S
         deleteChildDevice(it.deviceNetworkId)
     }
 }               
+/************************************************************************************************************
+CoRE Integration
+************************************************************************************************************/
+public  webCoRE_execute(pistonIdOrName,Map data=[:]){def i=(state.webCoRE?.pistons?:[]).find{(it.name==pistonIdOrName)||(it.id==pistonIdOrName)}?.id;if(i){sendLocationEvent([name:i,value:app.label,isStateChange:true,displayed:false,data:data])}
+log.info "piston executed"}
+public  webCoRE_list(mode){def p=state.webCoRE?.pistons;if(p)p.collect{mode=='id'?it.id:(mode=='name'?it.name:[id:it.id,name:it.name])}}
+public  webCoRE_handler(evt){switch(evt.value){case 'pistonList':List p=state.webCoRE?.pistons?:[];Map d=evt.jsonData?:[:];if(d.id&&d.pistons&&(d.pistons instanceof List)){p.removeAll{it.iid==d.id};p+=d.pistons.collect{[iid:d.id]+it}.sort{it.name};state.webCoRE = [updated:now(),pistons:p];};break;case 'pistonExecuted':def cbk=state.webCoRE?.cbk;if(cbk&&evt.jsonData)"$cbk"(evt.jsonData);break;}}
 
 /************************************************************************************************************
    Page status and descriptions 
