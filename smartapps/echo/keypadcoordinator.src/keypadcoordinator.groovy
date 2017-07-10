@@ -17,7 +17,7 @@
  *
 /**********************************************************************************************************************************************/
 definition(
-    name		: "KeyPadCoOrdinator",
+    name		: "KeypadCoordinator",
     namespace	: "Echo",
     author		: "JH/BD",
     description	: "A SmartApp to bring out the power of your KeyPad",
@@ -42,15 +42,15 @@ preferences {
     }
 page name: "main"
     def main() {
-    	dynamicPage (name: "main", title: "KeyPad CoOrdinator Profiles (${childApps?.size()})", install: true, uninstall: true) {
+    	dynamicPage (name: "main", title: "Keypad Coordinator Profiles (${childApps?.size()})", install: true, uninstall: true) {
     	if (childApps?.size()) {  
-    		section("KeyPadCoOrdinator",  uninstall: false){
+    		section("Keypad Coordinator",  uninstall: false){
     		app(name: "profiles", appName: "KeyPad Profiles", namespace: "Echo", title: "Create a new Profile", multiple: true,  uninstall: false)
     		}
     	}
     else {
-    	section("KeyPadCoOrdinator",  uninstall: false){
-    	paragraph "NOTE: Looks like you haven't created any Profiles yet.\n \nPlease make sure you have installed the Echo : KeyPadCoOrdinator app before creating your first Profile!"
+    	section("Keypad Coordinator",  uninstall: false){
+    	paragraph "NOTE: Looks like you haven't created any Profiles yet.\n \nPlease make sure you have installed the Echo : KeypadCoordinator app before creating your first Profile!"
     	app(name: "profiles", appName: "KeyPad Profiles", namespace: "Echo", title: "Create a new Profile", multiple: true,  uninstall: false)
     	}
     }
@@ -74,7 +74,7 @@ def updated() {
     initialize()
 }
 def initialize() {
-		subscribe(app, appHandler)
+//		subscribe(app, appHandler)
         webCoRE_init()
         subscribe(location, "askAlexaMQ", askAlexaMQHandler)
         //Other Apps Events
