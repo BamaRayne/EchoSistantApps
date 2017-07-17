@@ -55,6 +55,8 @@ page name: "main"
     	}
     }
     section("Settings",  uninstall: false, hideable: true, hidden: true){
+		paragraph "NOTE: All PIN codes should be four digits. PIN's with less than four digits will be padded with zeroes. (75 becomes 0075)"
+		paragraph "Please note: PIN 0000 is generated when ON button is pressed, therefore this code has been restricted in order to use the ON button"
     	input "debug", "bool", title: "Enable Debug Logging", default: true, submitOnChange: true
     	paragraph ("Version: ${textVersion()} | Release: ${release()}")
     	}

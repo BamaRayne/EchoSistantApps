@@ -54,73 +54,26 @@ def mainProfilePage() {
         }
         if (app.label != null) {
             section("${app.label}'s Actions ") {
-                href "pActions", title: "Does ${app.label} need to execute actions?"
-                href "pDeviceControl", title: "Does ${app.label} need to control any devices?", description: pDevicesComplete() , state: pDevicesSettings()
+                href "pActions", title: "Does ${app.label} need to execute actions?", description: pDevicesComplete() , state: pDevicesSettings()
+            }
+            section("${app.label}'s devices?") {
+            	href "pDeviceControl", title: "Does ${app.label} need to control any devices?", description: pDevicesComplete() , state: pDevicesSettings()
             }
             section("${app.label}'s Presence ") {
-                input "kpVirPer", "bool", title: "Does ${app.label} need a virtual presence sensor?", refreshAfterSelection: true
-                if (kpVirPer) {
-                    href "pPerson", title: "Create/Delete a Virtual Presence Device for ${app.label}"
-                    if(d) {
-                        input "sLocksVP","capability.lockCodes", title: "${app.label} can check-in using these keypads", required: true, multiple: true, submitOnChange: true
-                        input "vpCode", "number", title: "${app.label}'s check-in code (4 digits)", required: false, refreshAfterSelection: true
-                        input "vpActions", "bool", title: "Perform these actions when ${app.label} arrives", required: false, submitOnChange: true
-                        input "notifyVPArrive", "bool", title: "Notify me when ${app.label} Arrives", required: false, submitOnChange: true
-                        input "notifyVPDepart", "bool", title: "Notify me when ${app.label} Departs", required: false, submitOnChange: true
-                        if (notifyVPArrive || notifyVPDepart) {
-                            href "pVPNotifyPage", title: "${app.label}'s Notification Settings"
-                        }
-                    }
-                }    
+            	href "pPresence", title: "Does ${app.label} need a Virtual Presence Sensor?", description: pDevicesComplete() , state: pDevicesSettings()
             }
             section("${app.label}'s Garage Doors ") {
-                input "garageDoors", "bool", title: "Can ${app.label} control the garage doors?", refreshAfterSelection: true
-                if (garageDoors) {
-                    input "sLocksGarage","capability.lockCodes", title: "Select the Keypads that ${app.label} can use for the garage door", required: false, multiple: true, submitOnChange: true
-                    href "pGarageDoorNotify",title: "Garage Door Notification Settings"//, description: notificationPageDescription(), state: notificationPageDescription() ? "complete" : "")
-                    input "sDoor1", "capability.garageDoorControl", title: "${app.label} can control these garage door(s)", multiple: true, required: false, submitOnChange: true
-                    input "doorCode1", "number", title: "Code (4 digits)", required: false, refreshAfterSelection: true
-                    input "gd1Actions", "bool", title: "Perform this profiles actions when this Garage Door is opened via Keypad", required: false, submitOnChange: true
-                    if (doorCode1) {
-                        input "sDoor2", "capability.garageDoorControl", title: "Allow These Garage Door(s)...", multiple: true, required: false, submitOnChange: true
-                        input "doorCode2", "number", title: "Code (4 digits)", required: false, refreshAfterSelection: true
-                        input "gd2Actions", "bool", title: "Perform this profiles actions when this Garage Door is opened via Keypad", required: false, submitOnChange: true
-                        if (doorCode2) {
-                            input "gd3Actions", "bool", title: "Perform this profiles actions when this Garage Door is opened via Keypad", required: false, submitOnChange: true
-                            input "sDoor3", "capability.garageDoorControl", title: "Allow These Garage Door(s)...", multiple: true, required: false, submitOnChange: true
-                            input "doorCode3", "number", title: "Code (4 digits)", required: false, refreshAfterSelection: true
-                        }
-                    }
-                }
+                href "pGaragePage", title: "Will ${app.label} be able to control the garage doors?", description: pDevicesComplete() , state: pDevicesSettings()
             }
-            section("${app.label}'s SHM controls") {
-                input "SHMConfigure", "bool", title: "Will ${app.label} have control of SHM?", refreshAfterSelection: true
-                if (SHMConfigure) {
-                    input "sLocksSHM","capability.lockCodes", title: "Select Keypads", required: true, multiple: true, submitOnChange: true
-                    input "shmCode", "number", title: "Code (4 digits)", required: false, refreshAfterSelection: true
-                    input "armDelay", "number", title: "Input delay in seconds", required: false, refreshAfterSelection: true
-                    input "keypadstatus", "bool", title: "Send status to keypad?", required: true, defaultValue: false
-                    href "pShmNotifyPage", title: "SHM Profile Notification Settings"//, description: notificationPageDescription(), state: notificationPageDescription() ? "complete" : "")
+			section("${app.label}'s SHM controls") {
+            	href "pSHMpage", title: "Will ${app.label} be have control of Smart Home Monitor?", description: pDevicesComplete() , state: pDevicesSettings()
                 }
+			section("${app.label}'s Thermostats") {
+            	href "pThermo", title: "Will ${app.label} be have control of the thermostats?", description: pDevicesComplete() , state: pDevicesSettings()
+            }
+            section("${app.label}'s Panic Button Settings") {
+            	href "pPanic", title: "Configure the Panic Button Settings for ${app.label}"
             }    
-            if (SHMConfigure) {
-                def hhPhrases = location.getHelloHome()?.getPhrases()*.label
-                hhPhrases?.sort()
-                section("Execute These Routines") {
-                    input "armRoutine", "enum", title: "Arm/Away routine", options: hhPhrases, required: false
-                    input "disarmRoutine", "enum", title: "Disarm routine", options: hhPhrases, required: false
-                    input "stayRoutine", "enum", title: "Arm/Stay routine", options: hhPhrases, required: false
-                    input "armDelay", "number", title: "Arm Delay (in seconds)", required: false
-                    input "notifyIncorrectPin", "bool", title: "Notify you when incorrect code is used?", required: false, defaultValue: false, submitOnChange: true
-                }
-            }
-            section("${app.label}'s Thermostats") {
-                input "thermostats", "bool", title: "Will ${app.label} be able to adjust the temperature?", refreshAfterSelection: true	
-                if(thermostats) {
-                    input "tempKeypad", "capability.lockCodes", title: "Enter temperature using these keypads", required: false, multiple: true, submitOnChange: true
-                    input "tempStat", "capability.thermostat", title: "Change the temperature on these thermostats", required: false, multiple: true, submitOnChange: true
-                }
-            }
             section("General Keypad Settings") {
                 href "pGenSettings", title: "Configure the General Settings for ${app.label}"
             }
@@ -152,7 +105,7 @@ def pShmNotifyPage() {
             paragraph "For multiple SMS recipients, separate phone numbers with a comma"
             input(name: "notifySHMArm", title: "Notify when arming SHM", type: "bool", required: false)
             input(name: "notifySHMDisarm", title: "Notify when disarming SHM", type: "bool", required: false)
-            input "shmNotification", "bool", title: "Send A Push Notification", description: "Notification", required: false, submitOnChange: true
+            input "shmPush", "bool", title: "Send A Push Notification", description: "Notification", required: false, submitOnChange: true
         }
     }
 }        
@@ -170,9 +123,152 @@ def pGarageDoorNotify() {
         }
     }
 }
+page name: "pGarageDoor2Notify"
+def pGarageDoor2Notify() {
+    dynamicPage(name: "pGarageDoor2Notify", title: "Notification Settings") {
+        section {
+            input(name: "g2Phone", type: "text", title: "Text This Number", description: "Phone number", required: false, submitOnChange: true)
+            paragraph "For multiple SMS recipients, separate phone numbers with a semicolon(;)"
+            input(name: "g2Push", type: "bool", title: "Send A Push Notification", description: "Notification", required: false, submitOnChange: true)
+            if (phone != null || garagePush) {
+                input(name: "notifyG2doorOpen", title: "Notify when opening", type: "bool", required: false)
+                input(name: "notifyG2doorClose", title: "Notify when closing", type: "bool", required: false)
+            }
+        }
+    }
+}
+page name: "pGarageDoor3Notify"
+def pGarageDoor3Notify() {
+    dynamicPage(name: "pGarageDoor3Notify", title: "Notification Settings") {
+        section {
+            input(name: "g3Phone", type: "text", title: "Text This Number", description: "Phone number", required: false, submitOnChange: true)
+            paragraph "For multiple SMS recipients, separate phone numbers with a semicolon(;)"
+            input(name: "g3Push", type: "bool", title: "Send A Push Notification", description: "Notification", required: false, submitOnChange: true)
+            if (phone != null || garagePush) {
+                input(name: "notifyG3doorOpen", title: "Notify when opening", type: "bool", required: false)
+                input(name: "notifyG3doorClose", title: "Notify when closing", type: "bool", required: false)
+            }
+        }
+    }
+}
+/************************************************************************************************************
+		Smart Home Monitor Pages
+************************************************************************************************************/    
+page name: "pSHMpage"
+def pSHMpage() {
+    dynamicPage(name: "pSHMpage", title: "SHM Configurations") {
+        section {
+            input "sLocksSHM","capability.lockCodes", title: "Select Keypads", required: true, multiple: true, submitOnChange: true
+            input "shmCode", "number", title: "Code (4 digits)", required: false, refreshAfterSelection: true
+            input "armDelay", "number", title: "Arm Delay (in seconds)", required: false
+            input "keypadstatus", "bool", title: "Send status to keypads?", required: false, defaultValue: false, submitOnChange: true
+            if (keypadstatus) {
+                input "sLocksSHMstatus","capability.lockCodes", title: "Select Keypads to be updated by SHM", required: true, multiple: true, submitOnChange: true
+            }
+            href "pShmNotifyPage", title: "SHM Profile Notification Settings"//, description: notificationPageDescription(), state: notificationPageDescription() ? "complete" : "")
+		}
+        def hhPhrases = location.getHelloHome()?.getPhrases()*.label
+        hhPhrases?.sort()
+        section("Execute These Routines") {
+            input "stayRoutine", "enum", title: "Execute when setting Arm-Stay", options: hhPhrases, required: false
+            input "armRoutine", "enum", title: "Execute when setting Arm-Away", options: hhPhrases, required: false
+            input "disarmRoutine", "enum", title: "Execute when Disarming", options: hhPhrases, required: false
+        }
+    }
+}
+/************************************************************************************************************
+		Panic Button Pages
+************************************************************************************************************/    
+page name: "pPanic"
+def pPanic() {
+	dynamicPage(name: "pPanic", title: "Panic Button Controls") {
+        section("Panic Button Actions") {
+            input "panicKeypad","capability.lockCodes", title: "When the panic button is pressed on these keypads...", required: false, multiple: true, submitOnChange: true
+        	input "panicSwitches", "capability.switch", title: "Turn on these switches", required: false, multiple: true, submitOnChange: true
+            input "panicFlash", "capability.switch", title: "Flash these switches", required: false, multiple: true, submitOnChange: true
+            if (panicFlash) {
+                input "numFlashes", "number", title: "This number of times (default 3)", required: false, submitOnChange:true
+                input "onFor", "number", title: "On for (default 1 second)", required: false, submitOnChange:true			
+                input "offFor", "number", title: "Off for (default 1 second)", required: false, submitOnChange:true
+            }
+            input "panicText", "text", title: "Send this message", required: false
+            input(name: "panicPhone", type: "text", title: "To this/these number(s)", description: "Phone number", required: false, submitOnChange: true)
+            paragraph "For multiple SMS recipients, separate phone numbers with a semicolon(;)"
+            input(name: "panicPush", type: "bool", title: "Send A Push Notification", description: "Notification", required: false, submitOnChange: true)
+            input "panicSynthDevice", "capability.speechSynthesis", title: "on this Speech Synthesis Type Devices", multiple: true, required: false
+                input "panicSonosDevice", "capability.musicPlayer", title: "on this Sonos Type Devices", required: false, multiple: true, submitOnChange: true    
+                if (panicSonosDevice) {
+                    input "volume", "number", title: "Temporarily change volume", description: "0-100% (default value = 30%)", required: false
+                }  
+            }
+		}
+	}    
+
+    
+/************************************************************************************************************
+		Thermostat Pages
+************************************************************************************************************/    
+page name: "pThermo"
+def pThermo() {
+    dynamicPage(name: "pThermo", title: "Thermostat Controls") {
+        input "tempKeypad", "capability.lockCodes", type: "temp", title: "Enter temperature using these keypads", required: false, multiple: true, submitOnChange: true
+        input "tempStat", "capability.thermostat", title: "Change the temperature on these thermostats", required: false, multiple: true, submitOnChange: true
+    }
+}
+/************************************************************************************************************
+		Garage Door Pages
+************************************************************************************************************/    
+page name: "pGaragePage"
+def pGaragePage() {
+    dynamicPage(name: "pGaragePage", title: "Garage Door Controls") {
+        def hhPhrases = location.getHelloHome()?.getPhrases()*.label
+        hhPhrases?.sort()
+        input "garageDoors", "bool", title: "Can ${app.label} control the garage doors?", refreshAfterSelection: true
+        if (garageDoors) {
+            input "sLocksGarage","capability.lockCodes", title: "Select the Keypads that ${app.label} can use for the garage door", required: false, multiple: true, submitOnChange: true
+            input "sDoor1", "capability.garageDoorControl", title: "${app.label} can control these garage door(s)", multiple: true, required: false, submitOnChange: true
+            input "doorCode1", "number", title: "Code (4 digits)", required: false, refreshAfterSelection: true
+            href "pGarageDoorNotify",title: "Garage Door One Notification Settings"
+            input "gd1OpenRoutines", "enum", title: "Execute this routine when this door is opened via Keypad", options: hhPhrases, required: false, submitOnChange: true
+            input "gd1CloseRoutines", "enum", title: "Execute this routine when this door is closed via Keypad", options: hhPhrases, required: false, submitOnChange: true
+            if (doorCode1) {
+                input "sDoor2", "capability.garageDoorControl", title: "Allow These Garage Door(s)...", multiple: true, required: false, submitOnChange: true
+                input "doorCode2", "number", title: "Code (4 digits)", required: false, refreshAfterSelection: true
+                href "pGarageDoor2Notify",title: "Garage Door Two Notification Settings"
+                input "gd2OpenRoutines", "enum", title: "Execute this routine when this door is opened via Keypad", options: hhPhrases, required: false, submitOnChange: true
+                input "gd2CloseRoutines", "enum", title: "Execute this routine when this door is closed via Keypad", options: hhPhrases, required: false, submitOnChange: true
+                if (doorCode2) {
+                    input "sDoor3", "capability.garageDoorControl", title: "Allow These Garage Door(s)...", multiple: true, required: false, submitOnChange: true
+                    input "doorCode2", "number", title: "Code (4 digits)", required: false, refreshAfterSelection: true
+                    href "pGarageDoor3Notify",title: "Garage Door Notification Settings"
+                    input "gd3OpenRoutines", "enum", title: "Execute this routine when this door is opened via Keypad", options: hhPhrases, required: false, submitOnChange: true
+                    input "gd3CloseRoutines", "enum", title: "Execute this routine when this door is closed via Keypad", options: hhPhrases, required: false, submitOnChange: true
+                }
+            }
+        }
+    }
+}    
 /************************************************************************************************************
 		Virtual Presence Pages
 ************************************************************************************************************/    
+page name: "pPresence"
+def pPresence() {
+    dynamicPage(name: "pPresence", title: "Virtual Presence") {
+    	section () {
+        href "pPerson", title: "Create/Delete a Virtual Presence Device for ${app.label}"
+        if(d) {
+            input "sLocksVP","capability.lockCodes", title: "${app.label} can check-in using these keypads", required: true, multiple: true, submitOnChange: true
+            input "vpCode", "number", title: "${app.label}'s check-in code (4 digits)", required: false, refreshAfterSelection: true
+            input "vpActions", "bool", title: "Perform these actions when ${app.label} arrives", required: false, submitOnChange: true
+            input "notifyVPArrive", "bool", title: "Notify me when ${app.label} Arrives", required: false, submitOnChange: true
+            input "notifyVPDepart", "bool", title: "Notify me when ${app.label} Departs", required: false, submitOnChange: true
+            if (notifyVPArrive || notifyVPDepart) {
+                href "pVPNotifyPage", title: "${app.label}'s Notification Settings"
+            	}
+            }
+        }
+    }    
+}
 page name: "pPerson"
 def pPerson(){
     dynamicPage(name: "pPerson", title: "", uninstall: false){
@@ -197,17 +293,13 @@ def pPersonCreate(){
 ************************************************************************************************************/    
 page name: "pGenSettings"
 def pGenSettings() {
-    dynamicPage(name: "pGenSettings", title: "Notification Settings") {
-        section("Panic Button Actions") {
-            input "panicKeypad","capability.lockCodes", title: "When the panic button is pressed on these keypads...", required: false, multiple: true, submitOnChange: true
-        }
+    dynamicPage(name: "pGenSettings", title: "General Settings") {
         section("Send Chime when contacts open") {
             input "chimeKeypad","capability.lockCodes", title: "These keypads will chime...", required: false, multiple: true, submitOnChange: true
             input "chimeContact", "capability.contactSensor", title: "...when these contacts open", required: false, multiple: true, submitOnChange: true
         }
     }
 }    
-
 /************************************************************************************************************
 		Profile Actions Page
 ************************************************************************************************************/    
@@ -224,70 +316,60 @@ def pActions() {
             if (actionsCode) {
                 input "pMode", "enum", title: "Choose Mode to change to...", options: location.modes.name.sort(), multiple: false, required: false 
                 input "pRoutine", "enum", title: "Select an ST Routine to execute", required: false, options: actions, multiple: false, submitOnChange: true
-                input "myESprofile", "enum", title: "Select an EchoSistant Profile to execute", options: parent.listEchoSistantProfiles() , multiple: false, required: false 
-                input "myPiston", "enum", title: "Select a WebCoRE Piston to execute", options:  parent.webCoRE_list('name'), multiple: false, required: false
-            	input "deviceGroups", "capability.switch", title: "Select grouped devices", required: false, multiple: true
-                }
-                if (deviceGroups) {
-					def Groups = "${deviceGroups.device.groupId.unique()}"
-         			log.info "These devices are in these groups --> (listed by groupID number) --> ${Groups}"
-                    log.info "Devices = ${deviceGroups}"
-
-      //      log.info "${deviceGroups.device.groupId.unique()}"
-       //     log.debug "groupId: ${deviceGroups.device.groupId.toList()}"
-      //  }
-//    }
-//}
-                    }
-         //   }
+//                input "myESprofile", "enum", title: "Select an EchoSistant Profile to execute", options: parent.listEchoSistantProfiles() , multiple: false, required: false 
+//                input "myPiston", "enum", title: "Select a WebCoRE Piston to execute", options:  parent.webCoRE_list('name'), multiple: false, required: false
+            }
         }
     }
-}    
-def logDeviceInfo(device) {
-def groupId = evt?.device.device.groupId
-//    settings.each { k, v ->
-//        settings.get(k).each {
-            log.debug "groupId: ${it.device.groupId}"
-//        }
-//    }
 }
+/************************************************************************************************************
+		Momentary Devices on/off
+************************************************************************************************************/    
+page name: "pMomentaryControl"
+def pMomentaryControl(evt) {
+    dynamicPage(name: "pMomentaryControl", title: "",install: false, uninstall: false) {
+        section ("Momentary Switches", hideWhenEmpty: true) {
+            input "mKeypad","capability.lockCodes", title: "Select Keypads", required: true, multiple: true, submitOnChange: true
+            input "mCode", "number", title: "Code (4 digits)", required: false, refreshAfterSelection: true
+        	input "mSwitches", "capability.switch", title: "Select devices to turn on", multiple: true, required: false, submitOnChange: true
+            if (mSwitches) {
+            	input "mOff", "number", title: "Turn off after this many seconds", required: true, submitOnChange: true
+        	}
+        }    
+	}
+}    
 /************************************************************************************************************
 		Devices and Groups Control Pages
 ************************************************************************************************************/    
 page name: "pDeviceControl"
-def pDeviceControl() {
+def pDeviceControl(evt) {
     dynamicPage(name: "pDeviceControl", title: "",install: false, uninstall: false) {
-        section ("Switches", hideWhenEmpty: true){
-            input "sSwitches", "capability.switch", title: "Select Lights and Switches...", multiple: true, required: false, submitOnChange: true
-            if (sSwitches) {
-                input "sSwitchCmd", "enum", title: "Command To Send",
-                    options:["on":"Turn on","off":"Turn off","toggle":"Toggle"], multiple: false, required: false, submitOnChange:true
-                input "delaySwitches", "bool", title: "Delay Actions?", required: false, defaultValue: false, submitOnChange:true
-                if (delaySwitches) {
-                    input "sSecondsOn", "number", title: "Turn on in Seconds?", defaultValue: none, required: false
-                    input "sSecondsOff", "number", title: "Turn off in Seconds?", defaultValue: none, required: false
-                }
-                if (sSwitchCmd) input "sOtherSwitch", "capability.switch", title: "...and these other switches?", multiple: true, required: false, submitOnChange: true                        
-                if (sOtherSwitch) input "sOtherSwitchCmd", "enum", title: "Command To Send to these other switches", 
-                    options: ["on1":"Turn on","off1":"Turn off","toggle1":"Toggle"], multiple: false, required: false, submitOnChange: true
-                if (sOtherSwitchCmd)	input "delayOtherSwitches", "bool", title: "Delay Actions?", required: false, defaultValue: false, submitOnChange:true
-                if (delayOtherSwitches) {
-                    input "sOtherSecondsOn", "number", title: "Turn on in Seconds?", defaultValue: none, required: false
-                    input "sOtherSecondsOff", "number", title: "Turn off in Seconds?", defaultValue: none, required: false
-                }
-            }
+        section ("Control Keypads") {
+        	input "switchKeypad", "capability.lockCodes", title: "Use these keypads for device control"
         }
-        section ("Flash These Switches", hideWhenEmpty: true) {
-            input "sFlash", "capability.switch", title: "Flash Switch(es)", multiple: true, required: false, submitOnChange:true
-            if (sFlash) {
+        section ("Momentary Switches", hideWhenEmpty: true) {
+        	href "pMomentaryControl", title: "Select devices to turn on momentarily"
+            }    
+        section ("Switches On/Off", hideWhenEmpty: true) {
+            paragraph "Pressing the 'ON' button will turn these devices on."
+            paragraph "Pressing the 'PARTIAL' button will turn these devices off."
+            input "bSwitches", "capability.switch", title: "Select devices to turn on/off", multiple: true, required: false, submitOnChange: true
+        }
+        section ("Switches Toggle", hideWhenEmpty: true) {
+        	paragraph "Pressing the 'ON' button toggles these switches:"
+            input "tSwitches", "capability.switch", title: "Select devices to toggle", multiple: true, required: false, submitOnChange: true
+		}
+        section ("Switches Flash", hideWhenEmpty: true) {
+        	paragraph "Pressing the 'ON' button flashes these switches:"
+            input "fSwitches", "capability.switch", title: "Select devices to flash", multiple: true, required: false, submitOnChange: true
+            if (fSwitches) {
                 input "numFlashes", "number", title: "This number of times (default 3)", required: false, submitOnChange:true
                 input "onFor", "number", title: "On for (default 1 second)", required: false, submitOnChange:true			
                 input "offFor", "number", title: "Off for (default 1 second)", required: false, submitOnChange:true
             }
-        }
+		}
     }
 }    
-	
 /************************************************************************************************************
 		Restrictions Page
 ************************************************************************************************************/    
@@ -348,95 +430,43 @@ def initialize() {
     if (chimeContact) { subscribe (chimeContact, "contact.open", chimeHandler) }
     if (panicKeypad) { subscribe (panicKeypad, "contact.open", panicHandler) }
     if (actionsKeypad) { subscribe (actionsKeypad, "codeEntered", codeEntryHandler) }
+    if (switchKeypad) { subscribe (switchKeypad, "codeEntered", codeEntryHandler) }
+	if (panicKeypad) { subscribe (panicKeypad, "button.pushed", panicButtonHandler) }
+    if (mKeypad) { subscribe (mKeypad, "codeEntered", codeEntryHandler) }
+//initialize keypad to correct state
 }
+
 
 def codeEntryHandler(evt) {
     def codeEntered = evt.value as String
     def data = evt.data as String
     def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone) 
+    def armMode = ''
+    if (data == '0') armMode = 'off'
+    else if (data == '3') armMode = 'away'
+    else if (data == '1') armMode = 'stay'
+    else if (data == '2') armMode = 'stay'	//Currently no separate night mode for SHM, set to 'stay'
     if ("${codeEntered}" == "${vpCode}") {
         pVirToggle(data, codeEntered, evt)
     }
     if ("${codeEntered}" == "${doorCode1}" ||"${codeEntered}" == "${doorCode2}" || "${codeEntered}" == "${doorCode3}") {
         pGarage(data, codeEntered, evt)
     }
+    if ("${codeEntered}" == "0000") {
+    	deviceControl(data) 
+    }    
+   	if ("${codeEntered}" == "${mCode}") {
+   		momentaryDeviceHandler(data, codeEntered, evt, mOff)
+    }    
     if ("${codeEntered}" == "${shmCode}") {
-        pSHM(data, codeEntered, evt, armMode)
+        pSHM(data, codeEntered, evt, armMode, armDelay)
     }
     if ("${codeEntered}" == "${actionsCode}" && data == "3") {
         takeAction(data, codeEntered, evt)
     }
+    
 }
-/*if ("${codeEntered}" != "${doorCode1}" && "${codeEntered}" != "${doorCode2}" && "${codeEntered}" != "${doorCode3}" ) {
-if (data == '0') {
-    armMode = 'off'
-  }
-  else if (data == '3') {
-    armMode = 'away'
-  }
-  else if (data == '1') {
-    armMode = 'stay'
-  }
-	else {
-    log.error "${app.label}: Unexpected arm mode sent by keypad!: "+data
-    return []
-  }
-  def i = settings.maxUsers
-//  def message = " "
-  while (i > 0) {
-    log.debug "i =" + i
-    def correctCode = settings."userCode${i}" as String
-    if (codeEntered == correctCode) {
-      log.debug "User Enabled: " + state."userState${i}".enabled
-      if (state."userState${i}".enabled == true) {
-        log.debug "Correct PIN entered. Change SHM state to ${armMode}"
-       def unlockUserName = settings."userName${i}"
-        if (data == "0") {
-          runIn(0, "sendDisarmCommand")
-          message = "${evt.displayName} was disarmed by ${unlockUserName}"
-        }
-        else if (data == "1") {
-          if(armDelay && keypadstatus) {
-            keypad?.each() { it.setExitDelay(armDelay) }
-          }
-          runIn(armDelay, "sendStayCommand")
-          message = "${evt.displayName} was armed to 'Stay' by ${unlockUserName}"
-        }
-        else if (data == "3") {
-          //log.debug "sendArmCommand"
-          if(armDelay && keypadstatus) {
-            keypad?.each() { it.setExitDelay(armDelay) }
-          }
-          runIn(armDelay, "sendArmCommand")
-          message = "${evt.displayName} was armed to 'Away' by ${unlockUserName}"
-        }
-        if(settings."burnCode${i}") {
-          state."userState${i}".enabled = false
-          message += ".  Now burning code."
-        }
 
-        log.debug "${message}"
-        state."userState${i}".usage = state."userState${i}".usage + 1
-        send(message)
-        i = 0
-      } else if (state."userState${i}".enabled == false){
-        log.debug "PIN Disabled"
-      }
-    }
-    changedMode = 1
-    i--
-  }
-  if (changedMode == 1 && i == 0) {
-    def errorMsg = "Incorrect Code Entered: ${codeEntered}"
-    if (notifyIncorrectPin) {
-      log.debug "Incorrect PIN"
-      send(errorMsg)
-    }
-    keypad.sendInvalidKeycodeResponse()
-		}
-	}
-}
-*/
 /***********************************************************************************************************************
     TAKE ACTIONS HANDLER
 ***********************************************************************************************************************/
@@ -448,7 +478,7 @@ private takeAction(data, codeEntered, evt) {
     //    if("${myProfile}") sendEvent(eTxt)
     if(myESprofile) {
     	log.info "executing ES profile name = ${myESprofile}"
-		sendLocationEvent(name: "Profile", value: "execute", data: data, displayed: true, isStateChange: true, descriptionText: "Keypad Coordinator is asking to execute '${myESprofile}' Profile")
+		sendLocationEvent(name: "EchoSistant", value: "execute", data: data, displayed: true, isStateChange: true, descriptionText: "Keypad Coordinator is asking to execute '${myESprofile}' Profile")
     }
     if(myPiston) {
         log.info "executing piston name = ${myPiston}"
@@ -494,7 +524,8 @@ private pGarage(data, codeEntered, evt) {
     if ("${data}" == "0") {
         if ("${codeEntered}" == "${doorCode1}") {
             if (sDoor1 != null) {
-                sDoor1.close() 
+                sDoor1.close()
+                location.helloHome?.execute(gd1CloseRoutines)
                 message = "The ${sDoor1} was closed by ${app.label} using the ${evt.displayName} at ${stamp}"
                 sendG1txt(message)
             }
@@ -502,6 +533,7 @@ private pGarage(data, codeEntered, evt) {
         if ("${codeEntered}" == "${doorCode2}") {
             if (sDoor2 != null) {
                 sDoor2.close() 
+                location.helloHome?.execute(gd2CloseRoutines)
                 message = "The ${sDoor2} was closed by ${app.label} using the ${evt.displayName} at ${stamp}"
                 sendG2txt(message)
             }
@@ -509,6 +541,7 @@ private pGarage(data, codeEntered, evt) {
         if ("${codeEntered}" == "${doorCode3}") {            
             if (sDoor3 != null) {
                 sDoor3.close() 
+                location.helloHome?.execute(gd3CloseRoutines)
                 message = "The ${sDoor3} was closed by ${app.label} using the ${evt.displayName} at ${stamp}"
                 sendG3txt(message)
             }
@@ -519,6 +552,7 @@ private pGarage(data, codeEntered, evt) {
         if ("${codeEntered}" == "${doorCode1}") {            
             if (sDoor1 != null) {
                 sDoor1.open() 
+                location.helloHome?.execute(gd1OpenRoutines)
                 message = "The ${sDoor1} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
                 sendG1txt(message)
             }
@@ -526,6 +560,7 @@ private pGarage(data, codeEntered, evt) {
         if ("${codeEntered}" == "${doorCode2}") {            
             if (sDoor2 != null) {
                 sDoor2.open() 
+                location.helloHome?.execute(gd2OpenRoutines)
                 message = "The ${sDoor2} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
                 sendG2txt(message)
             }
@@ -533,6 +568,7 @@ private pGarage(data, codeEntered, evt) {
         if ("${codeEntered}" == "${doorCode3}") {            
             if (sDoor3 != null) {
                 sDoor3.open() 
+                location.helloHome?.execute(gd3OpenRoutines)
                 message = "The ${sDoor3} was opened by ${app.label} using the ${evt.displayName} at ${stamp}"
                 sendG3txt(message)
             }
@@ -541,67 +577,81 @@ private pGarage(data, codeEntered, evt) {
     }     
 }
 /************************************************************************************************************
+		Momentary Devices Handler
+************************************************************************************************************/    
+def momentaryDeviceHandler(data, codeEntered, evt, mOff) {
+	if (data == "3") {
+    	mSwitches.on()
+        runIn(mOff, "turnOff")
+        }
+    }
+def turnOff() {
+	mSwitches.off()
+    }
+/************************************************************************************************************
 		Smart Home Monitor Handler
 ************************************************************************************************************/    
-private pSHM(data, codeEntered, evt, armMode) {
-    def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone)
+private pSHM(data, codeEntered, evt, armMode, armDelay) {
+	def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone)
     def message = ""
-    log.debug "data == ${data}, codeEntered == ${codeEntered}, evt == ${evt}, armMode == ${armMode}"
     if (data == "0") {
-        if(keypadstatus) {
-            sLocksSHM?.each() { it.acknowledgeArmRequest(0) }
-        }        
-        runIn(0, "sendDisarmCommand")
+        sLocksSHM?.each() { it.acknowledgeArmRequest(0) } 
         message = "${app.label} disarmed SHM using ${evt.displayName} at ${stamp} "
-    }
+    	sendDisarmCommand()
+    		    if (notifySHMArm) {
+    				sendSHMtxt(message)
+			}
+        }
     else if (data == "1") {
-        if(armDelay && keypadstatus) {
-            sLocksSHM?.each() { it.setExitDelay(armDelay) }
-        }
-        runIn(armDelay, "sendStayCommand")
+        sLocksSHM?.each() { it.acknowledgeArmRequest(1) }
         message = "${app.label} set SHM to Armed-Stay using ${evt.displayName} at ${stamp} "
-    }
-    else if (data == "3") {
-        if(armDelay && keypadstatus) {
-            sLocksSHM?.each() { it.setExitDelay(armDelay) }
+    	sendStayCommand()
+    		    if (notifySHMArm) {
+    				sendSHMtxt(message)
+			}
         }
-        runIn(armDelay, "sendArmAwayCommand")
-        message = "${app.label} set SHM to Armed-Away using ${evt.displayName} at ${stamp} "
-    }
+    else if (data == "3") {
+        if (armDelay != null || armDelay > 0) {
+        	sLocksSHMstatus?.setExitDelay(armDelay) 
+        	runIn(armDelay, "sendArmAwayCommand")
+            message = "${app.label} set SHM to Armed-Away using ${evt.displayName} at ${stamp} with an exit delay of ${armDelay} seconds "
+    		    if (notifySHMArm) {
+    				sendSHMtxt(message)
+			}
+		}
+        else {
+        	sendArmAwayCommand() {
+        	message = "${app.label} set SHM to Armed-Away using ${evt.displayName} at ${stamp} "
+    		    if (notifySHMArm) {
+    				sendSHMtxt(message)
+				}
+        	}
+        }
+    }    
     log.info "${message}"
-}
+}    
 def sendArmAwayCommand() {
     log.debug "Sending Armed-Away Command."
-    if (keypadstatus) {
-        sLocksSHM?.each() { it.acknowledgeArmRequest(3) }
-    }
     sendSHMEvent("away")
-    //  execRoutine("away")
-}
-def sendDisarmCommand() {
-    log.debug "Sending Disarm Command."
-    if (keypadstatus) {
-        sLocksSHM?.each() { it.acknowledgeArmRequest(0) }
-    }
-    sendSHMEvent("off")
-    //  execRoutine("off")
+    sLocksSHM?.each() { it.acknowledgeArmRequest(3) }
+    sLocksSHMstatus?.each() { it.setArmedAway(armDelay) }
+    location.helloHome?.execute(armRoutine)
 }
 def sendStayCommand() {
     log.debug "Sending Armed-Stay Command."
-    if (keypadstatus) {
-        sLocksSHM?.each() { it.acknowledgeArmRequest(1) }
-    }
     sendSHMEvent("stay")
-    //  execRoutine("stay")
+    sLocksSHMstatus?.each() { it.setArmedStay() }
+    location.helloHome?.execute(stayRoutine)
 }
-private sendSHMEvent(String shmState) {
-    def event = [
-        name:"alarmSystemStatus",
-        value: shmState,
-        displayed: true,
-        description: "System Status is ${shmState}"
-    ]
-    log.debug "test ${event}"
+def sendDisarmCommand() {
+    log.debug "Sending Disarm Command."
+    sendSHMEvent("off")
+    sLocksSHMstatus?.each() { it.setDisarmed() }
+    location.helloHome?.execute(disarmRoutine)
+}
+private sendSHMEvent(String shmState){
+	def event = [name:"alarmSystemStatus", value: shmState, 
+    			displayed: true, description: "System Status is ${shmState}"]
     sendLocationEvent(event)
 }
 
@@ -678,6 +728,36 @@ private timeIntervalLabel() {
 /***********************************************************************************************************************
     SMS HANDLER
 ***********************************************************************************************************************/
+private void sendPanicText(panicText) {
+    if (parent.debug) log.debug "Request to send sms received with message: '${panicText}'"
+    if (sendContactText) { 
+        sendNotificationToContacts(panicText, recipients)
+        if (parent.debug) log.debug "Sending sms to selected reipients"
+    } 
+    if (panicPush) { 
+        sendPushMessage(panicText)
+        if (parent.debug) log.debug "Sending push message to selected reipients"
+    }
+    if (panicPhone) {
+        sendPanicText(sms, panicText)
+        if (parent.debug) log.debug "Processing message for selected phones"
+    }
+}
+private void sendSHMtxt(message) {
+    if (parent.debug) log.debug "Request to send sms received with message: '${message}'"
+    if (sendContactText) { 
+        sendNotificationToContacts(message, recipients)
+        if (parent.debug) log.debug "Sending sms to selected reipients"
+    } 
+    if (shmPush) { 
+        sendPushMessage(message)
+        if (parent.debug) log.debug "Sending push message to selected reipients"
+    }
+    if (shmPhone) {
+        sendSHMText(sms, message)
+        if (parent.debug) log.debug "Processing message for selected phones"
+    }
+}
 private void sendVPtxt(message) {
     if (parent.debug) log.debug "Request to send sms received with message: '${message}'"
     if (sendContactText) { 
@@ -738,7 +818,24 @@ private void sendG3txt(message) {
         if (parent.debug) log.debug "Processing message for selected phones"
     }
 }
-
+private void sendPanicText(number, message) {
+    if (panicPhone) {
+        def phones = panicPhone.split("\\,")
+        for (phone in phones) {
+            sendSms(phone, message)
+            if (parent.debug) log.debug "Sending sms to selected phones"
+        }
+    }
+}
+private void sendSHMText(number, message) {
+    if (shmPhone) {
+        def phones = shmPhone.split("\\,")
+        for (phone in phones) {
+            sendSms(phone, message)
+            if (parent.debug) log.debug "Sending sms to selected phones"
+        }
+    }
+}
 private void sendVPText(number, message) {
     if (vpPhone) {
         def phones = vpPhone.split("\\,")
@@ -776,68 +873,29 @@ private void sendG3Text(number, message) {
     }
 }
 /************************************************************************************************************
-   Switch/Color/Dimmer/Toggle Handlers
+  Device Control Handlers for press of 'ON' and 'PARTIAL' buttons
 ************************************************************************************************************/
-// Used for delayed devices
-def turnOnSwitch() { sSwitches?.on() }  
-def turnOffSwitch() { sSwitches?.off() }
-def turnOnOtherSwitch() { sOtherSwitch?.on() }
-def turnOffOtherSwitch() { sOtherSwitch?.off() }  
-def turnOnDimmers() { def level = dimmersLVL < 0 || !dimmersLVL ?  0 : dimmersLVL >100 ? 100 : dimmersLVL as int
-    sDimmers?.setLevel(sDimmersLVL) }
-def turnOffDimmers() { sDimmers?.off() }
-def turnOnOtherDimmers() { def otherlevel = otherDimmersLVL < 0 || !otherDimmersLVL ?  0 : otherDimmersLVL >100 ? 100 : otherDimmersLVL as int
-    sOtherDimmers?.setLevel(sOtherDimmersLVL) }
-def turnOffOtherDimmers() { sOtherDimmers?.off() }   
-
-// Primary control of profile triggered lights/switches when delayed
-def profileDeviceControl() {
-    if (sSecondsOn) { runIn(sSecondsOn,turnOnSwitch)}
-    if (sSecondsOff) { runIn(sSecondsOff,turnOffSwitch)}
-    if (sOtherSecondsOn)  { runIn(sOtherSecondsOn,turnOnOtherSwitch)}
-    if (sOtherSecondsOff) { runIn(sOtherSecondsOff,turnOffOtherSwitch)}
-    if (sSecondsDimmers) { runIn(sSecondsDimmers,turnOnDimmers)}
-    if (sSecondsDimmersOff) { runIn(sSecondsDimmersOff,turnOffDimmers)}
-    if (sSecondsOtherDimmers) { runIn(sSecondsOtherDimmers,turnOnOtherDimmers)}
-    if (sSecondsOtherDimmersOff) { runIn(sSecondsOtherDimmersOff,turnOffOtherDimmers)}
-    // Control of Lights and Switches when not delayed            
-    if (!sSecondsOn) {
-        if  (sSwitchCmd == "on") { sSwitches?.on() }
-        else if (sSwitchCmd == "off") { sSwitches?.off() }
-        if (sSwitchCmd == "toggle") { toggle() }
-        if (sOtherSwitchCmd == "on") { sOtherSwitch?.on() }
-        else if (sOtherSwitchCmd == "off") { sOtherSwitch?.off() }
-        if (otherSwitchCmd == "toggle") { toggle() }
-
-        if (sDimmersCmd == "set" && sDimmers) { def level = sDimmersLVL < 0 || !sDimmersLVL ?  0 : sDimmersLVL >100 ? 100 : sDimmersLVL as int
-            sDimmers?.setLevel(level) }
-        if (sOtherDimmersCmd == "set" && sOtherDimmers) { def otherLevel = sOtherDimmersLVL < 0 || !sOtherDimmersLVL ?  0 : sOtherDimmersLVL >100 ? 100 : sOtherDimmersLVL as int
-            sOtherDimmers?.setLevel(otherLevel) }
+def deviceControl(data) {  //// Turns switches on and off
+    if (data == "3") {
+        bSwitches?.on()
+        toggle()
+        flashLights()
     }
-}
-
-private toggle() {
-    if (sSwitches) {
-        if (sSwitches?.currentValue('switch').contains('on')) {
-            sSwitches?.off()
-        }
-        else if (sSwitches?.currentValue('switch').contains('off')) {
-            sSwitches?.on()
-        }
+    if (data == "1") {
+        bSwitches?.off()
     }
-    if (sOtherSwitch) {
-        if (sOtherSwitch?.currentValue('switch').contains('on')) {
-            sOtherSwitch?.off()
+} 
+private toggle() {  //// Toggles switches
+    if (tSwitches) {
+        if (tSwitches?.currentValue('switch').contains('on')) {
+            tSwitches?.off()
         }
-        else if (sOtherSwitch?.currentValue('switch').contains('off')) {
-            sOtherSwitch?.on()
+        else if (tSwitches?.currentValue('switch').contains('off')) {
+            tSwitches?.on()
         }
     }
 }
-/************************************************************************************************************
-   Flashing Lights Handler
-************************************************************************************************************/
-private flashLights() {
+private flashLights() {  //// Flashes switches
     if (parent.debug) log.debug "The Flash Switches Option has been activated"
     def doFlash = true
     def onFor = onFor ?: 60000/60
@@ -851,11 +909,11 @@ private flashLights() {
     }
     if (doFlash) {
         state.lastActivated = now()
-        def initialActionOn = sFlash.collect{it.currentflashSwitch != "on"}
+        def initialActionOn = fSwitches.collect{it.currentflashSwitch != "on"}
         def delay = 0L
 
         numFlashes.times {
-            sFlash.eachWithIndex {s, i ->
+            fSwitches.eachWithIndex {s, i ->
                 if (initialActionOn[i]) {
                     s.on(delay: delay)
                 }
@@ -864,7 +922,7 @@ private flashLights() {
                 } 
             }
             delay += onFor
-            sFlash.eachWithIndex {s, i ->
+            fSwitches.eachWithIndex {s, i ->
                 if (initialActionOn[i]) {
                     s.off(delay: delay)
                 }
@@ -876,12 +934,13 @@ private flashLights() {
         }
     }
 }
+
 /************************************************************************************************************
    Thermostat Handler
 ************************************************************************************************************/
 def tempHandler(evt) {
     def codeEntered = evt.value as String
-    if (codeEntered.startsWith("01")) {
+    if ("${codeEntered}".startsWith("01")) {
         def newSetPoint = codeEntered
         newSetPoint = newSetPoint.replaceAll(/01/,"")
         log.info "Changing the cooling to ${newSetPoint} degrees"
@@ -897,8 +956,87 @@ def tempHandler(evt) {
 /************************************************************************************************************
    Panic Button Handler
 ************************************************************************************************************/
-def panicHandler(evt) {
-    log.info "The panic button was pressed on the ${evt.displayName}"
+def panicButtonHandler(evt) {
+	def event = evt.data
+    def eVal = evt.value
+    def eName = evt.name
+    def eDev = evt.device
+	def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone)
+    log.info "The panic button was pressed on the ${evt.displayName} at " + stamp
+		def buttonNumUsed = evt.data.replaceAll("\\D+","")
+        buttonNumUsed = buttonNumUsed.toInteger()
+       	int butNum = buttonNumUsed 
+    if (panicSwitches) { panicSwitches.on() }
+    if (panicFlash) { panicFlasher() }
+	if (panicText) { sendPanicText(panicText) }
+    if (panicSynthDevice) { panicTTS(panicText) }
+    if (panicSonosDevice) { panicTTS(panicText) }
+}
+
+private panicFlasher() {  //// Flashes switches
+    if (parent.debug) log.debug "The Panic Button Flash Switches Option has been activated"
+    def doFlash = true
+    def onFor = onFor ?: 60000/60
+    def offFor = offFor ?: 60000/60
+    def numFlashes = numFlashes ?: 3
+
+    if (state.lastActivated) {
+        def elapsed = now() - state.lastActivated
+        def sequenceTime = (numFlashes + 1) * (onFor + offFor)
+        doFlash = elapsed > sequenceTime
+    }
+    if (doFlash) {
+        state.lastActivated = now()
+        def initialActionOn = panicFlash.collect{it.currentflashSwitch != "on"}
+        def delay = 0L
+
+        numFlashes.times {
+            panicFlash.eachWithIndex {s, i ->
+                if (initialActionOn[i]) {
+                    s.on(delay: delay)
+                }
+                else {
+                    s.off(delay:delay)                   
+                } 
+            }
+            delay += onFor
+            panicFlash.eachWithIndex {s, i ->
+                if (initialActionOn[i]) {
+                    s.off(delay: delay)
+                }
+                else {
+                    s.on(delay:delay)
+                }
+            }
+            delay += offFor
+        }
+    }
+}
+def panicTTS(panicText) {
+	def tts = "Attention, Attention, This is an emergency: ${panicText}"
+    if (panicSynthDevice) {
+        panicSynthDevice?.speak(tts) 
+        if (parent.debug) log.debug "Sending message to Synthesis Devices"
+    }
+    if (tts) {
+        state.sound = textToSpeech(tts instanceof List ? tts[0] : tts)
+    }
+    else {
+        state.sound = textToSpeech("You selected the custom message option but did not enter a message in the $app.label Smart App")
+        if (parent.debug) log.debug "You selected the custom message option but did not enter a message"
+    }
+    if (panicSonosDevice){ // 2/22/2017 updated Sono handling when speaker is muted
+        def currVolLevel = panicSonosDevice.latestValue("level")
+        def currMuteOn = panicSonosDevice.latestValue("mute").contains("muted")
+        if (parent.debug) log.debug "currVolSwitchOff = ${currVolSwitchOff}, vol level = ${currVolLevel}, currMuteOn = ${currMuteOn} "
+        if (currMuteOn) { 
+            if (parent.debug) log.warn "speaker is on mute, sending unmute command"
+            panicSonosDevice.unmute()
+        }
+        def sVolume = settings.volume ?: 20
+        panicSonosDevice?.playTrackAndResume(state.sound.uri, state.sound.duration, sVolume)
+        if (parent.debug) log.info "Playing message on the music player '${panicSonosDevice}' at volume '${volume}'" 
+    }
 }
 /************************************************************************************************************
    Contact Chime Handler
