@@ -76,7 +76,6 @@ def updated() {
     initialize()
 }
 def initialize() {
-//		subscribe(app, appHandler)
         webCoRE_init()
         subscribe(location, "askAlexaMQ", askAlexaMQHandler)
         //Other Apps Events
@@ -84,10 +83,12 @@ def initialize() {
         subscribe(location, "echoSistant", echoSistantHandler)
 		state.esProfiles = state.esProfiles ? state.esProfiles : []
         //CoRE and other 3rd party apps
+        sendLocationEvent(name: "remindR", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
+		sendLocationEvent(name: "echoSistant", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
         sendLocationEvent(name: "KeypadCoordinator", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "Keypad Coordinator list refresh")
-//		sendLocationEvent(name: "echoSistant", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
         //def children = getChildApps()
 }
+
 /************************************************************************************************************
 		3RD Party Integrations
 ************************************************************************************************************/
@@ -125,9 +126,6 @@ def childUninstalled() {
 	if (debug) log.debug "Refreshing Profiles for 3rd party apps, ${getChildApps()*.label}"
     sendLocationEvent(name: "KeypadCoordinator", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "Keypad Coordinator list refresh")
 } 
-//def childInitialized(message) {
-//	state.activeRetrigger = message
-//}
 
 def askAlexaMQHandler(evt) {
    if (!evt) return

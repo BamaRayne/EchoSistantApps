@@ -42,6 +42,7 @@ preferences {
   			page name: "pDeviceControl"
             page name: "pPerson"
             page name: "pVirPerAction"
+            page name: "pThermo"
 }
 
 //dynamic page methods
@@ -54,28 +55,28 @@ def mainProfilePage() {
         }
         if (app.label != null) {
             section("${app.label}'s Actions ") {
-                href "pActions", title: "Does ${app.label} need to execute actions?", description: pDevicesComplete() , state: pDevicesSettings()
+                href "pActions", title: "Does ${app.label} need to execute actions?", description: pActionsComplete() , state: pActionsSettings()
             }
             section("${app.label}'s devices?") {
             	href "pDeviceControl", title: "Does ${app.label} need to control any devices?", description: pDevicesComplete() , state: pDevicesSettings()
             }
             section("${app.label}'s Presence ") {
-            	href "pPresence", title: "Does ${app.label} need a Virtual Presence Sensor?", description: pDevicesComplete() , state: pDevicesSettings()
+            	href "pPresence", title: "Does ${app.label} need a Virtual Presence Sensor?", description: pPresenceComplete() , state: pPresenceSettings()
             }
             section("${app.label}'s Garage Doors ") {
-                href "pGaragePage", title: "Will ${app.label} be able to control the garage doors?", description: pDevicesComplete() , state: pDevicesSettings()
+                href "pGaragePage", title: "Will ${app.label} have control of the garage doors?", description: pGarageComplete() , state: pGarageSettings()
             }
 			section("${app.label}'s SHM controls") {
-            	href "pSHMpage", title: "Will ${app.label} be have control of Smart Home Monitor?", description: pDevicesComplete() , state: pDevicesSettings()
-                }
+            	href "pSHMpage", title: "Will ${app.label} have control of Smart Home Monitor?", description: pSHMComplete() , state: pSHMSettings()
+            }
 			section("${app.label}'s Thermostats") {
-            	href "pThermo", title: "Will ${app.label} be have control of the thermostats?", description: pDevicesComplete() , state: pDevicesSettings()
+            	href "pThermo", title: "Will ${app.label} have control of the thermostats?", description: pThermoComplete() , state: pThermoSettings()
             }
             section("${app.label}'s Panic Button Settings") {
-            	href "pPanic", title: "Configure the Panic Button Settings for ${app.label}"
+            	href "pPanic", title: "Configure the Panic Button Settings for ${app.label}", description: pPanicComplete() , state: pPanicSettings()
             }    
             section("General Keypad Settings") {
-                href "pGenSettings", title: "Configure the General Settings for ${app.label}"
+                href "pGenSettings", title: "Configure the General Settings for ${app.label}", description: pGenSetComplete() , state: pGenSetSettings()
             }
             section("General Restrictions for ${app.label}") {
                 href "pRestrict", title: "Does ${app.label} need to be restricted?", description: pRestrictComplete(), state: pRestrictSettings()
@@ -211,8 +212,10 @@ def pPanic() {
 page name: "pThermo"
 def pThermo() {
     dynamicPage(name: "pThermo", title: "Thermostat Controls") {
-        input "tempKeypad", "capability.lockCodes", type: "temp", title: "Enter temperature using these keypads", required: false, multiple: true, submitOnChange: true
+    section("") {
+    	input "tempKeypad", "capability.lockCodes", title: "Enter temperature using these keypads", required: false, multiple: true, submitOnChange: true
         input "tempStat", "capability.thermostat", title: "Change the temperature on these thermostats", required: false, multiple: true, submitOnChange: true
+    	}
     }
 }
 /************************************************************************************************************
@@ -223,8 +226,7 @@ def pGaragePage() {
     dynamicPage(name: "pGaragePage", title: "Garage Door Controls") {
         def hhPhrases = location.getHelloHome()?.getPhrases()*.label
         hhPhrases?.sort()
-        input "garageDoors", "bool", title: "Can ${app.label} control the garage doors?", refreshAfterSelection: true
-        if (garageDoors) {
+        section("") {
             input "sLocksGarage","capability.lockCodes", title: "Select the Keypads that ${app.label} can use for the garage door", required: false, multiple: true, submitOnChange: true
             input "sDoor1", "capability.garageDoorControl", title: "${app.label} can control these garage door(s)", multiple: true, required: false, submitOnChange: true
             input "doorCode1", "number", title: "Code (4 digits)", required: false, refreshAfterSelection: true
@@ -254,7 +256,8 @@ def pGaragePage() {
 page name: "pPresence"
 def pPresence() {
     dynamicPage(name: "pPresence", title: "Virtual Presence") {
-    	section () {
+    	def d = getChildDevice("${app.label}")
+        section () {
         href "pPerson", title: "Create/Delete a Virtual Presence Device for ${app.label}"
         if(d) {
             input "sLocksVP","capability.lockCodes", title: "${app.label} can check-in using these keypads", required: true, multiple: true, submitOnChange: true
@@ -348,7 +351,7 @@ def pDeviceControl(evt) {
         	input "switchKeypad", "capability.lockCodes", title: "Use these keypads for device control"
         }
         section ("Momentary Switches", hideWhenEmpty: true) {
-        	href "pMomentaryControl", title: "Select devices to turn on momentarily"
+        	href "pMomentaryControl", title: "Select devices to turn on momentarily", description: pMomentaryComplete() , state: pMomentarySettings()
             }    
         section ("Switches On/Off", hideWhenEmpty: true) {
             paragraph "Pressing the 'ON' button will turn these devices on."
@@ -384,7 +387,7 @@ def pRestrict(){
                 "enum", options: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
         }
         section ("Time - Audio only during these times"){
-            href "certainTime", title: "Only during a certain time", description: timeIntervalLabel ?: "Tap to set", state: timeIntervalLabel ? "complete" : null
+            href "certainTime", title: "Only during a certain time", description: pTimeComplete() , state: pTimeSettings()
         }   
     }
 }
@@ -450,19 +453,27 @@ def codeEntryHandler(evt) {
         pVirToggle(data, codeEntered, evt)
     }
     if ("${codeEntered}" == "${doorCode1}" ||"${codeEntered}" == "${doorCode2}" || "${codeEntered}" == "${doorCode3}") {
+        if (getDayOk()==true && getModeOk()==true && getTimeOk()==true) {
         pGarage(data, codeEntered, evt)
+    	}
     }
     if ("${codeEntered}" == "0000") {
-    	deviceControl(data) 
+    	if (getDayOk()==true && getModeOk()==true && getTimeOk()==true) {
+        deviceControl(data) 
+    	}
     }    
    	if ("${codeEntered}" == "${mCode}") {
-   		momentaryDeviceHandler(data, codeEntered, evt, mOff)
+   		if (getDayOk()==true && getModeOk()==true && getTimeOk()==true) {
+        momentaryDeviceHandler(data, codeEntered, evt, mOff)
+    	}
     }    
     if ("${codeEntered}" == "${shmCode}") {
         pSHM(data, codeEntered, evt, armMode, armDelay)
     }
     if ("${codeEntered}" == "${actionsCode}" && data == "3") {
+        if (getDayOk()==true && getModeOk()==true && getTimeOk()==true) { 
         takeAction(data, codeEntered, evt)
+        }
     }
     
 }
@@ -476,24 +487,23 @@ private takeAction(data, codeEntered, evt) {
 	if(parent.debug) log.warn "version number = ${release()}"
 	sendLocationEvent(name: "KeypadCoordinator", value: app.label, data: data, displayed: true, isStateChange: true, descriptionText: "KeypadCoordinator ${app.label} Profile was active")
     //    if("${myProfile}") sendEvent(eTxt)
-    if(myESprofile) {
-    	log.info "executing ES profile name = ${myESprofile}"
-		sendLocationEvent(name: "EchoSistant", value: "execute", data: data, displayed: true, isStateChange: true, descriptionText: "Keypad Coordinator is asking to execute '${myESprofile}' Profile")
-    }
-    if(myPiston) {
-        log.info "executing piston name = ${myPiston}"
-        webCoRE_execute("${myPiston}")
-    }
+//    if(myESprofile) {
+//    	log.info "executing ES profile name = ${myESprofile}"
+//		sendLocationEvent(name: "EchoSistant", value: "execute", data: data, displayed: true, isStateChange: true, descriptionText: "Keypad Coordinator is asking to execute '${myESprofile}' Profile")
+//    }
+//    if(myPiston) {
+//        log.info "executing piston name = ${myPiston}"
+//        webCoRE_execute(myPiston)
+//    }
     if(pRoutine) {
     	log.info "executing smartthings routine ${pRoutine}"
         location.helloHome?.execute(settings.pRoutine)
-    }
-    if(askAlexa && listOfMQs ) sendToAskAlexa(eTxt)
-    if (actionType == "Custom Text" || actionType == "Custom Text with Weather" || actionType == "Triggered Report") {
-        if (speechSynth || sonos) sTxt = textToSpeech(eTxt instanceof List ? eTxt[0] : eTxt)
-        state.sound = sTxt
-    }
-}    
+	    }
+	if (pMode) {
+		setLocationMode(pMode)
+	}        
+}
+    
 /************************************************************************************************************
 		Virtual Person Check In/Out Automatically Handler
 ************************************************************************************************************/    
@@ -656,7 +666,7 @@ private sendSHMEvent(String shmState){
 }
 
 /***********************************************************************************************************************
-    RESTRICTIONS HANDLER
+    RESTRICTIONS HANDLER  if (getDayOk()==true && getModeOk()==true && getTimeOk()==true && getFrequencyOk()==true && getConditionOk()==true) {
 ***********************************************************************************************************************/
 private getAllOk() {
     modeOk && daysOk && timeOk
@@ -1042,7 +1052,9 @@ def panicTTS(panicText) {
    Contact Chime Handler
 ************************************************************************************************************/
 def chimeHandler(evt) {
+    if (getDayOk()==true && getModeOk()==true && getTimeOk()==true) {
     chimeKeypad.beep()
+	}
 }
 /************************************************************************************************************
   Virtual Presence Handlers
@@ -1079,9 +1091,9 @@ private removeChildDevices(delete) {
     }
 }               
 /************************************************************************************************************
-CoRE Integration
+CoRE Integration   pistonIdOrName,Map data=[:]
 ************************************************************************************************************/
-public  webCoRE_execute(pistonIdOrName,Map data=[:]){def i=(state.webCoRE?.pistons?:[]).find{(it.name==pistonIdOrName)||(it.id==pistonIdOrName)}?.id;if(i){sendLocationEvent([name:i,value:app.label,isStateChange:true,displayed:false,data:data])}
+public  webCoRE_execute(myPiston){def i=(state.webCoRE?.pistons?:[]).find{(it.name==pistonIdOrName)||(it.id==pistonIdOrName)}?.id;if(i){sendLocationEvent([name:i,value:app.label,isStateChange:true,displayed:false,data:data])}
 log.info "piston executed"}
 public  webCoRE_list(mode){def p=state.webCoRE?.pistons;if(p)p.collect{mode=='id'?it.id:(mode=='name'?it.name:[id:it.id,name:it.name])}}
 public  webCoRE_handler(evt){switch(evt.value){case 'pistonList':List p=state.webCoRE?.pistons?:[];Map d=evt.jsonData?:[:];if(d.id&&d.pistons&&(d.pistons instanceof List)){p.removeAll{it.iid==d.id};p+=d.pistons.collect{[iid:d.id]+it}.sort{it.name};state.webCoRE = [updated:now(),pistons:p];};break;case 'pistonExecuted':def cbk=state.webCoRE?.cbk;if(cbk&&evt.jsonData)"$cbk"(evt.jsonData);break;}}
@@ -1089,60 +1101,105 @@ public  webCoRE_handler(evt){switch(evt.value){case 'pistonList':List p=state.we
 /************************************************************************************************************
    Page status and descriptions 
 ************************************************************************************************************/       
-def pSendSettings() {def result = ""
-                     if (synthDevice || sonosDevice || sendContactText || sendText || push) {
-                         result = "complete"}
-                     result}
-def pSendComplete() {def text = "Tap here to Configure" 
-                     if (synthDevice || sonosDevice || sendContactText || sendText || push) {
-                         text = "Configured"}
-                     else text = "Tap here to Configure"
-                     text}
-def pConfigSettings() {def result = ""
-                       if (pAlexaCustResp || pAlexaRepeat || pContCmdsProfile || pRunMsg || pPreMsg || pDisableAlexaProfile || pDisableALLProfile || pRunTextMsg || pPreTextMsg) {
-                           result = "complete"}
-                       result}
-def pConfigComplete() {def text = "Tap here to Configure" 
-                       if (pAlexaCustResp || pAlexaRepeat || pContCmdsProfile || pRunMsg || pPreMsg || pDisableAlexaProfile || pDisableALLProfile || pRunTextMsg || pPreTextMsg) {
-                           text = "Configured"}
-                       else text = "Tap here to Configure"
-                       text}
-def pDevicesSettings() {def result = ""
-                        if (sSwitches || sDimmers || sHues || sFlash) {
-                            result = "complete"}
-                        result}
-def pDevicesComplete() {def text = "Tap here to Configure" 
-                        if (sSwitches || sDimmers || sHues || sFlash) {
-                            text = "Configured"}
-                        else text = "Tap here to Configure"
-                        text}
 def pActionsSettings(){def result = ""
                        def pDevicesProc = ""
-                       if (sSwitches || sDimmers || sHues || sFlash || shmState) {
+                       if (pMode || pRoutine) {
                            result = "complete"
                            pDevicesProc = "complete"}
                        result}
 def pActionsComplete() {def text = "Configured" 
                         def pDevicesComplete = pDevicesComplete()
-                        if (pDevicesProc || pMode || pRoutine || shmState) {
+                        if (pMode || pRoutine) {
                             text = "Configured"}
                         else text = "Tap here to Configure"
                         text}        
+def pDevicesSettings() {def result = ""
+                        if (bSwitches || tSwitches || fSwitches || mSwitches) {
+                            result = "complete"}
+                        result}
+def pDevicesComplete() {def text = "Tap here to Configure" 
+                        if (bSwitches || tSwitches || fSwitches || mSwitches) {
+                            text = "Configured"}
+                        else text = "Tap here to Configure"
+                        text}
+def pMomentarySettings() {def result = ""
+                        if (mSwitches) {
+                            result = "complete"}
+                        result}
+def pMomentaryComplete() {def text = "Tap here to Configure" 
+                        if (mSwitches) {
+                            text = "Configured"}
+                        else text = "Tap here to Configure"
+                        text}
+def pPresenceSettings() {def result = ""
+                        if (sLocksVP) {
+                            result = "complete"}
+                        result}
+def pPresenceComplete() {def text = "Tap here to Configure" 
+                        if (sLocksVP) {
+                            text = "Configured"}
+                        else text = "Tap here to Configure"
+                        text}
+def pGarageSettings() {def result = ""
+                        if (sDoor1) {
+                            result = "complete"}
+                        result}
+def pGarageComplete() {def text = "Tap here to Configure" 
+                        if (sDoor1) {
+                            text = "Configured"}
+                        else text = "Tap here to Configure"
+                        text}
+def pSHMSettings() {def result = ""
+                        if (sLocksSHM) {
+                            result = "complete"}
+                        result}
+def pSHMComplete() {def text = "Tap here to Configure" 
+                        if (sLocksSHM) {
+                            text = "Configured"}
+                        else text = "Tap here to Configure"
+                        text}
+def pThermoSettings() {def result = ""
+                        if (tempKeypad) {
+                            result = "complete"}
+                        result}
+def pThermoComplete() {def text = "Tap here to Configure" 
+                        if (tempKeypad) {
+                            text = "Configured"}
+                        else text = "Tap here to Configure"
+                        text}
+def pPanicSettings() {def result = ""
+                        if (panicKeypad) {
+                            result = "complete"}
+                        result}
+def pPanicComplete() {def text = "Tap here to Configure" 
+                        if (panicKeypad) {
+                            text = "Configured"}
+                        else text = "Tap here to Configure"
+                        text}
+def pGenSetSettings() {def result = ""
+                        if (chimeKeypad) {
+                            result = "complete"}
+                        result}
+def pGenSetComplete() {def text = "Tap here to Configure" 
+                        if (chimeKeypad) {
+                            text = "Configured"}
+                        else text = "Tap here to Configure"
+                        text}
 def pRestrictSettings(){ def result = "" 
-                        if (modes || runDay || hues ||startingX || endingX) {
+                        if (modes || days || startingX || endingX) {
                             result = "complete"}
                         result}
 def pRestrictComplete() {def text = "Tap here to configure" 
-                         if (modes || runDay || hues ||startingX || endingX) {
+                         if (modes || days ||startingX || endingX) {
                              text = "Configured"}
                          else text = "Tap here to Configure"
                          text}
-def pGroupSettings() {def result = ""
-                      if (gSwitches || gFans || gHues || sVent || sMedia || sSpeaker) {
-                          result = "complete"}
-                      result}
-def pGroupComplete() {def text = "Tap here to Configure" 
-                      if (gSwitches || gFans || gHues || sVent || sMedia || sSpeaker) {
-                          text = "Configured"}
-                      else text = "Tap here to Configure"
-                      text}
+def pTimeSettings(){ def result = "" 
+                        if (startingX || endingX) {
+                            result = "complete"}
+                        result}
+def pTimeComplete() {def text = "Tap to set" 
+                         if (startingX || endingX) {
+                             text = "Time Set"}
+                         else text = "Tap to set"
+                         text}
