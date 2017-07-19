@@ -2,10 +2,11 @@
  * KeyPad CoOrdinator - Child app 
  ************************************ FOR INTERNAL USE ONLY ******************************************************
 							
- *		6/24/2017		Version:1.0 R.0.0.1		Initial Release
+ *		7/18/2017		Version:1.0 R.0.0.1a	Initial Release
+ *		6/24/2017		Version:1.0 R.0.0.1		Beta Release
  * 
  *  Copyright 2016 Jason Headley & Bobby Dobrescu
- *
+ * 
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
  *
@@ -28,7 +29,7 @@ definition(
 	iconX3Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/Keypad@2x.png")
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.1"
+	def text = "R.0.0.1a"
 }
 /**********************************************************************************************************************************************/
 preferences {
@@ -59,6 +60,9 @@ def mainProfilePage() {
             }
             section("${app.label}'s devices?") {
             	href "pDeviceControl", title: "Does ${app.label} need to control any devices?", description: pDevicesComplete() , state: pDevicesSettings()
+            }
+            section("${app.label}'s momentary devices") {
+            	href "pMomentaryControl", title: "Does ${app.label} need to control momentary switches?", description: pMomentaryComplete() , state: pMomentarySettings()
             }
             section("${app.label}'s Presence ") {
             	href "pPresence", title: "Does ${app.label} need a Virtual Presence Sensor?", description: pPresenceComplete() , state: pPresenceSettings()
@@ -381,9 +385,9 @@ def pDeviceControl(evt) {
         section ("Control Keypads") {
         	input "switchKeypad", "capability.lockCodes", title: "Use these keypads for device control"
         }
-        section ("Momentary Switches", hideWhenEmpty: true) {
-        	href "pMomentaryControl", title: "Select devices to turn on momentarily", description: pMomentaryComplete() , state: pMomentarySettings()
-            }    
+//        section ("Momentary Switches", hideWhenEmpty: true) {
+//        	href "pMomentaryControl", title: "Select devices to turn on momentarily", description: pMomentaryComplete() , state: pMomentarySettings()
+//            }    
         section ("Switches On/Off", hideWhenEmpty: true) {
             paragraph "Pressing the 'ON' button will turn these devices on."
             paragraph "Pressing the 'PARTIAL' button will turn these devices off."
