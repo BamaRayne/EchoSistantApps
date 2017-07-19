@@ -166,7 +166,7 @@ def pSHMpage() {
             if (keypadstatus) {
                 input "sLocksSHMstatus","capability.lockCodes", title: "Select Keypads to be updated by SHM", required: true, multiple: true, submitOnChange: true
             }
-            href "pShmNotifyPage", title: "SHM Profile Notification Settings"//, description: notificationPageDescription(), state: notificationPageDescription() ? "complete" : "")
+            href "pShmNotifyPage", title: "SHM Profile Notification Settings", description: SHMNotifyComplete(), state: SHMNotifySettings()
 		}
         def hhPhrases = location.getHelloHome()?.getPhrases()*.label
         hhPhrases?.sort()
@@ -262,11 +262,12 @@ def pPresence() {
         if(d) {
             input "sLocksVP","capability.lockCodes", title: "${app.label} can check-in using these keypads", required: true, multiple: true, submitOnChange: true
             input "vpCode", "number", title: "${app.label}'s check-in code (4 digits)", required: false, refreshAfterSelection: true
-            input "vpActions", "bool", title: "Perform these actions when ${app.label} arrives", required: false, submitOnChange: true
+            href "pVPActions", title: "Perform these actions when ${app.label} arrives", description: VPActionsComplete(), state: VPActionsSettings()
+            href "pVPActionsDepart", title: "Perform these actions when ${app.label} departs", description: VPActionsDComplete(), state: VPActionsDSettings()
             input "notifyVPArrive", "bool", title: "Notify me when ${app.label} Arrives", required: false, submitOnChange: true
             input "notifyVPDepart", "bool", title: "Notify me when ${app.label} Departs", required: false, submitOnChange: true
             if (notifyVPArrive || notifyVPDepart) {
-                href "pVPNotifyPage", title: "${app.label}'s Notification Settings"
+                href "pVPNotifyPage", title: "${app.label}'s Notification Settings", description: VPNotifyComplete(), state: VPNotifySettings()
             	}
             }
         }
@@ -303,6 +304,36 @@ def pGenSettings() {
         }
     }
 }    
+/************************************************************************************************************
+		Virtual Person Actions Page
+************************************************************************************************************/    
+page name: "pVPActions"
+def pVPActions() {
+    dynamicPage(name: "pVPActions", uninstall: false) {
+        def routines = location.helloHome?.getPhrases()*.label 
+        if (routines) {routines.sort()}
+        section("${app.label}'s Virtual Person Arrives Actions ") {
+            def actions = location.helloHome?.getPhrases()*.label 
+            actions.sort()
+                input "vpMode", "enum", title: "Choose Mode to change to...", options: location.modes.name.sort(), multiple: false, required: false 
+                input "vpRoutine", "enum", title: "Select an ST Routine to execute", required: false, options: actions, multiple: false, submitOnChange: true
+        }
+    }
+}
+page name: "pVPActionsDepart"
+def pVPActionsDepart() {
+    dynamicPage(name: "pVPActionsDepart", uninstall: false) {
+        def routines = location.helloHome?.getPhrases()*.label 
+        if (routines) {routines.sort()}
+        section("${app.label}'s Virtual Person Departs Actions ") {
+            def actions = location.helloHome?.getPhrases()*.label 
+            actions.sort()
+                input "vpModeD", "enum", title: "Choose Mode to change to...", options: location.modes.name.sort(), multiple: false, required: false 
+                input "vpRoutineD", "enum", title: "Select an ST Routine to execute", required: false, options: actions, multiple: false, submitOnChange: true
+        }
+    }
+}
+
 /************************************************************************************************************
 		Profile Actions Page
 ************************************************************************************************************/    
@@ -428,6 +459,7 @@ def updated() {
 }
 
 def initialize() {
+	if (sLocksVP) { subscribe(sLocksVP, "codeEntered", codeEntryHandler) }
     if (sLocksGarage) { subscribe(sLocksGarage, "codeEntered", codeEntryHandler) }
     if (tempKeypad) { subscribe(tempKeypad, "codeEntered", tempHandler) }
     if (chimeContact) { subscribe (chimeContact, "contact.open", chimeHandler) }
@@ -449,8 +481,12 @@ def codeEntryHandler(evt) {
     else if (data == '3') armMode = 'away'
     else if (data == '1') armMode = 'stay'
     else if (data == '2') armMode = 'stay'	//Currently no separate night mode for SHM, set to 'stay'
+    
     if ("${codeEntered}" == "${vpCode}") {
         pVirToggle(data, codeEntered, evt)
+        if (vpMode || vpModeD || vpRoutine || vpRoutineD) {
+        	vpAction(data, codeEntered, evt)
+        }    
     }
     if ("${codeEntered}" == "${doorCode1}" ||"${codeEntered}" == "${doorCode2}" || "${codeEntered}" == "${doorCode3}") {
         if (getDayOk()==true && getModeOk()==true && getTimeOk()==true) {
@@ -473,28 +509,32 @@ def codeEntryHandler(evt) {
     if ("${codeEntered}" == "${actionsCode}" && data == "3") {
         if (getDayOk()==true && getModeOk()==true && getTimeOk()==true) { 
         takeAction(data, codeEntered, evt)
-        }
     }
-    
+    }
 }
-
+/************************************************************************************************************
+		Virtual Person Actions Handler
+************************************************************************************************************/    
+private vpAction(data, codeEntered, evt) {
+    if(vpRoutine && data == "3") {
+        location.helloHome?.execute(vpRoutine)
+	    }
+	if (vpMode && data == "3") {
+		setLocationMode(vpMode)
+		}        
+    if(vpRoutineD && data == "0") {
+        location.helloHome?.execute(vpRoutineD)
+	    }
+	if (vpModeD && data == "0") {
+		setLocationMode(vpModeD)
+		}        
+	}
 /***********************************************************************************************************************
     TAKE ACTIONS HANDLER
 ***********************************************************************************************************************/
 private takeAction(data, codeEntered, evt) {
-    //Sending Data to 3rd parties
-//    def data = [args: eTxt ]
 	if(parent.debug) log.warn "version number = ${release()}"
 	sendLocationEvent(name: "KeypadCoordinator", value: app.label, data: data, displayed: true, isStateChange: true, descriptionText: "KeypadCoordinator ${app.label} Profile was active")
-    //    if("${myProfile}") sendEvent(eTxt)
-//    if(myESprofile) {
-//    	log.info "executing ES profile name = ${myESprofile}"
-//		sendLocationEvent(name: "EchoSistant", value: "execute", data: data, displayed: true, isStateChange: true, descriptionText: "Keypad Coordinator is asking to execute '${myESprofile}' Profile")
-//    }
-//    if(myPiston) {
-//        log.info "executing piston name = ${myPiston}"
-//        webCoRE_execute(myPiston)
-//    }
     if(pRoutine) {
     	log.info "executing smartthings routine ${pRoutine}"
         location.helloHome?.execute(settings.pRoutine)
@@ -509,20 +549,22 @@ private takeAction(data, codeEntered, evt) {
 ************************************************************************************************************/    
 private pVirToggle(data, codeEntered, evt) {
     def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone) 
-    def vp = getChildDevice("${app.label}")
     def message = ""
-    if(vp != null) {
-        if (vp.currentValue("presence").contains("not") && data == "3") {
+	def vp = getChildDevice("${app.label}")
+     if(vp) {
+     if (data == "3") {
+     //if (vp?.currentValue('presence').contains('not')) {
             vp.arrived()
             message = "${app.label} arrived via ${evt.displayName} at ${stamp}"
             if (notifyVPArrive) { sendVPtxt(message) }
-        }
-        else if (vp.currentValue("presence").contains("present") && data == "0") {
+            }
+        if (data == "0") {
+        //else if (vp?.currentValue('presence').contains('present')) {
             vp.departed()
             message = "${app.label} departed via ${evt.displayName} at ${stamp}"
             if (notifyVPDepart) { sendVPtxt(message) }
-        }
-    }
+            }
+    	}
     if (parent.debug) { log.info "${message}" }
 }
 /************************************************************************************************************
@@ -1150,11 +1192,11 @@ def pGarageComplete() {def text = "Tap here to Configure"
                         else text = "Tap here to Configure"
                         text}
 def pSHMSettings() {def result = ""
-                        if (sLocksSHM) {
+                        if (sLocksSHM || SHMPhone || SHMPush) {
                             result = "complete"}
                         result}
 def pSHMComplete() {def text = "Tap here to Configure" 
-                        if (sLocksSHM) {
+                        if (sLocksSHM || SHMPhone || SHMPush) {
                             text = "Configured"}
                         else text = "Tap here to Configure"
                         text}
@@ -1185,7 +1227,7 @@ def pGenSetComplete() {def text = "Tap here to Configure"
                             text = "Configured"}
                         else text = "Tap here to Configure"
                         text}
-def pRestrictSettings(){ def result = "" 
+def pRestrictSettings() {def result = "" 
                         if (modes || days || startingX || endingX) {
                             result = "complete"}
                         result}
@@ -1194,7 +1236,7 @@ def pRestrictComplete() {def text = "Tap here to configure"
                              text = "Configured"}
                          else text = "Tap here to Configure"
                          text}
-def pTimeSettings(){ def result = "" 
+def pTimeSettings() {def result = "" 
                         if (startingX || endingX) {
                             result = "complete"}
                         result}
@@ -1203,3 +1245,39 @@ def pTimeComplete() {def text = "Tap to set"
                              text = "Time Set"}
                          else text = "Tap to set"
                          text}
+def SHMNotifySettings() {def result = "" 
+                        if (shmPhone || shmPush) {
+                            result = "complete"}
+                        result}
+def SHMNotifyComplete() {def text = "Tap here to configuret" 
+                         if (shmPhone || shmPush) {
+                             text = "Configured"}
+                         else text = "Tap here to Configure"
+                         text}
+def VPNotifySettings() {def result = "" 
+                        if (vpPhone || vpPush) {
+                            result = "complete"}
+                        result}
+def VPNotifyComplete() {def text = "Tap here to configuret" 
+                         if (vpPhone || vpPush) {
+                             text = "Configured"}
+                         else text = "Tap here to Configure"
+                         text}
+def VPActionsSettings(){def result = ""
+                       if (vpMode || vpRoutine) {
+                           result = "complete"}
+                       result}
+def VPActionsComplete() {def text = "Configured" 
+                        if (vpMode || vpRoutine) {
+                            text = "Configured"}
+                        else text = "Tap here to Configure"
+                        text}        
+def VPActionsDSettings(){def result = ""
+                       if (vpModeD || vpRoutineD) {
+                           result = "complete"}
+                       result}
+def VPActionsDComplete() {def text = "Configured" 
+                        if (vpModeD || vpRoutineD) {
+                            text = "Configured"}
+                        else text = "Tap here to Configure"
+                        text}        
