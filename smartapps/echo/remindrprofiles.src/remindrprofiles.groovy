@@ -1272,6 +1272,7 @@ def buttonNumHandler(evt) {
     def eDisplayN = evt.displayName
         if(eDisplayN == null) eDisplayN = eDev // 5/28/2017 eName
     def eDisplayT = evt.descriptionText
+    def bTN
 	def data = [:]
     def eTxt = eDisplayN + " is " + eVal //evt.descriptionText 
     if(parent) log.info "button event received: event = $event, eVal = $eVal, eName = $eName, eDev = $eDev, eDisplayN = $eDisplayN, eDisplayT = $eDisplayT, eTxt = $eTxt"
