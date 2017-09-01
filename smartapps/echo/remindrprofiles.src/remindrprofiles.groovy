@@ -71,6 +71,54 @@ page name: "mainProfilePage"
                 "Custom Text with Weather",
                 "Triggered Report"
 				]
+		input "stVoice", "enum", title: "SmartThings Voice", required: true, defaultValue: "en-US Salli", 
+                options: [
+                "da-DK Naja",
+                "da-DK Mads",
+                "de-DE Marlene",
+                "de-DE Hans","en-US Salli",
+                "en-US Joey","en-AU Nicole",
+                "en-AU Russell",
+                "en-GB Amy",
+                "en-GB Brian","en-GB Emma",
+                "en-GB Gwyneth",
+                "en-GB Geraint",
+                "en-IN Raveena",
+                "en-US Chipmunk",
+                "en-US Eric",
+                "en-US Ivy",
+                "en-US Jennifer",
+                "en-US Justin",
+                "en-US Kendra",
+                "en-US Kimberly",
+                "es-ES Conchita",
+                "es-ES Enrique",
+                "es-US Penelope",
+                "es-US Miguel",
+                "fr-CA Chantal",
+                "fr-FR Celine",
+                "fr-FR Mathieu",
+                "is-IS Dora",
+                "is-IS Karl",
+                "it-IT Carla",
+                "it-IT Giorgio",
+                "nb-NO Liv",
+                "nl-NL Lotte",
+                "nl-NL Ruben",
+                "pl-PL Agnieszka",
+                "pl-PL Jacek",
+                "pl-PL Ewa",
+                "pl-PL Jan",
+                "pl-PL Maja",
+                "pt-BR Vitoria",
+                "pt-BR Ricardo",
+                "pt-PT Cristiano",
+                "pt-PT Ines",
+                "ro-RO Carmen",
+                "ru-RU Tatyana",
+                "ru-RU Maxim",
+                "sv-SE Astrid",
+                "tr-TR Filiz"]
 		}        
         if (actionType == "Custom Sound") {        
             section ("Play this sound...") {
@@ -1483,7 +1531,7 @@ def alertsHandler(evt) {
             else{
                 if(sonos) {
                     def sCommand = resumePlaying == true ? "playTrackAndResume" : "playTrackAndRestore"
-                    def sTxt = textToSpeech(eTxt instanceof List ? eTxt[0] : eTxt)
+                    def sTxt = textToSpeech(eTxt instanceof List ? eTxt[0] : eTxt, stVoice.substring(6))
                     def sVolume = settings.sonosVolume ?: 20
                     sonos."${sCommand}"(sTxt.uri, sTxt.duration, sVolume)
                 }
@@ -1669,7 +1717,7 @@ private takeAction(eTxt) {
     }
     if(askAlexa && listOfMQs ) sendToAskAlexa(eTxt)
     if (actionType == "Custom Text" || actionType == "Custom Text with Weather" || actionType == "Triggered Report") {
-        if (speechSynth || sonos) sTxt = textToSpeech(eTxt instanceof List ? eTxt[0] : eTxt)
+        if (speechSynth || sonos) sTxt = textToSpeech(eTxt instanceof List ? eTxt[0] : eTxt, stVoice.substring(6))
         state.sound = sTxt
     }
     else {
