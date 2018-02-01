@@ -1,0 +1,36 @@
+{
+    "namespace": "Echo",
+    "repoOwner": "BamaRayne",
+    "repoName": "EchoSistantApps",
+    "repoBranch": "master",
+    "name": "RemindR",
+    "author": "JH/BD",
+    "description": "Never miss an important event",
+    "category": "My Apps",
+    "videoUrl": "http://f.cl.ly/items/3O2L03471l2K3E3l3K1r/Zombie%20Kid%20Likes%20Turtles.mp4",
+    "photoUrl": "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR.png",
+    "bannerUrl": "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/RemindR_banner.png",
+    "keywords": ["alexa", "echo", "reminders", "events"],
+    "smartApps": {
+        "parent": {
+            "name": "RemindR",
+            "iconUrl": "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR.png",
+            "published": true,
+            "oAuth": true,
+            "version": "1.0",
+            "appSettings": {},
+            "appUrl": "smartapps/echo/remindr.src/remindr.groovy"
+        },
+        "children": [{
+            "name": "RemindRProfiles",
+            "iconUrl": "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR.png",
+            "published": true,
+            "oAuth": false,
+            "version": "R.0.0.10e",
+            "appSettings": {},
+            "appUrl": "smartapps/echo/remindrprofiles.src/remindrprofiles.groovy",
+            "optional": false
+        }]
+    },
+    "deviceHandlers": []
+}
