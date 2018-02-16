@@ -9,7 +9,7 @@
     "category": "My Apps",
     "videoUrl": "http://f.cl.ly/items/3O2L03471l2K3E3l3K1r/Zombie%20Kid%20Likes%20Turtles.mp4",
     "photoUrl": "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR.png",
-    "bannerUrl": "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/RemindR_banner.png",
+    "bannerUrl": "",
     "keywords": ["alexa", "echo", "reminders", "events"],
     "smartApps": {
         "parent": {
