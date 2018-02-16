@@ -1,5 +1,5 @@
 /* 
- * RemindR - An EchoSistant Smart App 
+ * RemindR - An EchoSistant 
  
  *	6/20/2017		Version:1.0 R.0.0.10	added webCoRE integration
  *	6/13/2017		Version:1.0 R.0.0.9		added Ask Alexa integration and fine-tuned the intro sound
