@@ -1,7 +1,7 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
  
- *	2/21/2017		Version:1.0 R.0.0.11		added SHM trigger, various bugs fixes
+ *	2/21/2017		Version:1.0 R.0.0.12		added SHM trigger, various bugs fixes
  *	6/26/2017		Version:1.0 R.0.0.10e		fixed a bug with send to Ask Alexa
  *	6/26/2017		Version:1.0 R.0.0.10b		enabled send to Ask Alexa for default messages
  *	6/22/2017		Version:1.0 R.0.0.10a		added ground work for upcoming webCoRE integration, button capability
@@ -39,7 +39,7 @@ definition(
 //MERGE INTO NOTIFICATION ADD_ON FROM HERE DOWN!!!!!!
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.10e"
+	def text = "R.0.0.12"
 }
 
 preferences {
@@ -1701,7 +1701,7 @@ def checkEvent(data) {
 private takeAction(eTxt) {
     //Sending Data to 3rd parties
     def data = [args: eTxt ]
-	sendLocationEvent(name: "remindR", value: app.label, data: data, displayed: true, isStateChange: true, descriptionText: "RemindR ${app.label} Profile was active")
+	sendLocationEvent(name: "echoSistant", value: app.label, data: data, displayed: true, isStateChange: true, descriptionText: "RemindR ${app.label} Profile was active")
 	if (parent.debug) log.debug "sendNotificationEvent sent to 3rd party as ${app.label} was active"
 	state.savedOffset = false
 	def sVolume
