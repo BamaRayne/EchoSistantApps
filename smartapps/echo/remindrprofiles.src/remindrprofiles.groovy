@@ -1,6 +1,7 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
  
+ *	2/21/2017		Version:1.0 R.0.0.11		added SHM trigger, various bugs fixes
  *	6/26/2017		Version:1.0 R.0.0.10e		fixed a bug with send to Ask Alexa
  *	6/26/2017		Version:1.0 R.0.0.10b		enabled send to Ask Alexa for default messages
  *	6/22/2017		Version:1.0 R.0.0.10a		added ground work for upcoming webCoRE integration, button capability
@@ -243,7 +244,7 @@ page name: "mainProfilePage"
                             ]
                     if (retrigger) {
                         input "howManyTimes", "number", title: "...how many times to retrigger", required: true, description: "number of reminders"
-                        input "continueOnChange", "bool", title: "Continue to deliver reminders after condition changes", required: false, defaultValue: false
+                        input "continueOnChange", "bool", title: "Cancel reminders after condition changes?", required: true, defaultValue: false //flipped to cancel on change
                     }	
             	}         
             }
@@ -262,7 +263,7 @@ page name: "mainProfilePage"
                     }
                 input "tv", "capability.notification", title: "Display on this Notification Capable Device(s)", required: false, multiple: true, submitOnChange: true
                 href "SMS", title: "Send SMS & Push Messages...", description: pSendComplete(), state: pSendSettings()
-				input "alexa", "bool", title: "Send to Echo Mailbox", default: false, submitOnChange: true
+				//input "alexa", "bool", title: "Send to Echo Mailbox", default: false, submitOnChange: true
 				input "askAlexa", "bool", title: "Send to Ask Alexa", default: false, submitOnChange: true
                 if(askAlexa) {
                 	input "listOfMQs", "enum", title: "Choose Ask Alexa Message Queue(s)", options: parent.listaskAlexaMQHandler(), multiple: true, required: false, submitOnChange: true
@@ -430,7 +431,8 @@ page name: "triggers"
             }   
             if(actionType != "Default"){
                 section ("Choose Location Event", hideWhenEmpty: true) {
-                    input "myMode", "enum", title: "Modes", options: location.modes.name.sort(), multiple: true, required: false 
+                    input "myMode", "enum", title: "Modes", options: location.modes.name.sort(), multiple: true, required: false
+                    input "mySHM", "enum", title: "SHM status", options: ["Armed (Away)","Armed (Home)","Disarmed"], multiple: true, required: false
                     if (actionType != "Ad-Hoc Report") {
                     	input "myRoutine", "enum", title: "Routines", options: actions, multiple: true, required: false            
                     	input "mySunState", "enum", title: "Sunrise or Sunset...", options: ["Sunrise", "Sunset"], multiple: false, required: false, submitOnChange: true
@@ -721,6 +723,7 @@ def initialize() {
         if (myPower) 							subscribe(myPower, "power", meterHandler)
         if (myRoutine) 							subscribe(location, "routineExecuted",alertsHandler)
         if (myMode) 							subscribe(location, "mode", alertsHandler)
+    	if (mySHM) 								subscribe(location, "alarmSystemStatus",alertsHandler)
         if (mySwitch) {
             if (mySwitchS == "on")				subscribe(mySwitch, "switch.on", alertsHandler)
             if (mySwitchS == "off")				subscribe(mySwitch, "switch.off", alertsHandler)
@@ -730,7 +733,6 @@ def initialize() {
             if (myButtonS == "held")				subscribe(myButton, "button.held", buttonNumHandler)
             if (myButtonS == "pushed")				subscribe(myButton, "button.pushed", buttonNumHandler)
         }    
-
 		if (myContact) {
             if (myContactS == "open")			subscribe(myContact, "contact.open", alertsHandler)
             if (myContactS == "closed")			subscribe(myContact, "contact.closed", alertsHandler)
@@ -761,8 +763,6 @@ def initialize() {
             if (myValveS == "closed")			subscribe(myValve, "valve.closed", alertsHandler)
             if (myValveS == "both" || myValveS == null)			subscribe(myValve, "valve", alertsHandler)
         }        
-
-        
 		if (myShades) {
             if (myShadesS == "open")			subscribe(myShades, "contact.open", alertsHandler)
             if (myShadesS == "closed")			subscribe(myShades, "contact.closed", alertsHandler)
@@ -1853,7 +1853,7 @@ def retriggerHandler() {
 	def message = "In case you misssed it " + state.message
     state.occurrences =  state.occurrences + 1
     def occurrenceTrig = state.occurrences
-    if(continueOnChange == true) {
+    if(continueOnChange == false) {
 		if(parent.debug) log.info "processing retrigger with message = $message"
 		if(recipients?.size()>0 || sms?.size()>0 || push) {
 			sendtxt(message)
@@ -2750,7 +2750,7 @@ def pSendComplete() {def text = "Tap here to configure settings"
     	else text = "Tap to Configure"
 		text}
 def triggersSettings() {def result = ""
-    if (myWeatherTriggers || myWeather || myButton || myTemperature || myShades || myGarage || myCO2 || myCO ||  myAcceleration || myHumidity || myWindow || myDoor || myValve || mySound || myWeatherAlert || myWater || mySmoke || myPresence || myMotion || myContact || mySwitch || myPower || myLocks || myTstat || myMode || myRoutine || frequency || xFutureTime ) {
+    if (myWeatherTriggers || myWeather || myButton || myTemperature || myShades || myGarage || myCO2 || myCO ||  myAcceleration || myHumidity || myWindow || myDoor || myValve || mySound || myWeatherAlert || myWater || mySmoke || myPresence || myMotion || myContact || mySwitch || myPower || myLocks || myTstat || myMode || mySHM || myRoutine || frequency || xFutureTime ) {
     	result = "complete"}
    		result}
 def triggersComplete() {def text = "Tap here to configure settings" 
