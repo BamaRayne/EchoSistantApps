@@ -1,7 +1,7 @@
 /* 
  * RemindR - An EchoSistant 
  
- *	6/20/2017		Version:1.0 R.0.0.12	added webCoRE integration
+ *	6/20/2017		Version:1.0 R.0.0.13	fixed webCoRE integration
  *	6/13/2017		Version:1.0 R.0.0.9		added Ask Alexa integration and fine-tuned the intro sound
  *	5/30/2017		Version:1.0 R.0.0.5		app touch cancelation
  *	5/24/2017		Version:1.0 R.0.0.2		ad-hoc triggering
@@ -34,7 +34,7 @@ private def textVersion() {
 	def text = "1.0"
 }
 private release() {
-    def text = "R.0.0.10b"
+    def text = "R.0.0.13"
 }
 /**********************************************************************************************************************************************/
 
@@ -90,7 +90,7 @@ def initialize() {
         //Other Apps Events
         state.esEvent = [:]
         state.activeRetrigger
-        subscribe(location, "echoSistant", echoSistantHandler)
+        //subscribe(location, "echoSistant", echoSistantHandler)
 		state.esProfiles = state.esProfiles ? state.esProfiles : []
         //CoRE and other 3rd party apps
         sendLocationEvent(name: "remindR", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")

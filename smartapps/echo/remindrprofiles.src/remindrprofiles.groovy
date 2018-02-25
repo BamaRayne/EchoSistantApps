@@ -1,7 +1,7 @@
 /* 
  * RemindR Profiles- An EchoSistant Smart App 
  
- *	2/21/2017		Version:1.0 R.0.0.12		added SHM trigger, various bugs fixes
+ *	2/21/2017		Version:1.0 R.0.0.13		fixed webCore integration, added SHM trigger, various bugs fixes
  *	6/26/2017		Version:1.0 R.0.0.10e		fixed a bug with send to Ask Alexa
  *	6/26/2017		Version:1.0 R.0.0.10b		enabled send to Ask Alexa for default messages
  *	6/22/2017		Version:1.0 R.0.0.10a		added ground work for upcoming webCoRE integration, button capability
@@ -39,7 +39,7 @@ definition(
 //MERGE INTO NOTIFICATION ADD_ON FROM HERE DOWN!!!!!!
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.12"
+	def text = "R.0.0.13"
 }
 
 preferences {
@@ -271,7 +271,7 @@ page name: "mainProfilePage"
             	}
             }
             if(actionType != "Default" && actionType != null){
-				def sProfile = actionType != "Triggered Report" ? "EchoSistant Profile" : "Ad-Hoc Report"
+				def sProfile = actionType != "Triggered Report" ? "Profile" : "Ad-Hoc Report"
         		section ("Run actions for this ${sProfile}") {
 					if(actionType != "Triggered Report") {
                     	if(!parent.listEchoSistantProfiles()) {
@@ -507,6 +507,7 @@ page name: "triggers"
                 }
                 input "myAcceleration", "capability.accelerationSensor", title: "Acceleration", required: false, multiple: true, submitOnChange: true
                     if (myAcceleration && actionType != "Ad-Hoc Report") input "myAccelerationS", "enum", title: "Notify when state changes to...", options: ["active", "inactive", "both"], required: false                   
+                        if (myAccelerationS != "both" && actionType != "Default") input "minutes", "number", title: "... and continues to be ${myAcceleration} for (minutes) - OPTIONAL", required: false, description: "minutes"
                 input "myMotion", "capability.motionSensor", title: "Motion" , required: false, multiple: true, submitOnChange: true
                     if (myMotion && actionType != "Ad-Hoc Report") {
                     	input "myMotionS", "enum", title: "Notify when state changes to...", options: ["active", "inactive", "both"], required: false
@@ -1515,7 +1516,7 @@ def alertsHandler(evt) {
     def eTxt = eDisplayN + " is " + eVal //evt.descriptionText 
     if(parent.debug) log.info "event received: event = $event, eVal = $eVal, eName = $eName, eDev = $eDev, eDisplayN = $eDisplayN, eDisplayT = $eDisplayT, eTxt = $eTxt"
     if(parent.debug) log.warn "version number = ${release()}"
-    def dCapability = eName == "switch" ? "mySwitch" : eName == "motion" ? "myMotion" : eName == "contact" ? "myContact" : eName == "valve" ? "myValve" :  eName == "lock" ? "myLocks" : eName == "garageDoorControl" ? "myGarage" : null
+    def dCapability = eName == "switch" ? "mySwitch" : eName == "motion" ? "myMotion" : eName == "contact" ? "myContact" : eName == "acceleration" ? "myAcceleration" : eName == "valve" ? "myValve" :  eName == "lock" ? "myLocks" : eName == "garageDoorControl" ? "myGarage" : null
     if(dCapability && minutes && eName != "delay"){
     	def data =[deviceName: eDev.label,attributeName: eVal, capabilityName:"${eName}", type: dCapability ]
         log.warn "scheduling delay with data: $data"
@@ -1701,8 +1702,9 @@ def checkEvent(data) {
 private takeAction(eTxt) {
     //Sending Data to 3rd parties
     def data = [args: eTxt ]
-	sendLocationEvent(name: "echoSistant", value: app.label, data: data, displayed: true, isStateChange: true, descriptionText: "RemindR ${app.label} Profile was active")
-	if (parent.debug) log.debug "sendNotificationEvent sent to 3rd party as ${app.label} was active"
+	sendLocationEvent(name:"echoSistantProfile",value:app.label,isStateChange:true,displayed:false,data:data)
+	//sendLocationEvent([name:i,value:app.label,isStateChange:true,displayed:false,data:data])
+    if (parent.debug) log.debug "sendNotificationEvent sent to 3rd party as ${app.label} was active"
 	state.savedOffset = false
 	def sVolume
     def sTxt
@@ -1710,7 +1712,7 @@ private takeAction(eTxt) {
     double prevDuration
     if(state.sound) prevDuration = state.sound.duration as Double
     if(sonosDelay && prevDuration)	prevDuration = prevDuration + sonosDelay
-    if(myProfile && actionType != "Triggered Report") sendEvent(eTxt)
+    if(myProfile && actionType != "Triggered Report") //sendEvent(eTxt) retired mailbox 2/25/18
     if(myPiston && actionType != "Triggered Report" ) {
     	log.warn "executing piston name = $myPiston"
     	webCoRE_execute(myPiston)
@@ -2696,15 +2698,6 @@ log.warn "looking for as-hoc reports"
 ******************************************************************************************************/
 def checkRelease() {
 	return state.NotificationRelease
-}
-/******************************************************************************************************
-   SEND TO ECHOSISTANT MAILBOX
-******************************************************************************************************/
-def sendEvent(message) {
-    def profile = myProfile
-    def data = [:]
-	data = [profile:profile, message:message]
-	sendLocationEvent(name: "EchoMailbox", value: "execute", data: data, displayed: true, isStateChange: true, descriptionText: "RemindR is asking to execute '${myProfile}' Profile")
 }
 /******************************************************************************************************
    SEND TO ASK ALEXA
