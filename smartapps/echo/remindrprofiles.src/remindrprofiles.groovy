@@ -17,10 +17,10 @@
 /**********************************************************************************************************************************************/
 
 definition(
-	name: "RemindRProfile",
+	name: "RemindRProfiles",
 	namespace: "Echo",
 	author: "JH/BD",
-	description: "ReminRProfile",
+	description: "ReminRProfiles",
 	category: "My Apps",
 	parent: "Echo:RemindR",
 	iconUrl: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR.png",

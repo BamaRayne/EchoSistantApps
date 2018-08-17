@@ -54,7 +54,7 @@ def mainPage() {
 		}
 		section("Reminders: (${childApps?.size()})") {
 			def i0 = "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png"
-			app(name: "profApp", appName: "RemindRProfile", namespace: "Echo", title: "Create New Reminder", multiple: true, image: i0)
+			app(name: "profApp", appName: "RemindRProfiles", namespace: "Echo", title: "Create New Reminder", multiple: true, image: i0)
 		}
 		if (state?.activeRetrigger) {
 			section("Retriggers:"){
