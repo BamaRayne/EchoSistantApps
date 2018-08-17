@@ -26,8 +26,8 @@ definition(
 	iconX3Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
 
 /**********************************************************************************************************************************************/
-private appVersion() { return "2.0.0" }
-private appDate() { return "08/16/2018" }
+private appVersion() { return "2.0.1" }
+private appDate() { return "08/17/2018" }
 private release() { return "R.0.0.13"}
 /**********************************************************************************************************************************************/
 
