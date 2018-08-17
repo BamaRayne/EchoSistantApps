@@ -55,9 +55,11 @@ def mainPage() {
 			def i0 = "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png"
 			app(name: "profApp", appName: "RemindRProfiles", namespace: "Echo", title: "Create New Reminder", multiple: true, image: i0)
 		}
-		if (state?.activeRetrigger) {
+		if (atomicState?.activeRetriggers?.size()) {
 			section("Retriggers:"){
-				paragraph title: "Active Retrigger", "${state?.activeRetrigger}", state: "complete"
+				atomicState?.activeRetriggers?.each { id, msg->
+					if(msg) { paragraph title: "Active Retrigger", "${msg}", state: "complete" }
+				}
 			}
 		}
 		section("Settings:") {
@@ -84,29 +86,38 @@ def uninstallPage() {
 		Base Process
 ************************************************************************************************************/
 def installed() {
-	if (debug) { log.debug "Installed with settings: ${settings}" }
-	state.ParentRelease = appVersion()
+	if (settings?.debug) { log.debug "Installed with settings: ${settings}" }
 	initialize()
 }
+
 def updated() {
-	if (debug) { log.debug "Updated with settings: ${settings}" }
+	if (settings?.debug) { log.debug "Updated with settings: ${settings}" }
 	unsubscribe()
 	initialize()
 }
+
 def initialize() {
 	subscribe(app, appHandler)
 	webCoRE_init()
 	subscribe(location, "askAlexaMQ", askAlexaMQHandler)
 	pushover_init()
 	//Other Apps Events
-	state.esEvent = [:]
-	state.activeRetrigger
+	atomicState.esEvent = [:]
+	atomicState.activeRetriggers = null
 	//subscribe(location, "echoSistant", echoSistantHandler)
-	state.esProfiles = state?.esProfiles ? state?.esProfiles : []
+	if(!atomicState.esProfiles) { atomicState?.esProfiles = [] }
 	//CoRE and other 3rd party apps
 	sendLocationEvent(name: "remindR", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
 	sendLocationEvent(name: "echoSistant", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
 	setChildStates()
+	stateCleanup()
+}
+
+private stateCleanup() {
+	List sItems = []
+	sItems?.each { i->
+		if(state?.containsKey(i as String)) { state?.remove(i) }
+	}
 }
 
 private setChildStates() {
@@ -121,11 +132,11 @@ def getAppImg(imgName)	{ return "https://echosistant.com/es5_content/images/$img
 		3RD Party Integrations
 ************************************************************************************************************/
 private webCoRE_handle(){return'webCoRE'}
-private webCoRE_init(pistonExecutedCbk){state.webCoRE=(state.webCoRE instanceof Map?state.webCoRE:[:])+(pistonExecutedCbk?[cbk:pistonExecutedCbk]:[:]);subscribe(location,"${webCoRE_handle()}.pistonList",webCoRE_handler);if(pistonExecutedCbk)subscribe(location,"${webCoRE_handle()}.pistonExecuted",webCoRE_handler);webCoRE_poll();}
+private webCoRE_init(pistonExecutedCbk){atomicState.webCoRE=(atomicState?.webCoRE instanceof Map?atomicState?.webCoRE:[:])+(pistonExecutedCbk?[cbk:pistonExecutedCbk]:[:]);subscribe(location,"${webCoRE_handle()}.pistonList",webCoRE_handler);if(pistonExecutedCbk)subscribe(location,"${webCoRE_handle()}.pistonExecuted",webCoRE_handler);webCoRE_poll();}
 private webCoRE_poll(){sendLocationEvent([name: webCoRE_handle(),value:'poll',isStateChange:true,displayed:false])}
-public  webCoRE_execute(pistonIdOrName,Map data=[:]){def i=(state.webCoRE?.pistons?:[]).find{(it.name==pistonIdOrName)||(it.id==pistonIdOrName)}?.id;if(i){sendLocationEvent([name:i,value:app.label,isStateChange:true,displayed:false,data:data])}}
-public  webCoRE_list(mode){def p=state.webCoRE?.pistons;if(p)p.collect{mode=='id'?it.id:(mode=='name'?it.name:[id:it.id,name:it.name])}}
-public  webCoRE_handler(evt){switch(evt.value){case 'pistonList':List p=state.webCoRE?.pistons?:[];Map d=evt.jsonData?:[:];if(d.id&&d.pistons&&(d.pistons instanceof List)){p.removeAll{it.iid==d.id};p+=d.pistons.collect{[iid:d.id]+it}.sort{it.name};state.webCoRE = [updated:now(),pistons:p];};break;case 'pistonExecuted':def cbk=state.webCoRE?.cbk;if(cbk&&evt.jsonData)"$cbk"(evt.jsonData);break;}}
+public  webCoRE_execute(pistonIdOrName,Map data=[:]){def i=(atomicState?.webCoRE?.pistons?:[]).find{(it.name==pistonIdOrName)||(it.id==pistonIdOrName)}?.id;if(i){sendLocationEvent([name:i,value:app.label,isStateChange:true,displayed:false,data:data])}}
+public  webCoRE_list(mode){def p=atomicState?.webCoRE?.pistons;if(p)p.collect{mode=='id'?it.id:(mode=='name'?it.name:[id:it.id,name:it.name])}}
+public  webCoRE_handler(evt){switch(evt.value){case 'pistonList':List p=atomicState?.webCoRE?.pistons?:[];Map d=evt.jsonData?:[:];if(d.id&&d.pistons&&(d.pistons instanceof List)){p.removeAll{it.iid==d.id};p+=d.pistons.collect{[iid:d.id]+it}.sort{it.name};atomicState?.webCoRE = [updated:now(),pistons:p];};break;case 'pistonExecuted':def cbk=atomicState?.webCoRE?.cbk;if(cbk&&evt.jsonData)"$cbk"(evt.jsonData);break;}}
 
 //PushOver-Manager Input Generation Functions
 private getPushoverSounds(){return (Map) atomicState?.pushoverManager?.sounds?:[:]}
@@ -144,14 +155,13 @@ public pushover_handler(evt){Map pmd=atomicState?.pushoverManager?:[:];switch(ev
 //Builds Map Message object to send to Pushover Manager
 private buildPushMessage(List devices,Map msgData,timeStamp=false){if(!devices||!msgData){return};Map data=[:];data?.appId=app?.getId();data.devices=devices;data?.msgData=msgData;if(timeStamp){data?.msgData?.timeStamp=new Date().getTime()};pushover_msg(devices,data);}
 
-
-def echoSistantHandler(evt) {
+public echoSistantHandler(evt) {
 	def result
 	if (!evt) { return }
 	log.warn "received event from EchoSistant with data: ${evt?.data}"
 	switch (evt?.value) {
 		case "refresh":
-			state.esProfiles = evt?.jsonData && evt?.jsonData?.profiles ? evt?.jsonData.profiles : []
+			atomicState?.esProfiles = (evt?.jsonData && evt?.jsonData?.profiles) ? evt?.jsonData?.profiles : []
 			break
 		case "runReport":
 			result = runReport(evt?.jsonData)
@@ -160,43 +170,50 @@ def echoSistantHandler(evt) {
 	return result
 }
 
-def listEchoSistantProfiles() {
+public listEchoSistantProfiles() {
 	log.warn "child requesting esProfiles"
-	return state.esProfiles = state.esProfiles ? state.esProfiles : []
+	return (atomicState?.esProfiles ?: [])
 }
 
-def getProfileList(){
+public getProfileList(){
 	return getChildApps()*.getLabel()
 }
 
-def childUninstalled() {
-	if (debug) { log.debug "Refreshing Profiles for 3rd party apps, ${getProfileList()}" }
+public childUninstalled() {
+	if (settings?.debug) { log.debug "Refreshing Profiles for 3rd party apps, ${getProfileList()}" }
 	sendLocationEvent(name: "remindR", value: "refresh", data: [profiles: getProfileList()], isStateChange: true, descriptionText: "RemindR list refresh")
 }
 
-def childInitialized(message) {
-	state.activeRetrigger = message
+Map getActiveRetriggers() {
+	return atomicState?.activeRetriggers ?: null
 }
 
-def askAlexaMQHandler(evt) {
+public updActiveRetrigger(String id, String msg) {
+	if(settings?.debug) { log.trace "updActiveRetrigger($id, $msg" }
+	Map items = getActiveRetriggers() ?: [:]
+	items[id] = msg
+	atomicState?.activeRetriggers = items
+}
+
+public askAlexaMQHandler(evt) {
    if (!evt) { return }
 	switch (evt?.value) {
 		case "refresh":
-		state?.askAlexaMQ = evt?.jsonData && evt?.jsonData?.queues ? evt?.jsonData?.queues : []
+		atomicState?.askAlexaMQ = evt?.jsonData && evt?.jsonData?.queues ? evt?.jsonData?.queues : []
 		break
 	}
 }
 
-def listaskAlexaMQHandler() {
+public listaskAlexaMQHandler() {
 	log.warn "child requesting askAlexa Message Queues"
-	return state?.askAlexaMQ
+	return atomicState?.askAlexaMQ
 }
 
-def getAdHocReports() {
+public getAdHocReports() {
 	log.warn "looking for as-hoc reports"
 	def childList = []
 	getChildApps()?.each { c ->
-		log.warn "child ${c?.getLabel()} has actionType = ${state?.actionType}"
+		log.warn "child ${c?.getLabel()} has actionType = ${atomicState?.actionType}"
 		if (c?.getStateVal("actionType") == "Ad-Hoc Report") { childList?.push(c?.getLabel() as String) }
 	}
 	log.warn "finished looking and found: $childList"
@@ -206,12 +223,12 @@ def getAdHocReports() {
 /***********************************************************************************************************************
 	RUN ADHOC REPORT
 ***********************************************************************************************************************/
-def runReport(String profile) {
+public runReport(String profile) {
 	def result = null
-	childApps.each {c ->
+	getChhildApps()?.each {c ->
 		String ch = c?.getLabel()
 		if (ch == profile) {
-			if (debug) { log.debug "Found a profile, $profile" }
+			if (settings?.debug) { log.debug "Found a profile, $profile" }
 			result = c?.runProfile(ch)
 		}
 	}
@@ -220,23 +237,42 @@ def runReport(String profile) {
 /***********************************************************************************************************************
 	CANCEL RETRIGGER
 ***********************************************************************************************************************/
-def cancelRetrigger() {
-	def result = null
-	childApps.each { child ->
-		def ch = child?.getLabel()
-		def chMessage = child?.retriveMessage()
-		if (chMessage == state?.activeRetrigger) {
-			if (debug) { log.debug "Found a profile for the retrigger = $ch" }
-			result = child?.cancelRetrigger()
-		}
+def cancelRetrigger(String id, String msg) {
+	// log.trace "cancelRetrigger($id, $msg)"
+	String result = "failed"
+	if(id && msg) { 
+		def capp = getChildApps()?.find { it?.getId() == id }
+		if(capp) {
+			String cmsg = capp?.retriveMessage()
+			if(cmsg == msg) {
+				if (settings?.debug) { log.debug "Found a profile for the retrigger = ${capp?.getLabel()}" }
+				result = capp?.cancelRetrigger()
+			}	
+		} 
 	}
 	log.warn "retrigger cancelation was $result"
 	return result
 }
 
+public cancelAllRetriggers() {
+	Map items = getActiveRetriggers() ?: [:]
+	try {
+		items?.each { id,msg->
+			if(id && msg) {
+				def c = cancelRetrigger(id, msg)
+				log.debug "cancelRetrigger() = $c"
+				if(c == "successful") {
+					items.remove(id as String)
+				}
+			}
+		}
+	} catch (ex) { log.error "cancelAllRetriggers exception: ", ex }
+	atomicState?.activeRetriggers = items
+}
+
 def appHandler(evt) {
-	cancelRetrigger()
-	log.debug "app event ${evt.name}:${evt.value} received"
+	log.info "AppTouch Button Pressed..."
+	cancelAllRetriggers()
 }
 
 public static List stVoicesList() {

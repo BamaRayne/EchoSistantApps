@@ -186,13 +186,17 @@ def mainPage(params) {
 						input "retriggerSched", "enum", title: "Schedule Post Event Reminder", multiple: false, required: false, submitOnChange: true, image: getAppImg("day_calendar2.png"),
 							options: [
 								"runEvery1Minute": "Every Minute",
+								"runEvery2Minutes": "Every 2 Minutes",
+								"runEvery3Minutes": "Every 3 Minutes",
 								"runEvery5Minutes": "Every 5 Minutes",
 								"runEvery10Minutes": "Every 10 Minutes",
 								"runEvery15Minutes": "Every 15 Minutes",
 								"runEvery30Minutes": "Every 30 Minutes",
 								"runEvery1Hour": "Every Hour",
 								"runEvery3Hours": "Every 3 Hours",
-								//"runEvery1Day": "Every Day"
+								"runEvery6Hours": "Every 6 Hours",
+								"runEvery12Hours": "Every 12 Hours",
+								"runEvery1Day": "Every Day"
 							]
 						if (settings?.retriggerSched) {
 							input "retriggerCount", "number", title: "...remind you how many times", required: true, description: "number of reminders", defaultValue: 3, submitOnChange: true, image: "blank.png"
@@ -1958,12 +1962,17 @@ def sonosFirstDelayedMessage() {
 Integer retriggerConvMap(String val) {
 	Map m = [
 		"runEvery1Minute": 60,
+		"runEvery2Minutes": 60,
+		"runEvery3Minutes": 60,
 		"runEvery5Minutes": 300,
 		"runEvery10Minutes": 600,
 		"runEvery15Minutes": 900,
 		"runEvery30Minutes": 1800,
 		"runEvery1Hour": 3600,
-		"runEvery3Hours": (3600*3)
+		"runEvery3Hours": (3600*3),
+		"runEvery6Hours": (3600*6),
+		"runEvery12Hours": (3600*12),
+		"runEvery1Day": (3600*24)
 	]
 	return m[val] ?: null
 }
@@ -1977,13 +1986,14 @@ void retriggerSchedule(eTxt) { //Called by takeAction()
 		if (curCnt == 0) {
 			if (state?.showDebug) { log.warn "saving message" }
 			state?.message = eTxt
+			state?.originalMessage = eTxt
 		}
 		if (!curCnt || (curCnt < stopCnt) && seconds) {
 			if (state?.showDebug) { log.warn "scheduling reminders" }
 			runIn(seconds, retriggerHandler)
 			state?.retriggerSchedActive = true
 			//state?.message = eTxt
-			parent.childInitialized(eTxt)
+			parent.updActiveRetrigger(app?.getId(), eTxt)
 		} else if(curCnt && (curCnt >= stopCnt)) {
 			unscheduleRetrigger()
 		}
@@ -2000,9 +2010,7 @@ def retriggerHandler() {
 		if(getDayOk() && getModeOk() && getTimeOk() && getFrequencyOk() && getConditionOk()) {
 			send = true
 		} else {
-			if(state?.retriggerSchedActive) {
-				unscheduleRetrigger()
-			}
+			if(state?.retriggerSchedActive) { unscheduleRetrigger() }
 		}
 	}
 	if(send) {
@@ -2014,27 +2022,27 @@ def retriggerHandler() {
 	}
 }
 
-void unscheduleRetrigger() {
+void unscheduleRetrigger(updParent=true) {
 	unschedule("retriggerHandler")
 	state?.retriggerSchedActive = false
 	state?.message = null
+	state?.originalMessage = null
 	state?.occurrences = 0
-	parent?.childInitialized(null)
-	if (state?.showDebug) { log.warn "canceling reminders" }
+	if(updParent) { parent?.updActiveRetrigger(app?.getId(), null) }
+	if (state?.showDebug && updParent) { log.warn "canceling reminders" }
 }
 /***********************************************************************************************************************
 	CANCEL RETRIGGER
 ***********************************************************************************************************************/
-def retriveMessage() { return state?.message }
+String retriveMessage() { 
+	if (state?.showDebug) { log.trace "retrieveMessage..." }
+	return state?.originalMessage
+}
 
 def cancelRetrigger() {
-	def result = "successful"
-	unschedule("retriggerHandler")
-	state?.message = null
-	state?.occurrences = 0
-	parent.childInitialized(null)
+	unscheduleRetrigger(false)
 	if (state?.showDebug) { log.warn "canceling retrigger as requested by other app" }
-	return result
+	return "successful"
 }
 /***********************************************************************************************************************
 	CUSTOM WEATHER VARIABLES
@@ -2878,15 +2886,15 @@ def getDeviceVarAvg(List items, String attrVal, dbl=false) {
 	List itemList = []
 	def avgVal = 0
 	if(items && attrVal) {
-		if(items?.size() > 1) {
-			itemList = items*."${attrVal}" ?: []
+		if(items?.size()) {
+			itemList = items*."current${attrVal?.capitalize()}"
 			if(itemList && itemList?.size() > 1) {
-				avgVal = (itemList?.sum().toDouble()/itemList?.size().toDouble())
-				avgVal = dbl ? avgVal?.round(1) : avgVal?.round(0)
+				avgVal = (itemList?.sum().toDouble() / itemList?.size().toDouble()).round(1)
+				avgVal = dbl ? avgVal : avgVal?.toDouble()?.round(0)
 			}
 		}
 	}
-	return dbl ? avgVal as Double : avgVal as Integer
+	return dbl==true ? avgVal?.toDouble() : avgVal?.toInteger()
 }
 
 def getDevsByAttrState(devs, String attrType, String stateVal) {
