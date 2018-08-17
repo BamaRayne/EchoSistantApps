@@ -1,13 +1,9 @@
-/* 
- * RemindR - An EchoSistant 
- 
- *	6/20/2017		Version:1.0 R.0.0.13	fixed webCoRE integration
- *	6/13/2017		Version:1.0 R.0.0.9		added Ask Alexa integration and fine-tuned the intro sound
- *	5/30/2017		Version:1.0 R.0.0.5		app touch cancelation
- *	5/24/2017		Version:1.0 R.0.0.2		ad-hoc triggering
+/*
+ * RemindR - An EchoSistant
+
+ *	7/19/2018 Version: 2.0 (R.0.0.13) Started rewrite of v2
  *
- *
- *  Copyright 2017 Jason Headley & Bobby Dobrescu
+ *  Copyright 2016, 2017, 2018 Jason Headley & Bobby Dobrescu & Anthony Santilli
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -20,83 +16,100 @@
  *
 /**********************************************************************************************************************************************/
 definition(
-    name		: "RemindR",
-    namespace	: "Echo",
-    author		: "JH/BD",
-    description	: "Never miss an important event",
-    category	: "My Apps",
-	iconUrl			: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR.png",
-	iconX2Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png",
-	iconX3Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
+	name: "RemindR",
+	namespace: "Echo",
+	author: "JH/BD",
+	description: "Never miss an important event",
+	category: "My Apps",
+	iconUrl: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR.png",
+	iconX2Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png",
+	iconX3Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
 
 /**********************************************************************************************************************************************/
-private def textVersion() {
-	def text = "1.0"
-}
-private release() {
-    def text = "R.0.0.13"
-}
+private appVersion() { return "2.0.0" }
+private appDate() { return "08/16/2018" }
+private release() { return "R.0.0.13"}
 /**********************************************************************************************************************************************/
 
 preferences {
-	page(name: "main")
-    page(name: "profiles")
-    page(name: "advanced")
+	page(name: "mainPage")
+	page(name: "uninstallPage")
 }
-		page name: "main"
-            def main() {
-                dynamicPage (name: "main", title: "Reminders and Notifications (${childApps?.size()})", install: true, uninstall: true) {
-                    if (childApps?.size()) {  
-                        section("Reminders",  uninstall: false){
-                            app(name: "profiles", appName: "RemindRProfiles", namespace: "Echo", title: "Create a new Reminder", multiple: true,  uninstall: false)
-                        }
-                    }
-                    else {
-                        section("Reminders",  uninstall: false){
-                            paragraph "NOTE: Looks like you haven't created any reminders yet.\n \nPlease make sure you have installed the Echo : RemindRProfile app before creating your first reminder!"
-                            app(name: "profiles", appName: "RemindRProfiles", namespace: "Echo", title: "Create a new Reminder", multiple: true,  uninstall: false)
-                        }
-                    }
-					if (state.activeRetrigger) {
-                    	section("Active Retrigger"){
-                        	paragraph ("${state.activeRetrigger}")
-						}
-                    }
-                    section("Settings",  uninstall: false, hideable: true, hidden: true){
-						input "debug", "bool", title: "Enable Debug Logging", default: true, submitOnChange: true
-            			input "wZipCode", "text", title: "Zip Code (If Location Not Set)", required: "false"
-                        paragraph ("Version: ${textVersion()} | Release: ${release()}")
-					}
 
-             	}
-	        }       
+def appInfoSect()	{
+	section() {
+		def str = "Released: (${appDate()})"
+		paragraph title: "${app?.name} (V${appVersion()})", str, image: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png"
+	}
+}
+
+def mainPage() {
+	dynamicPage (name: "mainPage", title: "RemindR Home Page", install: true, uninstall: false) {
+		appInfoSect()
+		def profApp = getChildApps()
+		if(!profApp) {
+			section(" ") {
+				paragraph "You haven't created any Reminders yet!!\nTap Create New Reminder to get Started"
+			}
+		}
+		section("Reminders: (${childApps?.size()})") {
+			def i0 = "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png"
+			app(name: "profApp", appName: "RemindRProfile", namespace: "Echo", title: "Create New Reminder", multiple: true, image: i0)
+		}
+		if (state?.activeRetrigger) {
+			section("Retriggers:"){
+				paragraph title: "Active Retrigger", "${state?.activeRetrigger}", state: "complete"
+			}
+		}
+		section("Settings:") {
+			input "debug", "bool", title: "Enable Debug Logging", defaultValue: false, submitOnChange: true, image: getAppImg("debug.png")
+			if(!location?.zipCode) {
+				input "wZipCode", "text", title: "Zip Code", required: false, submitOnChange: true, image: getAppImg("info.png")
+			}
+		}
+		section(" ") {
+			href "uninstallPage", title: "Remove App & All Reminders", description: "", image: getAppImg("uninstall.png")
+		}
+	}
+}
+
+def uninstallPage() {
+	dynamicPage(name: "uninstallPage", title: "Uninstall", install: false, uninstall: true) {
+		section() {
+			paragraph title: "NOTICE", "This will completely uninstall this App and All Reminders.", required: true, state: null
+		}
+		remove("Remove this App and All (${getChildApps()?.size()}) Reminders!", "WARNING!!!", "Last Chance to Stop!\nThis action is not reversible\n\nThis App and All Reminders will be removed...")
+	}
+}
 /************************************************************************************************************
 		Base Process
 ************************************************************************************************************/
 def installed() {
-	if (debug) log.debug "Installed with settings: ${settings}"
-    state.ParentRelease = release()
-    initialize()
+	if (debug) { log.debug "Installed with settings: ${settings}" }
+	state.ParentRelease = release()
+	initialize()
 }
-def updated() { 
-	if (debug) log.debug "Updated with settings: ${settings}"
-    unsubscribe()
-    initialize()
+def updated() {
+	if (debug) { log.debug "Updated with settings: ${settings}" }
+	unsubscribe()
+	initialize()
 }
 def initialize() {
-		subscribe(app, appHandler)
-        webCoRE_init()
-        subscribe(location, "askAlexaMQ", askAlexaMQHandler)
-        //Other Apps Events
-        state.esEvent = [:]
-        state.activeRetrigger
-        //subscribe(location, "echoSistant", echoSistantHandler)
-		state.esProfiles = state.esProfiles ? state.esProfiles : []
-        //CoRE and other 3rd party apps
-        sendLocationEvent(name: "remindR", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
-		sendLocationEvent(name: "echoSistant", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
-        //def children = getChildApps()
+	subscribe(app, appHandler)
+	webCoRE_init()
+	subscribe(location, "askAlexaMQ", askAlexaMQHandler)
+	pushover_init()
+	//Other Apps Events
+	state.esEvent = [:]
+	state.activeRetrigger
+	//subscribe(location, "echoSistant", echoSistantHandler)
+	state.esProfiles = state?.esProfiles ? state?.esProfiles : []
+	//CoRE and other 3rd party apps
+	sendLocationEvent(name: "remindR", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
+	sendLocationEvent(name: "echoSistant", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
 }
+
+def getAppImg(imgName)	{ return "https://echosistant.com/es5_content/images/$imgName" }
 /************************************************************************************************************
 		3RD Party Integrations
 ************************************************************************************************************/
@@ -107,80 +120,188 @@ public  webCoRE_execute(pistonIdOrName,Map data=[:]){def i=(state.webCoRE?.pisto
 public  webCoRE_list(mode){def p=state.webCoRE?.pistons;if(p)p.collect{mode=='id'?it.id:(mode=='name'?it.name:[id:it.id,name:it.name])}}
 public  webCoRE_handler(evt){switch(evt.value){case 'pistonList':List p=state.webCoRE?.pistons?:[];Map d=evt.jsonData?:[:];if(d.id&&d.pistons&&(d.pistons instanceof List)){p.removeAll{it.iid==d.id};p+=d.pistons.collect{[iid:d.id]+it}.sort{it.name};state.webCoRE = [updated:now(),pistons:p];};break;case 'pistonExecuted':def cbk=state.webCoRE?.cbk;if(cbk&&evt.jsonData)"$cbk"(evt.jsonData);break;}}
 
+//PushOver-Manager Input Generation Functions
+private getPushoverSounds(){return (Map) atomicState?.pushoverManager?.sounds?:[:]}
+private getPushoverDevices(){List opts=[];Map pmd=atomicState?.pushoverManager?:[:];pmd?.apps?.each{k,v->if(v&&v?.devices&&v?.appId){Map dm=[:];v?.devices?.sort{}?.each{i->dm["${i}_${v?.appId}"]=i};addInputGrp(opts,v?.appName,dm);}};return opts;}
+private inputOptGrp(List groups,String title){def group=[values:[],order:groups?.size()];group?.title=title?:"";groups<<group;return groups;}
+private addInputValues(List groups,String key,String value){def lg=groups[-1];lg["values"]<<[key:key,value:value,order:lg["values"]?.size()];return groups;}
+private listToMap(List original){original.inject([:]){r,v->r[v]=v;return r;}}
+private addInputGrp(List groups,String title,values){if(values instanceof List){values=listToMap(values)};values.inject(inputOptGrp(groups,title)){r,k,v->return addInputValues(r,k,v)};return groups;}
+private addInputGrp(values){addInputGrp([],null,values)}
+//PushOver-Manager Location Event Subscription Events, Polling, and Handlers
+public pushover_init(){subscribe(location,"pushoverManager",pushover_handler);pushover_poll()}
+public pushover_cleanup(){state?.remove("pushoverManager");unsubscribe("pushoverManager");}
+public pushover_poll(){sendLocationEvent(name:"pushoverManagerCmd",value:"poll",data:[empty:true],isStateChange:true,descriptionText:"Sending Poll Event to Pushover-Manager")}
+public pushover_msg(List devs,Map data){if(devs&&data){sendLocationEvent(name:"pushoverManagerMsg",value:"sendMsg",data:data,isStateChange:true,descriptionText:"Sending Message to Pushover Devices: ${devs}");}}
+public pushover_handler(evt){Map pmd=atomicState?.pushoverManager?:[:];switch(evt?.value){case"refresh":def ed = evt?.jsonData;String id = ed?.appId;Map pA = pmd?.apps?.size() ? pmd?.apps : [:];if(id){pA[id]=pA?."${id}"instanceof Map?pA[id]:[:];pA[id]?.devices=ed?.devices?:[];pA[id]?.appName=ed?.appName;pA[id]?.appId=id;pmd?.apps = pA;};pmd?.sounds=ed?.sounds;break;case "reset":pmd=[:];break;};atomicState?.pushoverManager=pmd;}
+//Builds Map Message object to send to Pushover Manager
+private buildPushMessage(List devices,Map msgData,timeStamp=false){if(!devices||!msgData){return};Map data=[:];data?.appId=app?.getId();data.devices=devices;data?.msgData=msgData;if(timeStamp){data?.msgData?.timeStamp=new Date().getTime()};pushover_msg(devices,data);}
+
+
 def echoSistantHandler(evt) {
 	def result
-	if (!evt) return
-    log.warn "received event from EchoSistant with data: $evt.data"
-	switch (evt.value) {
+	if (!evt) { return }
+	log.warn "received event from EchoSistant with data: ${evt?.data}"
+	switch (evt?.value) {
 		case "refresh":
-		state.esProfiles = evt.jsonData && evt.jsonData?.profiles ? evt.jsonData.profiles : []
+			state.esProfiles = evt?.jsonData && evt?.jsonData?.profiles ? evt?.jsonData.profiles : []
 			break
 		case "runReport":
-			def profile = evt.jsonData
-            	result = runReport(profile)
-            break	
-    }
-    return result
+			result = runReport(evt?.jsonData)
+			break
+	}
+	return result
 }
+
 def listEchoSistantProfiles() {
-log.warn "child requesting esProfiles"
+	log.warn "child requesting esProfiles"
 	return state.esProfiles = state.esProfiles ? state.esProfiles : []
 }
 
 def getProfileList(){
-		return getChildApps()*.label
+	return getChildApps()*.getLabel()
 }
+
 def childUninstalled() {
-	if (debug) log.debug "Refreshing Profiles for 3rd party apps, ${getChildApps()*.label}"
-    sendLocationEvent(name: "remindR", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
-} 
+	if (debug) { log.debug "Refreshing Profiles for 3rd party apps, ${getProfileList()}" }
+	sendLocationEvent(name: "remindR", value: "refresh", data: [profiles: getProfileList()], isStateChange: true, descriptionText: "RemindR list refresh")
+}
+
 def childInitialized(message) {
 	state.activeRetrigger = message
 }
 
 def askAlexaMQHandler(evt) {
-   if (!evt) return
-      switch (evt.value) {
-         case "refresh":
-            state.askAlexaMQ = evt.jsonData && evt.jsonData?.queues ? evt.jsonData.queues : []
-            break
-      }
+   if (!evt) { return }
+	switch (evt?.value) {
+		case "refresh":
+		state?.askAlexaMQ = evt?.jsonData && evt?.jsonData?.queues ? evt?.jsonData?.queues : []
+		break
+	}
 }
+
 def listaskAlexaMQHandler() {
-log.warn "child requesting askAlexa Message Queues"
-	return state.askAlexaMQ
+	log.warn "child requesting askAlexa Message Queues"
+	return state?.askAlexaMQ
 }
+
+def getAdHocReports() {
+	log.warn "looking for as-hoc reports"
+	def childList = []
+	getChildApps()?.each { c ->
+		log.warn "child ${c?.getLabel()} has actionType = ${state?.actionType}"
+		if (c?.getStateVal("actionType") == "Ad-Hoc Report") { childList?.push(c?.getLabel() as String) }
+	}
+	log.warn "finished looking and found: $childList"
+	return childList
+}
+
 /***********************************************************************************************************************
-    RUN ADHOC REPORT
+	RUN ADHOC REPORT
 ***********************************************************************************************************************/
-def runReport(profile) {
-def result
-           		childApps.each {child ->
-                        def ch = child.label
-                		if (ch == profile) { 
-                    		if (debug) log.debug "Found a profile, $profile"
-                            result = child.runProfile(ch)
-						}
-            	}
-                return result
+def runReport(String profile) {
+	def result = null
+	childApps.each {c ->
+		String ch = c?.getLabel()
+		if (ch == profile) {
+			if (debug) { log.debug "Found a profile, $profile" }
+			result = c?.runProfile(ch)
+		}
+	}
+	return result
 }
 /***********************************************************************************************************************
-    CANCEL RETRIGGER
+	CANCEL RETRIGGER
 ***********************************************************************************************************************/
 def cancelRetrigger() {
-def result
-           		childApps.each {child ->
-                        def ch = child.label
-                		def chMessage = child.retriveMessage()
-                        if (chMessage == state.activeRetrigger) { 
-                    		if (debug) log.debug "Found a profile for the retrigger = $ch"
-                            result = child.cancelRetrigger()
-						}
-            	}
-                //return result
-                log.warn "retrigger cancelation was $result"
+	def result = null
+	childApps.each { child ->
+		def ch = child?.getLabel()
+		def chMessage = child?.retriveMessage()
+		if (chMessage == state?.activeRetrigger) {
+			if (debug) { log.debug "Found a profile for the retrigger = $ch" }
+			result = child?.cancelRetrigger()
+		}
+	}
+	log.warn "retrigger cancelation was $result"
+	return result
 }
+
 def appHandler(evt) {
-    cancelRetrigger()
-    log.debug "app event ${evt.name}:${evt.value} received"
+	cancelRetrigger()
+	log.debug "app event ${evt.name}:${evt.value} received"
+}
+
+public static List stVoicesList() {
+	return [
+		"da-DK Naja",
+		"da-DK Mads",
+		"de-DE Marlene",
+		"de-DE Hans","en-US Salli",
+		"en-US Joey","en-AU Nicole",
+		"en-AU Russell",
+		"en-GB Amy",
+		"en-GB Brian","en-GB Emma",
+		"en-GB Gwyneth",
+		"en-GB Geraint",
+		"en-IN Raveena",
+		"en-US Chipmunk",
+		"en-US Eric",
+		"en-US Ivy",
+		"en-US Jennifer",
+		"en-US Justin",
+		"en-US Kendra",
+		"en-US Kimberly",
+		"es-ES Conchita",
+		"es-ES Enrique",
+		"es-US Penelope",
+		"es-US Miguel",
+		"fr-CA Chantal",
+		"fr-FR Celine",
+		"fr-FR Mathieu",
+		"is-IS Dora",
+		"is-IS Karl",
+		"it-IT Carla",
+		"it-IT Giorgio",
+		"nb-NO Liv",
+		"nl-NL Lotte",
+		"nl-NL Ruben",
+		"pl-PL Agnieszka",
+		"pl-PL Jacek",
+		"pl-PL Ewa",
+		"pl-PL Jan",
+		"pl-PL Maja",
+		"pt-BR Vitoria",
+		"pt-BR Ricardo",
+		"pt-PT Cristiano",
+		"pt-PT Ines",
+		"ro-RO Carmen",
+		"ru-RU Tatyana",
+		"ru-RU Maxim",
+		"sv-SE Astrid",
+		"tr-TR Filiz"
+	]
+}
+
+public static List custSoundList() {
+	return [
+		"Custom URI",
+		"Alexa: Bada Bing Bada Boom",
+		"Alexa: Beep Beep",
+		"Alexa: Boing",
+		"Alexa: Open Sesame",
+		"Bell 1",
+		"Bell 2",
+		"Dogs Barking",
+		"Fire Alarm",
+		"The mail has arrived",
+		"A door opened",
+		"There is motion",
+		"Smartthings detected a flood",
+		"Smartthings detected smoke",
+		"Soft Chime",
+		"Someone is arriving",
+		"Piano",
+		"Lightsaber"
+	]
 }
