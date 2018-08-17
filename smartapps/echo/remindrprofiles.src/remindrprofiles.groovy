@@ -52,9 +52,9 @@ def appInfoSect(showType=false)	{
 	section() {
 		def str = "Released: (${appDate()})"
 		paragraph title: "${app?.name} (V${appVersion()})", str, image: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png"
-		if(showType) { 
+		if(showType) {
 			def i0 = actionTypesMap()[state?.actionType]?.image
-			paragraph title: "Report Configuration", "${state?.actionType?.toString()?.capitalize()}", image: getAppImg(i0) 
+			paragraph title: "Report Configuration", "${state?.actionType?.toString()?.capitalize()}", image: getAppImg(i0)
 		}
 	}
 }
@@ -307,7 +307,7 @@ def variablePage() {
 		}
 		if (isAdHoc()) {
 			section("AD-Hoc Variables:") {
-				
+
 				getDeviceVarMap()?.each { k, v->
 					paragraph title: "&${k}", (settings?."${v}" ? getVariable(k as String)?.toString() : "No ${k} Devices Selected!"), state: (settings?."${v}" ? "complete" : "")
 				}
@@ -920,76 +920,76 @@ private subscriber() {
 		if (settings?.myMode) 	{ subscribe(location, "mode", alertsHandler) }
 		if (settings?.mySHM) 	{ subscribe(location, "alarmSystemStatus", alertsHandler) }
 		if (settings?.mySwitch) {
-			if (settings?.mySwitchS == "on") { 
-				subscribe(settings?.mySwitch, "switch.on", alertsHandler) 
-			} else if (settings?.mySwitchS == "off") { 
-				subscribe(settings?.mySwitch, "switch.off", alertsHandler) 
+			if (settings?.mySwitchS == "on") {
+				subscribe(settings?.mySwitch, "switch.on", alertsHandler)
+			} else if (settings?.mySwitchS == "off") {
+				subscribe(settings?.mySwitch, "switch.off", alertsHandler)
 			} else { subscribe(settings?.mySwitch, "switch", alertsHandler) }
 		}
 		if (settings?.myButton) {
-			if (settings?.myButtonS == "held") { 
-				subscribe(settings?.myButton, "button.held", buttonNumHandler) 
+			if (settings?.myButtonS == "held") {
+				subscribe(settings?.myButton, "button.held", buttonNumHandler)
 			} else if (settings?.myButtonS == "pushed") { subscribe(settings?.myButton, "button.pushed", buttonNumHandler) }
 		}
 		if (settings?.myContact) {
-			if (settings?.myContactS == "open") { 
-				subscribe(settings?.myContact, "contact.open", alertsHandler) 
-			} else if (settings?.myContactS == "closed")	{ 
-				subscribe(settings?.myContact, "contact.closed", alertsHandler) 
+			if (settings?.myContactS == "open") {
+				subscribe(settings?.myContact, "contact.open", alertsHandler)
+			} else if (settings?.myContactS == "closed")	{
+				subscribe(settings?.myContact, "contact.closed", alertsHandler)
 			} else { subscribe(settings?.myContact, "contact", alertsHandler) }
 		}
 		if (settings?.myGarage) {
-			if (settings?.myGarageS == "open") { 
-				subscribe(settings?.myGarage, "contact.open", alertsHandler) 
-			} else if (settings?.myGarageS == "closed") { 
-				subscribe(settings?.myGarage, "contact.closed", alertsHandler) 
+			if (settings?.myGarageS == "open") {
+				subscribe(settings?.myGarage, "contact.open", alertsHandler)
+			} else if (settings?.myGarageS == "closed") {
+				subscribe(settings?.myGarage, "contact.closed", alertsHandler)
 			} else { subscribe(settings?.myGarage, "contact", alertsHandler) }
 		}
 		if (settings?.myRelayContact) {
-			if (settings?.myRelayContactS == "open") { 
-				subscribe(settings?.myRelayContact, "contact.open", alertsHandler) 
-			} else if (settings?.myRelayContactS == "closed") { 
-				subscribe(settings?.myRelayContact, "contact.closed", alertsHandler) 
+			if (settings?.myRelayContactS == "open") {
+				subscribe(settings?.myRelayContact, "contact.open", alertsHandler)
+			} else if (settings?.myRelayContactS == "closed") {
+				subscribe(settings?.myRelayContact, "contact.closed", alertsHandler)
 			} else { subscribe(settings?.myRelayContact, "contact", alertsHandler) }
 		}
 		if (settings?.myDoor) {
-			if (settings?.myDoorS == "open") { 
-				subscribe(settings?.myDoor, "contact.open", alertsHandler) 
+			if (settings?.myDoorS == "open") {
+				subscribe(settings?.myDoor, "contact.open", alertsHandler)
 			} else if (settings?.myDoorS == "closed") {
-				subscribe(settings?.myDoor, "contact.closed", alertsHandler) 
+				subscribe(settings?.myDoor, "contact.closed", alertsHandler)
 			} else { subscribe(settings?.myDoor, "contact", alertsHandler) }
 		}
 		if (settings?.myWindow) {
-			if (settings?.myWindowS == "open") { 
-				subscribe(settings?.myWindow, "contact.open", alertsHandler) 
+			if (settings?.myWindowS == "open") {
+				subscribe(settings?.myWindow, "contact.open", alertsHandler)
 			} else if (settings?.myWindowS == "closed") {
-				subscribe(settings?.myWindow, "contact.closed", alertsHandler) 
+				subscribe(settings?.myWindow, "contact.closed", alertsHandler)
 			} else { subscribe(settings?.myWindow, "contact", alertsHandler) }
 		}
 		if (settings?.myValve) {
-			if (settings?.myValveS == "open") { 
+			if (settings?.myValveS == "open") {
 				subscribe(settings?.myValve, "valve.open", alertsHandler)
-			} else if (settings?.myValveS == "closed") { 
+			} else if (settings?.myValveS == "closed") {
 				subscribe(settings?.myValve, "valve.closed", alertsHandler)
 			} else { subscribe(settings?.myValve, "valve", alertsHandler) }
 		}
 		if (settings?.myShades) {
-			if (settings?.myShadesS == "open") { 
-				subscribe(settings?.myShades, "contact.open", alertsHandler) 
-			} else if (settings?.myShadesS == "closed") { 
-				subscribe(settings?.myShades, "contact.closed", alertsHandler) 
+			if (settings?.myShadesS == "open") {
+				subscribe(settings?.myShades, "contact.open", alertsHandler)
+			} else if (settings?.myShadesS == "closed") {
+				subscribe(settings?.myShades, "contact.closed", alertsHandler)
 			} else { subscribe(settings?.myShades, "contact", alertsHandler) }
 		}
 		if (settings?.myMotion) {
-			if (settings?.myMotionS == "active") { 
-				subscribe(settings?.myMotion, "motion.active", alertsHandler) 
-			} else if (settings?.myMotionS == "inactive") { 
-				subscribe(settings?.myMotion, "motion.inactive", alertsHandler) 
+			if (settings?.myMotionS == "active") {
+				subscribe(settings?.myMotion, "motion.active", alertsHandler)
+			} else if (settings?.myMotionS == "inactive") {
+				subscribe(settings?.myMotion, "motion.inactive", alertsHandler)
 			} else { subscribe(settings?.myMotion, "motion", alertsHandler) }
 		}
 		if (settings?.myLocks) {
-			if (settings?.myLocksS == "locked") { 
-				subscribe(settings?.myLocks, "lock.locked", alertsHandler) 
+			if (settings?.myLocksS == "locked") {
+				subscribe(settings?.myLocks, "lock.locked", alertsHandler)
 			} else if (settings?.myLocksS == "unlocked") {
 				if (settings?.myLocksSCode) {
 					subscribe(settings?.myLocks, "lock", unlockedWithCodeHandler)
@@ -997,69 +997,69 @@ private subscriber() {
 			} else { subscribe(settings?.myLocks, "lock", alertsHandler) }
 		}
 		if (settings?.myPresence) {
-			if (settings?.myPresenceS == "present") { 
+			if (settings?.myPresenceS == "present") {
 				subscribe(settings?.myPresence, "presence.present", alertsHandler) }
-			else if (settings?.myPresenceS == "not present"){ 
-				subscribe(settings?.myPresence, "presence.not present", alertsHandler) 
+			else if (settings?.myPresenceS == "not present"){
+				subscribe(settings?.myPresence, "presence.not present", alertsHandler)
 			} else { subscribe(settings?.myPresence, "presence", alertsHandler)	}
 		}
 		if (settings?.myTstat) {
-			if (settings?.myTstatS == "cooling") { 			
-				subscribe(settings?.myTstat, "coolingSetpoint", alertsHandler) 
-			} else if (settings?.myTstatS == "heating") { 	
-				subscribe(settings?.myTstat, "heatingSetpoint", alertsHandler) 
+			if (settings?.myTstatS == "cooling") {
+				subscribe(settings?.myTstat, "coolingSetpoint", alertsHandler)
+			} else if (settings?.myTstatS == "heating") {
+				subscribe(settings?.myTstat, "heatingSetpoint", alertsHandler)
 			} else {
 				subscribe(settings?.myTstat, "coolingSetpoint", alertsHandler)
 				subscribe(settings?.myTstat, "heatingSetpoint", alertsHandler)
 			}
-			if (settings?.myTstatM == "auto") { 
-				subscribe(settings?.myTstat, "thermostatMode.auto", alertsHandler) 
-			} else if (settings?.myTstatM == "cool") { 
-				subscribe(settings?.myTstat, "thermostatMode.cool", alertsHandler) 
-			} else if (settings?.myTstatM == "heat") { 
-				subscribe(settings?.myTstat, "thermostatMode.heat", alertsHandler) 
-			} else if (settings?.myTstatM == "off") { 
-				subscribe(settings?.myTstat, "thermostatMode.off", alertsHandler) 
+			if (settings?.myTstatM == "auto") {
+				subscribe(settings?.myTstat, "thermostatMode.auto", alertsHandler)
+			} else if (settings?.myTstatM == "cool") {
+				subscribe(settings?.myTstat, "thermostatMode.cool", alertsHandler)
+			} else if (settings?.myTstatM == "heat") {
+				subscribe(settings?.myTstat, "thermostatMode.heat", alertsHandler)
+			} else if (settings?.myTstatM == "off") {
+				subscribe(settings?.myTstat, "thermostatMode.off", alertsHandler)
 			} else { subscribe(settings?.myTstat, "thermostatMode", alertsHandler) }
 
 			if (settings?.myTstatOS == "cooling") {
-				subscribe(settings?.myTstat, "thermostatOperatingState.cooling", alertsHandler) 
-			} else if (settings?.myTstatOS == "heating") { 
-				subscribe(settings?.myTstat, "thermostatOperatingState.heating", alertsHandler) 
+				subscribe(settings?.myTstat, "thermostatOperatingState.cooling", alertsHandler)
+			} else if (settings?.myTstatOS == "heating") {
+				subscribe(settings?.myTstat, "thermostatOperatingState.heating", alertsHandler)
 			} else if (settings?.myTstatOS == "idle") {
-				subscribe(settings?.myTstat, "thermostatOperatingState.idle", alertsHandler) 
+				subscribe(settings?.myTstat, "thermostatOperatingState.idle", alertsHandler)
 			} else { subscribe(settings?.myTstat, "thermostatOperatingState", alertsHandler) }
 		}
 		if (settings?.mySmoke) {
 			if (settings?.mySmokeS == "detected") {
-				subscribe(settings?.mySmoke, "smoke.detected", alertsHandler) 
-			} else if (settings?.mySmokeS == "clear") { 
-				subscribe(settings?.mySmoke, "smoke.clear", alertsHandler) 
+				subscribe(settings?.mySmoke, "smoke.detected", alertsHandler)
+			} else if (settings?.mySmokeS == "clear") {
+				subscribe(settings?.mySmoke, "smoke.clear", alertsHandler)
 			} else { subscribe(settings?.mySmoke, "smoke", alertsHandler) }
 		}
 		if (settings?.myWater) {
-			if (settings?.myWaterS == "wet") { 
-				subscribe(settings?.myWater, "water.wet", alertsHandler) 
-			} else if (settings?.myWaterS == "dry") { 
-				subscribe(settings?.myWater, "water.dry", alertsHandler) 
+			if (settings?.myWaterS == "wet") {
+				subscribe(settings?.myWater, "water.wet", alertsHandler)
+			} else if (settings?.myWaterS == "dry") {
+				subscribe(settings?.myWater, "water.dry", alertsHandler)
 			} else { subscribe(settings?.myWater, "water", alertsHandler) }
 		}
 		if (settings?.myTemperature) { subscribe(settings?.myTemperature, "temperature", tempHandler) }
 		if (settings?.myCO2) { subscribe(settings?.myCO2, "carbonDioxide", carbonDioxideHandler) }
 		if (settings?.myCO) {
-			if (settings?.myCOS== "detected") { 
-				subscribe(settings?.myCO, "carbonMonoxide.detected", alertsHandler) 
-			} else if (settings?.myCOS== "tested") { 
-				subscribe(settings?.myCO, "carbonMonoxide.tested", alertsHandler) 
+			if (settings?.myCOS== "detected") {
+				subscribe(settings?.myCO, "carbonMonoxide.detected", alertsHandler)
+			} else if (settings?.myCOS== "tested") {
+				subscribe(settings?.myCO, "carbonMonoxide.tested", alertsHandler)
 			} else { subscribe(settings?.myCO, "carbonMonoxide", alertsHandler) }
 		}
 		if (settings?.myHumidity) { subscribe(settings?.myHumidity, "humidity", humidityHandler) }
 		if (settings?.mySound) { subscribe(settings?.mySound, "soundPressureLevel", soundHandler) }
 		if (settings?.myAcceleration) {
-			if (settings?.myAccelerationS == "active") { 
-				subscribe(settings?.myAcceleration, "acceleration.active", alertsHandler) 
-			} else if (settings?.myAccelerationS == "inactive") { 
-				subscribe(settings?.myAcceleration, "acceleration.inactive", alertsHandler) 
+			if (settings?.myAccelerationS == "active") {
+				subscribe(settings?.myAcceleration, "acceleration.active", alertsHandler)
+			} else if (settings?.myAccelerationS == "inactive") {
+				subscribe(settings?.myAcceleration, "acceleration.inactive", alertsHandler)
 			} else { subscribe(settings?.myAcceleration, "acceleration", alertsHandler) }
 		}
 	}
@@ -1166,49 +1166,49 @@ String getVariable(var) {
 
 		case "open":
 			if (settings?.myContact) {
-				devList = getDevicesByAttrState(settings?.myContact, "contact", "open")
+				devList = getDevsByAttrState(settings?.myContact, "contact", "open")
 				result = varResultBuilder(devList, " sensor", " sensors", "no sensors")
 			}
 			break
-		
+
 		case "doors":
 			if (settings?.myDoor) {
-				devList = getDevicesByAttrState(settings?.myDoor, "contact", "open")
+				devList = getDevsByAttrState(settings?.myDoor, "contact", "open")
 				result = varResultBuilder(devList, " door", " doors", "no doors")
 			}
 			break
 
 		case "windows":
 			if (settings?.myWindow) {
-				devList = getDevicesByAttrState(settings?.myWindow, "contact", "open")
+				devList = getDevsByAttrState(settings?.myWindow, "contact", "open")
 				result = varResultBuilder(devList, " window", " windows", "no windows")
 			}
 			break
 
 		case "valves":
 			if (settings?.myValve) {
-				devList = getDevicesByAttrState(settings?.myValve, "valve", "open")
+				devList = getDevsByAttrState(settings?.myValve, "valve", "open")
 				result = varResultBuilder(devList, " valve", " valves", "no valves")
 			}
 			break
 
 		case "unlocked":
 			if (settings?.myLocks) {
-				devList = getDevicesByAttrState(settings?.myLocks, "lock", "unlocked")
+				devList = getDevsByAttrState(settings?.myLocks, "lock", "unlocked")
 				result = varResultBuilder(devList, " door", " doors", "no doors")
 			}
 			break
 
 		case "present":
 			if (settings?.myPresence) {
-				devList = getDevicesByAttrState(settings?.myPresence, "presence", "present")
+				devList = getDevsByAttrState(settings?.myPresence, "presence", "present")
 				result = varResultBuilder(devList, " person", " people", "no people")
 			}
 			break
-	
+
 		case "lights":
 			if (settings?.mySwitch) {
-				devList = getDevicesByAttrState(settings?.mySwitch, "switch", "on")
+				devList = getDevsByAttrState(settings?.mySwitch, "switch", "on")
 				result = varResultBuilder(devList, " switch", " switches", "no switches")
 			}
 			break
@@ -1270,7 +1270,7 @@ String getVariable(var) {
 
 		case "motion":
 			if (settings?.myMotion) {
-				devList = getDevicesByAttrState(settings?.myMotion, "motion", "active")
+				devList = getDevsByAttrState(settings?.myMotion, "motion", "active")
 				result = varResultBuilder(devList, " motion sensor", " motion sensors", "no motion sensors")
 			}
 			break
@@ -1279,11 +1279,11 @@ String getVariable(var) {
 			Integer devCnt = 0
 			if (settings?.myGarage) {
 				devCnt = devCnt + settings?.myGarage?.size()
-				devList = devList + getDevicesByAttrState(settings?.myGarage, "contact", "open")
+				devList = devList + getDevsByAttrState(settings?.myGarage, "contact", "open")
 			}
 			if (settings?.myRelayContact) {
 				devCnt = devCnt + settings?.myRelayContact?.size()
-				devList = devList + getDevicesByAttrState(settings?.myRelayContact, "contact", "open")
+				devList = devList + getDevsByAttrState(settings?.myRelayContact, "contact", "open")
 			}
 			def closedDoors = devCnt - devList?.size()
 			result = varResultBuilder(devList, " garage door is open", " of the Garage doors are open and ${closedDoor} closed", "no garage doors are open")
@@ -1291,7 +1291,7 @@ String getVariable(var) {
 
 		case "shades":
 			if (settings?.myShades) {
-				devList = getDevicesByAttrState(settings?.myShades, "contact", "open")
+				devList = getDevsByAttrState(settings?.myShades, "contact", "open")
 				def closedShades = settings?.myShades?.size() - devList?.size()
 				result = varResultBuilder(devList, " of the shades is open and ${closedShades} closed", " of the shades are open and ${closedShades} closed", "no shades are open")
 			}
@@ -1299,7 +1299,7 @@ String getVariable(var) {
 
 		case "smoke":
 			if (settings?.mySmoke) {
-				devList = getDevicesByAttrState(settings?.mySmoke, "smoke", "detected")
+				devList = getDevsByAttrState(settings?.mySmoke, "smoke", "detected")
 				result = varResultBuilder(devList, " sensor detected smoke", " sensors detected smoke", "no sensors detected smoke")
 			}
 			break
@@ -1627,7 +1627,7 @@ def alertsHandler(evt) {
 	def evtDescText = evt.descriptionText
 	if (evtDispName == null) { evtDispName = evtDevice }
 	log.warn "occurrences number = ${state.occurrences}"
-    // state?.occurrences = 0
+	// state?.occurrences = 0
 	String eTxt = "$evtDispName is $evtValue"
 	if (parent?.debug) { log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName, evtDescText = $evtDescText, eTxt = $eTxt" }
 	if (parent?.debug) { log.warn "version number = ${appVersion()}" }
@@ -1654,7 +1654,10 @@ def alertsHandler(evt) {
 			if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) { sendtxt(eTxt) }
 			if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
 			if (settings?.askAlexa && settings?.askAlexaMQs) { sendToAskAlexa(eTxt) }
-		} else {
+		} else if (ok2Proceed()) { // << Shouldn't this wrapp the whole thing... Is there anything that needs to run if all the shedule and condition checks don't pass?
+			// there is nothing preventing the intro sound to be played
+
+			
 			if (settings?.playCustIntroSound) {
 				def lastPlay = state?.lastPlayed ?: now()
 				def elapsed = now() - lastPlay
@@ -1825,8 +1828,8 @@ private takeAction(eTxt) {
 	}
 	if (settings?.askAlexa && settings?.askAlexaMQs ) sendToAskAlexa(eTxt)
 	if (isCustText() || isCustTextWeather() || isTrigger()) {
-		if (settings?.mySpeechDevices || settings?.mySonosDevices) { 
-			sTxt = textToSpeech(eTxt instanceof List ? eTxt[0] : eTxt, settings?.ttsVoiceStyle.substring(6)) 
+		if (settings?.mySpeechDevices || settings?.mySonosDevices) {
+			sTxt = textToSpeech(eTxt instanceof List ? eTxt[0] : eTxt, settings?.ttsVoiceStyle.substring(6))
 		}
 		state.sound = sTxt
 	} else {
@@ -1969,11 +1972,11 @@ void retriggerSchedule(eTxt) { //Called by takeAction()
 		Integer curCnt = state?.occurrences ?: 0
 		Integer stopCnt = (settings?.retriggerCount ?: 3)
 		if (parent?.debug) { log.info "curCnt = $curCnt; stopCnt = $stopCnt" }
-        if (curCnt == 0) {
+		if (curCnt == 0) {
 			if (parent?.debug) { log.warn "saving message" }
 			state?.message = eTxt
-        }    
-        if (!curCnt || (curCnt < stopCnt) && seconds) {
+		}
+		if (!curCnt || (curCnt < stopCnt) && seconds) {
 			if (parent?.debug) { log.warn "scheduling reminders" }
 			runIn(seconds, retriggerHandler)
 			state?.retriggerSchedActive = true
@@ -1982,7 +1985,7 @@ void retriggerSchedule(eTxt) { //Called by takeAction()
 		} else if(curCnt && (curCnt >= stopCnt)) {
 			unscheduleRetrigger()
 		}
-	} 
+	}
 }
 
 def retriggerHandler() {
@@ -2421,8 +2424,8 @@ def cronHandler(var) {
 			def weekDaysList = []
 				settings?.xWeeks?.each {weekDaysList << it }
 			def weekDays = weekDaysList?.join(",")
-			if (settings?.xWeeks && settings?.xWeeksStarting) { 
-				cron = "0 $mn $hr ? * ${settings?.weekDays} *" 
+			if (settings?.xWeeks && settings?.xWeeksStarting) {
+				cron = "0 $mn $hr ? * ${settings?.weekDays} *"
 			} else { log.error " unable to schedule your reminder due to missing required variables" }
 			break
 		case "Monthly":
@@ -2430,7 +2433,7 @@ def cronHandler(var) {
 			def hrmn = hhmm(settings?.xMonthsStarting, "HH:mm")
 			def hr = hrmn[0..1]
 			def mn = hrmn[3..4]
-			if (settings?.xMonths && settings?.xMonthsDay) { 
+			if (settings?.xMonths && settings?.xMonthsDay) {
 				cron = "0 $mn $hr ${settings?.xMonthsDay} 1/${settings?.xMonths} ? *"
 			} else { log.error "unable to schedule your reminder due to missing required variables" }
 			break
@@ -2439,8 +2442,8 @@ def cronHandler(var) {
 			def hrmn = hhmm(settings?.xYearsStarting, "HH:mm")
 			def hr = hrmn[0..1]
 			def mn = hrmn[3..4]
-			if (settings?.xYears) { 
-				cron = "0 $mn $hr ${settings?.xYearsDay} ${settings?.xYears} ? *" 
+			if (settings?.xYears) {
+				cron = "0 $mn $hr ${settings?.xYearsDay} ${settings?.xYears} ? *"
 			} else { log.error "unable to schedule your reminder due to missing required variables" }
 			break
 	}
@@ -2507,31 +2510,36 @@ def scheduledTimeHandler(state) {
 /***********************************************************************************************************************
 	RESTRICTIONS HANDLER
 ***********************************************************************************************************************/
+Boolean ok2Proceed() {
+	return (getDayOk() && getModeOk() && getTimeOk() && getFrequencyOk() && getConditionOk())
+}
+
 Boolean getConditionOk() {
-	def devList = []
-	def devcheck = ((settings?.rSwitch && settings?.rSwitchS) || (settings?.rMotion && settings?.rMotionS) || (settings?.rContact && settings?.rContactS) || (settings?.rPresence && settings?.rPresenceS))
+	List devList = []
+	Boolean devcheck = ((settings?.rSwitch && settings?.rSwitchS) || (settings?.rMotion && settings?.rMotionS) || (settings?.rContact && settings?.rContactS) || (settings?.rPresence && settings?.rPresenceS))
+	Integer devCnts = ((settings?.rSwitch?.size()?:0) + (settings?.rMotion?.size()?:0) + (settings?.rContact?.size()?:0) + (settings?.rPresence?.size()?:0))
 	if (settings?.rSwitch && settings?.rSwitchS) {
-		def devs = getDevicesByAttrState(settings?.rSwitch, settings?.rSwitchS)
+		List devs = getDevsByAttrState(settings?.rSwitch, "switch", settings?.rSwitchS)
 		devList = devList + devs
 		log.warn "rSwitch list is ${devs} for state ${settings?.rSwitchS}"
 	}
 	if (settings?.rMotion && settings?.rMotionS) {
-		def devs = getDevicesByAttrState(settings?.rMotion, settings?.rMotionS)
+		List devs = getDevsByAttrState(settings?.rMotion, "motion", settings?.rMotionS)
 		devList = devList + devs
 		log.warn "rMotion list is ${devs} for state ${settings?.rMotionS}"
 	}
 	if (settings?.rContact && settings?.rContactS) {
-		def devs = getDevicesByAttrState(settings?.rContact, settings?.rContactS)
+		List devs = getDevsByAttrState(settings?.rContact, "contact", settings?.rContactS)
 		devList = devList + devs
 		log.warn "rContact list is ${devs} for state ${settings?.rContactS}"
 	}
 	if (settings?.rPresence && settings?.rPresenceS) {
-		def devs = getDevicesByAttrState(settings?.rPresence, settings?.rPresenceS)
+		List devs = getDevsByAttrState(settings?.rPresence, "presence", settings?.rPresenceS)
 		devList = devList + devs
 		log.warn "rPresence list is ${devs} for state ${settings?.rPresenceS}"
 	}
-	Boolean result = devcheck ? (devList?.size() > 0) : true
-	log.debug "getConditionOk = $result"
+	Boolean result = devcheck ? (devList?.size() == devCnts) : true
+	log.debug "getConditionOk = ${result} | devcheck: ${devcheck} | devList: ${devList}"
 	return result
 }
 
@@ -2672,11 +2680,11 @@ private void sendtxt(message) {
 		parent?.buildPushMessage(settings?.pushoverDevices, msgObj, true)
 		if (parent?.debug) { log.debug "Sending pushover message to selected ${settings?.pushoverDevices}" }
 	}
-	// if (settings?.notify) {
+	if (settings?.smsNumbers) { sendText(settings?.smsNumbers, message) }
+	// if (settings?.notify) { //Note: Not sure where this was defined in V1?
 	// 	sendNotificationEvent(message)
 	// 	if (parent?.debug) { log.debug "Sending notification to mobile app" }
 	// }
-	if (settings?.smsNumbers) { sendText(settings?.smsNumbers, message) }
 }
 
 private void sendText(number, message) {
@@ -2882,15 +2890,11 @@ def getDeviceVarAvg(List items, String attrVal, dbl=false) {
 	return dbl ? avgVal as Double : avgVal as Integer
 }
 
-def getDevicesByAttrState(devs, String attr, String stateVal) {
+def getDevsByAttrState(devs, String attrType, String stateVal) {
 	List list = []
-	if(!(devs && attr && stateVal)) { return [] }
+	if(!(devs && attrType && stateVal)) { return list }
 	if(devs instanceof List) {
-		return devs?.findAll { it?."${attr}" == "${stateVal}" }
-	} else {
-		if(devs?."${attr}" == "${stateVal}") { 
-			list?.push(devs)
-		}
-		return list
-	}
+		list = devs?.findAll { it?.currentState("${attrType}")?.value == "${stateVal}" }
+	} else { if(devs?.currentState("${attrType}")?.value == "${stateVal}") { list?.push(devs)	} }
+	return list
 }
