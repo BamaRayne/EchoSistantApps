@@ -26,7 +26,7 @@ definition(
 	iconX3Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
 
 /**********************************************************************************************************************************************/
-private appVersion() { return "2.0.1" }
+private appVersion() { return "2.0.0d" }
 private appDate() { return "08/17/2018" }
 private release() { return "R.0.0.13"}
 /**********************************************************************************************************************************************/
@@ -107,6 +107,14 @@ def initialize() {
 	//CoRE and other 3rd party apps
 	sendLocationEvent(name: "remindR", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
 	sendLocationEvent(name: "echoSistant", value: "refresh", data: [profiles: getProfileList()] , isStateChange: true, descriptionText: "RemindR list refresh")
+	setChildStates()
+}
+
+private setChildStates() {
+	getChildApps()?.each { 
+		it?.setDebugVal((settings?.debug == true))
+		it?.setZipCode(location?.zipCode ?: settings?.zipCode)
+	}
 }
 
 def getAppImg(imgName)	{ return "https://echosistant.com/es5_content/images/$imgName" }

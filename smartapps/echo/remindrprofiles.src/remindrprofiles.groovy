@@ -27,7 +27,7 @@ definition(
 	iconX2Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png",
 	iconX3Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
 /**********************************************************************************************************************************************/
-private appVersion() { return "2.0.2" }
+private appVersion() { return "2.0.0e" }
 private appDate() { return "08/17/2018" }
 private platform() { return "smartthings" }
 
@@ -881,6 +881,14 @@ def initialize() {
 	subscriber()
 }
 
+public setDebugVal(val) {
+	state?.showDebug = (val == true)
+}
+
+public setZipCode(val) {
+	state?.wZipCode = val
+}
+
 private subscriber() {
 	if (settings?.mySunState == "Sunset") {
 		subscribe(location, "sunsetTime", sunsetTimeHandler)
@@ -906,7 +914,7 @@ private subscriber() {
 		mGetWeatherTrigger()
 	}
 	if (settings?.myWeather) {
-		if (parent?.debug) { log.debug "refreshing hourly weather" }
+		if (state?.showDebug) { log.debug "refreshing hourly weather" }
 		runEvery1Hour("mGetCurrentWeather")
 		state.lastWeather = null
 		state.lastWeatherCheck = null
@@ -1242,7 +1250,7 @@ String getVariable(var) {
 		case "running":
 			if (settings?.myTstat) {
 				settings?.myTstat.each { dev -> devList += dev.currentState("thermostatOperatingState")?.stringValue }
-				if (parent?.debug) { log.warn "size = ${devList?.size()}, $devList " }
+				if (state?.showDebug) { log.warn "size = ${devList?.size()}, $devList " }
 				if (devList && devList.contains("idle")) { result = "not running" }
 				else if (devList && (devList.contains("cooling") || devList.contains("heating"))) { result = "running" }
 				else if (devList && devList.contains("fan only")) { result = "running the fan only" }
@@ -1340,12 +1348,12 @@ def meterHandler(evt) {
 		if (meterValue >= thresholdValue && meterValue <= thresholdStopValue ) {
 			if (cycleOnHigh == false) {
 				state.cycleOnH = true
-				if (parent?.debug) { log.debug "Power meter $meterValue is above threshold $thresholdValue with threshold stop $thresholdStopValue" }
+				if (state?.showDebug) { log.debug "Power meter $meterValue is above threshold $thresholdValue with threshold stop $thresholdStopValue" }
 				if (delay) {
 					log.warn "scheduling delay ${delay}, ${60*delay}"
 					runIn(60*delay, bufferPendingH)
 				} else {
-					if (parent?.debug) { log.debug "sending notification (above)" }
+					if (state?.showDebug) { log.debug "sending notification (above)" }
 					alertsHandler([value:"above threshold", name:"power", device:"power meter"])
 				}
 			}
@@ -1359,12 +1367,12 @@ def meterHandler(evt) {
 		if (meterValue <= thresholdValue && meterValue >= thresholdStopValue) {
 			if (cycleOnLow == false) {
 				state.cycleOnL = true
-				if (parent?.debug) { log.debug "Power meter $meterValue is below threshold $thresholdValue with threshold stop $thresholdStopValue" }
+				if (state?.showDebug) { log.debug "Power meter $meterValue is below threshold $thresholdValue with threshold stop $thresholdStopValue" }
 				if (delay) {
-					if (parent?.debug) { log.warn "scheduling delay ${delay}, ${60*delay}" }
+					if (state?.showDebug) { log.warn "scheduling delay ${delay}, ${60*delay}" }
 					runIn(60*delay, bufferPendingL)
 				} else {
-					if (parent?.debug) { log.debug "sending notification (below)" }
+					if (state?.showDebug) { log.debug "sending notification (below)" }
 					alertsHandler([value:"below threshold", name:"power", device:"power meter"])
 				}
 			}
@@ -1381,7 +1389,7 @@ def bufferPendingH() {
 	int meterValue = meterValueRaw ?: 0 as int
 	def thresholdValue = settings?.threshold == null ? 0 : settings?.threshold as int
 	if (meterValue >= thresholdValue) {
-		if (parent?.debug) { log.debug "sending notification (above)" }
+		if (state?.showDebug) { log.debug "sending notification (above)" }
 		alertsHandler([value:"above threshold", name:"power", device:"power meter"])
 	}
 }
@@ -1391,7 +1399,7 @@ def bufferPendingL() {
 	int meterValue = meterValueRaw ?: 0 as int
 	def thresholdValue = settings?.threshold == null ? 0 : settings?.threshold as int
 	if (meterValue <= thresholdValue) {
-		if (parent?.debug) { log.debug "sending notification (below)" }
+		if (state?.showDebug) { log.debug "sending notification (below)" }
 		alertsHandler([value:"below threshold", name:"power", device:"power meter"])
   	}
 }
@@ -1407,7 +1415,7 @@ def unlockedWithCodeHandler(evt) {
 	def evtDescText = evt.descriptionText
 	def data = [:]
 	def eTxt = evtDispName + " was " + evtValue //evt.descriptionText
-	if (parent?.debug) { log.info "unlocked event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName, evtDescText = $evtDescText, eTxt = $eTxt" }
+	if (state?.showDebug) { log.info "unlocked event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName, evtDescText = $evtDescText, eTxt = $eTxt" }
 	if (evtValue == "unlocked" && myLocksSCode && event) {
 		def userCode = evt.data.replaceAll("\\D+","")
 		userCode = userCode.toInteger()
@@ -1432,7 +1440,7 @@ def buttonNumHandler(evt) {
 	def evtDescText = evt.descriptionText
 	def bTN
 	def eTxt = evtDispName + " is " + evtValue //evt.descriptionText
-	if (parent?.debug) { log.info "button event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName, evtDescText = $evtDescText, eTxt = $eTxt" }
+	if (state?.showDebug) { log.info "button event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName, evtDescText = $evtDescText, eTxt = $eTxt" }
 	if (evtValue == "pushed" || evtValue == "held") {
 		def buttonNumUsed = evt?.data?.replaceAll("\\D+","")
 		buttonNumUsed = buttonNumUsed.toInteger()
@@ -1454,19 +1462,19 @@ def tempHandler(evt) {
 	def evtDevice = evt.device
 	def evtDispName = evt.displayName
 	if (evtDispName == null) { evtDispName = evtDevice } // 5/28/2017 evtName
-	if (parent?.debug) { log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName" }
+	if (state?.showDebug) { log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName" }
 	def tempAVG = settings?.myTemperature ? getAverage(settings?.myTemperature, "temperature") : "undefined device"
 	def cycleThigh = state.cycleTh
 	def cycleTlow = state.cycleTl
 	def currentTemp = tempAVG
 	int temperatureStopVal = settings?.temperatureStop == null ? 0 : settings?.temperatureStop as int
-	if (parent?.debug) { log.warn "currentTemp = $currentTemp" }
+	if (state?.showDebug) { log.warn "currentTemp = $currentTemp" }
 	if (settings?.myTemperatureS == "above") {
 		temperatureStopVal = temperatureStopVal == 0 ? 999 : temperatureStopVal as int
 		if (currentTemp >= settings?.temperature && currentTemp <= temperatureStopVal) {
 			if (cycleThigh == false) {
 				state.cycleTh = true
-				if (parent?.debug) { log.debug "sending notification (above): as temperature $currentTemp is above threshold ${settings?.temperature}" }
+				if (state?.showDebug) { log.debug "sending notification (above): as temperature $currentTemp is above threshold ${settings?.temperature}" }
 				alertsHandler([value:"above ${settings?.temperature} degrees", name:"temperature", device:"temperature sensor"])
 			}
 		} else { state.cycleTh = false }
@@ -1475,7 +1483,7 @@ def tempHandler(evt) {
 		if (currentTemp <= settings?.temperature && currentTemp >= temperatureStopVal) {
 			if (cycleTlow == false) {
 				state.cycleTl = true
-				if (parent?.debug) { log.debug "sending notification (below): as temperature $currentTemp is below threshold ${settings?.temperature}" }
+				if (state?.showDebug) { log.debug "sending notification (below): as temperature $currentTemp is below threshold ${settings?.temperature}" }
 				alertsHandler([value:"below ${settings?.temperature} degrees", name:"temperature", device:"temperature sensor"])
 			}
 		} else { state.cycleTl = false }
@@ -1487,7 +1495,7 @@ def tempHandler(evt) {
 ******************************************************************************/
 def getAverage(device,type) {
 	def total = 0
-	if (parent?.debug) { log.debug "calculating average temperature" }
+	if (state?.showDebug) { log.debug "calculating average temperature" }
 	device.each { total += it.latestValue(type) }
 	return Math.round(total/device?.size())
 }
@@ -1502,12 +1510,12 @@ def humidityHandler(evt) {
 	def evtDevice = evt.device
 	def evtDispName = evt.displayName
 	if (evtDispName == null) { evtDispName = evtDevice } // 5/28/2017 evtName
-	if (parent?.debug) { log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName" }
+	if (state?.showDebug) { log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName" }
 	if (settings?.myHumidityS == "above") {
 		if (evtValue >= settings?.humidity) {
 			if (state.cycleHh == false) {
 				state.cycleHh = true
-				if (parent?.debug) { log.debug "sending notification (above): as humidity $evtValue is above threshold ${settings?.humidity}" }
+				if (state?.showDebug) { log.debug "sending notification (above): as humidity $evtValue is above threshold ${settings?.humidity}" }
 				alertsHandler([value:"above ${settings?.humidity}", name:"humidity", device:"humidity sensor"])
 			}
 		} else { state.cycleHh = false }
@@ -1516,7 +1524,7 @@ def humidityHandler(evt) {
 			if (evtValue <= settings?.humidity) {
 				if (state.cycleHl == false) {
 					state.cycleHl = true
-					if (parent?.debug) { log.debug "sending notification (below): as humidity $evtValue is below threshold ${settings?.humidity}" }
+					if (state?.showDebug) { log.debug "sending notification (below): as humidity $evtValue is below threshold ${settings?.humidity}" }
 					alertsHandler([value:"below ${settings?.humidity}", name:"humidity", device:"humidity sensor"])
 				}
 			} else { state.cycleHl = false }
@@ -1536,12 +1544,12 @@ def soundHandler(evt) {
 	def evtDispName = evt.displayName
 	if (evtDispName == null) { evtDispName = evtDevice } // 5/28/2017 evtName
 
-	if (parent?.debug) { log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName" }
+	if (state?.showDebug) { log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName" }
 	if (settings?.mySoundS == "above") {
 		if (evtValue >= settings?.noise) {
 			if (state.cycleSh == false) {
 				state.cycleSh = true
-				if (parent?.debug) { log.debug "sending notification (above): as noise $evtValue is above threshold ${settings?.noise}" }
+				if (state?.showDebug) { log.debug "sending notification (above): as noise $evtValue is above threshold ${settings?.noise}" }
 				alertsHandler([value:"above ${settings?.noise}", name:"noise", device:"sound sensor"])
 			}
 		} else { state.cycleSh = false }
@@ -1550,7 +1558,7 @@ def soundHandler(evt) {
 			if (evtValue <= settings?.noise) {
 				if (state.cycleSl == false) {
 					state.cycleSl = true
-					if (parent?.debug) { log.debug "sending notification (below): as noise $evtValue is below threshold ${settings?.noise}" }
+					if (state?.showDebug) { log.debug "sending notification (below): as noise $evtValue is below threshold ${settings?.noise}" }
 					alertsHandler([value:"below ${settings?.noise}", name:"noise", device:"sound sensor"])
 				}
 			} else { state.cycleSl = false }
@@ -1568,12 +1576,12 @@ def carbonDioxideHandler(evt) {
 	def evtDevice = evt.device
 	def evtDispName = evt.displayName
 	if (evtDispName == null) { evtDispName = evtDevice } // 5/28/2017 evtName
-	if (parent?.debug) { log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName" }
+	if (state?.showDebug) { log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName" }
 	if (settings?.myCO2S == "above") {
 		if (evtValue >= settings?.CO2) {
 			if (state.cycleCO2h == false) {
 				state.cycleCO2h = true
-				if (parent?.debug) { log.debug "sending notification (above): as CO2 $evtValue is above threshold ${settings?.CO2}" }
+				if (state?.showDebug) { log.debug "sending notification (above): as CO2 $evtValue is above threshold ${settings?.CO2}" }
 				alertsHandler([value:"${evtValue}", name:"CO2", device:"CO2 sensor"])
 			}
 		} else { state.cycleCO2h = false }
@@ -1582,7 +1590,7 @@ def carbonDioxideHandler(evt) {
 			if (evtValue <= settings?.CO2) {
 				if (state.cycleCO2l == false) {
 					state.cycleCO2l = true
-					if (parent?.debug) { log.debug "sending notification (below): as CO2 $evtValue is below threshold ${settings?.CO2}" }
+					if (state?.showDebug) { log.debug "sending notification (below): as CO2 $evtValue is below threshold ${settings?.CO2}" }
 					alertsHandler([value:"${evtValue}", name:"CO2", device:"CO2 sensor"])
 				}
 			} else { state.cycleCO2l = false }
@@ -1627,8 +1635,8 @@ def alertsHandler(evt) {
 	log.warn "occurrences number = ${state.occurrences}"
 	// state?.occurrences = 0
 	String eTxt = "$evtDispName is $evtValue"
-	if (parent?.debug) { log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName, evtDescText = $evtDescText, eTxt = $eTxt" }
-	if (parent?.debug) { log.warn "version number = ${appVersion()}" }
+	if (state?.showDebug) { log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName, evtDescText = $evtDescText, eTxt = $eTxt" }
+	if (state?.showDebug) { log.warn "version number = ${appVersion()}" }
 	String dCapability = getDeviceCapName(evtName)
 	Integer delayMinutes = (dCapability && settings["${dCapability}Minutes"]) ? settings["${dCapability}Minutes"] : null
 	if (dCapability && delayMinutes && evtName != "delay") {
@@ -1652,8 +1660,7 @@ def alertsHandler(evt) {
 			if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) { sendtxt(eTxt) }
 			if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
 			if (settings?.askAlexa && settings?.askAlexaMQs) { sendToAskAlexa(eTxt) }
-		} else if (ok2Proceed()) { // << Shouldn't this wrapp the whole thing... Is there anything that needs to run if all the shedule and condition checks don't pass?
-			// there is nothing preventing the intro sound to be played
+		} else if (ok2Proceed()) { 
 			if (isTrigger() && settings?.myAdHocReport) {
 				eTxt = null
 				if (evtName == "routineExecuted" || evtName == "mode") {
@@ -1672,87 +1679,86 @@ def alertsHandler(evt) {
 			def stamp = state.lastTime = new Date(now()).format("h:mm aa", location.timeZone)
 			def today = new Date(now()).format("EEEE, MMMM d, yyyy", location.timeZone)
 			def last = state.lastEvent
-			//if (getDayOk() && getModeOk() && getTimeOk() && getFrequencyOk() && getConditionOk()) { - NO NEED to double check
-				if (settings?.playCustIntroSound) {
-					def lastPlay = state?.lastPlayed ?: now()
-					def elapsed = now() - lastPlay
-					log.warn "last play elapsed = $elapsed"
-					def sVolume = settings.mySonosVolume ?: 20
-					loadIntro()
-					//state.soundIntro =  [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume ]
-					playIntro() //settings?.mySonosDevices?.playTrackAndResume(state.soundIntro.uri, state.soundIntro.duration, sVolume)
-				}
-                if (evtName == "time of day" && settings?.reportMessage && !isTrigger()) {
-					eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDispName}")?.replace("&event", "time")?.replace("&action", "executed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : null
+			if (settings?.playCustIntroSound) {
+				def lastPlay = state?.lastPlayed ?: now()
+				def elapsed = now() - lastPlay
+				log.warn "last play elapsed = $elapsed"
+				def sVolume = settings.mySonosVolume ?: 20
+				loadIntro()
+				//state.soundIntro =  [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume ]
+				playIntro() //settings?.mySonosDevices?.playTrackAndResume(state.soundIntro.uri, state.soundIntro.duration, sVolume)
+			}
+			if (evtName == "time of day" && settings?.reportMessage && !isTrigger()) {
+				eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDispName}")?.replace("&event", "time")?.replace("&action", "executed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : null
+				if (isCustTextWeather()) { eTxt = getWeatherVar(eTxt) }
+			}
+			if (evtName == "coolingSetpoint" || evtName == "heatingSetpoint") {
+				evtValue = evt.value.toFloat()
+				evtValue = Math.round(evtValue)
+			}
+			if (evtName == "routineExecuted" && settings?.myRoutine && !isTrigger()) {
+				def deviceMatch = settings?.myRoutine?.find {r -> r == evtDispName}
+				if (deviceMatch) {
+					eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDispName}")?.replace("&event", "routine")?.replace("&action", "executed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : null
 					if (isCustTextWeather()) { eTxt = getWeatherVar(eTxt) }
+					if (settings?.reportMessage) {
+						if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) {
+							sendtxt(eTxt)
+						}
+						if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(message) }
+						takeAction(eTxt)
+					} else {
+						eTxt = "routine was executed"
+						takeAction(eTxt)
+					}
 				}
-				if (evtName == "coolingSetpoint" || evtName == "heatingSetpoint") {
-					evtValue = evt.value.toFloat()
-					evtValue = Math.round(evtValue)
-				}
-				if (evtName == "routineExecuted" && settings?.myRoutine && !isTrigger()) {
-					def deviceMatch = settings?.myRoutine?.find {r -> r == evtDispName}
+			} else {
+				if (evtName == "mode" && settings?.myMode && !isTrigger()) {
+					def deviceMatch = settings?.myMode?.find {m -> m == evtValue}
 					if (deviceMatch) {
-						eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDispName}")?.replace("&event", "routine")?.replace("&action", "executed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : null
+						eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtValue}")?.replace("&event", "${evtName}")?.replace("&action", "changed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : null
 						if (isCustTextWeather()) { eTxt = getWeatherVar(eTxt) }
 						if (settings?.reportMessage) {
 							if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) {
 								sendtxt(eTxt)
 							}
-							if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(message) }
+							if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
 							takeAction(eTxt)
 						} else {
-							eTxt = "routine was executed"
+							eTxt = "location mode has changed"
 							takeAction(eTxt)
 						}
 					}
 				} else {
-					if (evtName == "mode" && settings?.myMode && !isTrigger()) {
-						def deviceMatch = settings?.myMode?.find {m -> m == evtValue}
-						if (deviceMatch) {
-							eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtValue}")?.replace("&event", "${evtName}")?.replace("&action", "changed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : null
+					if (settings?.reportMessage || isTrigger()) {
+						if (settings?.reportMessage) {
+							eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDevice}")?.replace("&event", "${evtName}")?.replace("&action", "${evtValue}")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}")?.replace("&last", "${last}") : null
 							if (isCustTextWeather()) { eTxt = getWeatherVar(eTxt) }
-							if (settings?.reportMessage) {
-								if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) {
-									sendtxt(eTxt)
-								}
-								if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
-								takeAction(eTxt)
-							} else {
-								eTxt = "location mode has changed"
-								takeAction(eTxt)
-							}
+						}
+						if (eTxt) {
+							if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) { sendtxt(eTxt) }
+							if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
+							takeAction(eTxt)
 						}
 					} else {
-						if (settings?.reportMessage || isTrigger()) {
-							if (settings?.reportMessage) {
-								eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDevice}")?.replace("&event", "${evtName}")?.replace("&action", "${evtValue}")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}")?.replace("&last", "${last}") : null
-								if (isCustTextWeather()) { eTxt = getWeatherVar(eTxt) }
+						if (evtDevice == "weather") {
+							if (evtDispName == "weather alert") {
+								eTxt = evtValue
+							} else { eTxt = evtDispName + " is " + evtValue }
+						}
+						if (eTxt) {
+							if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) {
+								// if (state?.showDebug) { log.info "sending sms" }
+								sendtxt(eTxt)
 							}
-							if (eTxt) {
-								if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) { sendtxt(eTxt) }
-								if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
-								takeAction(eTxt)
-							}
-						} else {
-							if (evtDevice == "weather") {
-								if (evtDispName == "weather alert") {
-									eTxt = evtValue
-								} else { eTxt = evtDispName + " is " + evtValue }
-							}
-							if (eTxt) {
-								if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) {
-									// if (parent?.debug) { log.info "sending sms" }
-									sendtxt(eTxt)
-								}
-								if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
-								if (parent?.debug) { log.info "processing eTxt = $eTxt" }
-								takeAction(eTxt)
-							}
+							if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
+							if (state?.showDebug) { log.info "processing eTxt = $eTxt" }
+							takeAction(eTxt)
 						}
 					}
 				}
-			//}
+			}
+			
 		}
 	}
 }
@@ -1796,7 +1802,7 @@ def checkEvent(data) {
 	}
 	log.warn "r = $r"
 	if (r) {
-		if (parent?.debug) { log.debug "pushing notification after delay" }
+		if (state?.showDebug) { log.debug "pushing notification after delay" }
 		alertsHandler([value: deviceAttribute, name: "delay", device: deviceName])
 	}
 }
@@ -1809,7 +1815,7 @@ private takeAction(eTxt) {
 	def data = [args: eTxt]
 	sendLocationEvent(name:"echoSistantProfile",value: app.getLabel(), isStateChange: true, displayed: false, data: data)
 	//sendLocationEvent([name:i,value:app.label,isStateChange:true,displayed:false,data:data])
-	if (parent?.debug) { log.debug "sendNotificationEvent sent to 3rd party as ${app.label} was active" }
+	if (state?.showDebug) { log.debug "sendNotificationEvent sent to 3rd party as ${app.label} was active" }
 	state.savedOffset = false
 	def sVolume
 	def sTxt
@@ -1837,13 +1843,13 @@ private takeAction(eTxt) {
 	if (settings?.mySpeechDevices) {
 		def currVolLevel = settings?.mySpeechDevices.latestValue("level")
 		def currMute = settings?.mySpeechDevices.latestValue("mute")
-		if (parent?.debug) { log.debug "vol switch = ${currVolSwitch}, vol level = ${currVolLevel}, currMute = ${currMute} " }
+		if (state?.showDebug) { log.debug "vol switch = ${currVolSwitch}, vol level = ${currVolLevel}, currMute = ${currMute} " }
 		sVolume = settings.mySpeechVolume ?: 30
 		if (!settings?.mySpeechDelay1) {
 			unmuteDevices(settings?.mySpeechDevices)
 			settings?.mySpeechDevices?.playTextAndResume(eTxt, sVolume)
 			state?.lastPlayed = now()
-			if (parent?.debug) { log.info "Playing Message on Speech Synthesizer(s) '${settings?.mySpeechDevices}' at volume (${sVolume})" }
+			if (state?.showDebug) { log.info "Playing Message on Speech Synthesizer(s) '${settings?.mySpeechDevices}' at volume (${sVolume})" }
 		} else {
 			state.mySpeechSound = eTxt
 			state.mySpeechVolume = sVolume
@@ -1861,20 +1867,20 @@ private takeAction(eTxt) {
 			if (!settings?.mySonosDelay1) {
 				if (settings?.playCustIntroSound) {
 					int sDelayFirst = 2
-					if (parent?.debug) { log.info "delaying first message to play intro by $sDelayFirst" }
+					if (state?.showDebug) { log.info "delaying first message to play intro by $sDelayFirst" }
 					state?.sound?.command = sCommand
 					state?.sound?.volume = sVolume
 					state?.lastPlayed = now()
 					runIn(sDelayFirst, sonosFirstDelayedMessage)
 				} else {
-					if (parent?.debug) { log.info "playing first message" }
+					if (state?.showDebug) { log.info "playing first message" }
 					settings?.mySonosDevices?."${sCommand}"(sTxt.uri, Math.max((sTxt.duration as Integer),2), sVolume)
 					state?.lastPlayed = now()
 					state?.sound?.command = sCommand
 					state?.sound?.volume = sVolume
 				}
 			} else {
-				if (parent?.debug) { log.info "delaying first message by ${settings?.mySonosDelay1}" }
+				if (state?.showDebug) { log.info "delaying first message by ${settings?.mySonosDelay1}" }
 				state?.sound?.command = sCommand
 				state?.sound?.volume = sVolume
 				state?.lastPlayed = now()
@@ -1895,13 +1901,13 @@ private takeAction(eTxt) {
 			} else {
 				if (settings?.playCustIntroSound) {
 					int sDelayFirst = 2
-					if (parent?.debug) { log.info "delaying first message to play intro by $sDelayFirst" }
+					if (state?.showDebug) { log.info "delaying first message to play intro by $sDelayFirst" }
 					state?.sound?.command = sCommand
 					state?.sound?.volume = sVolume
 					state?.lastPlayed = now()
 					runIn(sDelayFirst, sonosFirstDelayedMessage)
 				} else {
-					if (parent?.debug) { log.info "playing message without delay" }
+					if (state?.showDebug) { log.info "playing message without delay" }
 					settings?.mySonosDevices?."${sCommand}"(sTxt.uri, Math.max((sTxt.duration as Integer),2), sVolume)
 					state?.lastPlayed = now()
 					state?.sound?.command = sCommand
@@ -1929,7 +1935,7 @@ void unmuteDevices(devs) {
 def delayedMessage() {
 	def sTxt = state.sound
 	settings?.mySonosDevices?."${sTxt.command}"(sTxt.uri, Math.max((sTxt.duration as Integer),2), sTxt.volume)
-	if (parent?.debug) { log.info "delayed message is now playing" }
+	if (state?.showDebug) { log.info "delayed message is now playing" }
 }
 
 def delayedFirstMessage() {
@@ -1937,13 +1943,14 @@ def delayedFirstMessage() {
 	def sVolume = state.mySpeechVolume
 	settings?.mySpeechDevices?.playTextAndResume(eTxt, sVolume)
 	state?.lastPlayed = now()
-	if (parent?.debug) { log.info "Playing first message delayed" }
+	if (state?.showDebug) { log.info "Playing first message delayed" }
 }
 
 def sonosFirstDelayedMessage() {
-	def sTxt = state.sound
-	settings?.mySonosDevices?."${sTxt.command}"(sTxt.uri, Math.max((sTxt.duration as Integer),2), sTxt.volume)
-	if (parent?.debug) { log.info "Playing first message delayed" }
+	if(state?.sound) {
+		settings?.mySonosDevices?."${state?.sound?.command}"(state?.sound?.uri, Math.max((state?.sound?.duration as Integer),2), state?.sound?.volume)
+		if (state?.showDebug) { log.info "Playing first message delayed" }
+	} else { if(state?.showDebug) {log.warn "sonosFirstDelayedMessage() Skipping... Sound state not available!!!"} }
 }
 /***********************************************************************************************************************
 	RETRIGGER
@@ -1967,13 +1974,13 @@ void retriggerSchedule(eTxt) { //Called by takeAction()
 		Integer seconds = retriggerConvMap(settings?.retriggerSched)
 		Integer curCnt = state?.occurrences ?: 0
 		Integer stopCnt = (settings?.retriggerCount ?: 3)
-		if (parent?.debug) { log.info "curCnt = $curCnt; stopCnt = $stopCnt" }
+		if (state?.showDebug) { log.info "curCnt = $curCnt; stopCnt = $stopCnt" }
 		if (curCnt == 0) {
-			if (parent?.debug) { log.warn "saving message" }
+			if (state?.showDebug) { log.warn "saving message" }
 			state?.message = eTxt
 		}
 		if (!curCnt || (curCnt < stopCnt) && seconds) {
-			if (parent?.debug) { log.warn "scheduling reminders" }
+			if (state?.showDebug) { log.warn "scheduling reminders" }
 			runIn(seconds, retriggerHandler)
 			state?.retriggerSchedActive = true
 			//state?.message = eTxt
@@ -2001,7 +2008,7 @@ def retriggerHandler() {
 	}
 	if(send) {
 		state?.occurrences = curCnt ? curCnt+1 : 1
-		if (parent?.debug) { log.info "processing retrigger with message = $message" }
+		if (state?.showDebug) { log.info "processing retrigger with message = $message" }
 		if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings?.pushoverEnabled && settings?.pushoverDevices)) { sendtxt(message) }
 		if (settings?.myNotifyDevice) { settings?.myNotifyDevice?.deviceNotification(message) }
 		takeAction(message)
@@ -2014,7 +2021,7 @@ void unscheduleRetrigger() {
 	state?.message = null
 	state?.occurrences = 0
 	parent?.childInitialized(null)
-	if (parent?.debug) { log.warn "canceling reminders" }
+	if (state?.showDebug) { log.warn "canceling reminders" }
 }
 /***********************************************************************************************************************
 	CANCEL RETRIGGER
@@ -2027,7 +2034,7 @@ def cancelRetrigger() {
 	state?.message = null
 	state?.occurrences = 0
 	parent.childInitialized(null)
-	if (parent?.debug) { log.warn "canceling retrigger as requested by other app" }
+	if (state?.showDebug) { log.warn "canceling retrigger as requested by other app" }
 	return result
 }
 /***********************************************************************************************************************
@@ -2066,7 +2073,7 @@ def mGetWeatherTrigger() {
 	def process = false
 	try {
 		if (getMetric() == false) {
-			def cWeather = getWeatherFeature("conditions", parent?.wZipCode)
+			def cWeather = getWeatherFeature("conditions", state?.wZipCode)
 			def cTempF = cWeather?.current_observation?.temp_f.toDouble()
 			int tempF = cTempF as Integer
 			def cRelativeHum = cWeather?.current_observation?.relative_humidity
@@ -2077,10 +2084,10 @@ def mGetWeatherTrigger() {
 			def cPrecipIn = cWeather?.current_observation?.precip_1hr_in?.toDouble()
 			double precip = cPrecipIn //as double
 				precip = 1 + precip //precip
-			if (parent?.debug) { log.debug "current triggers: precipitation = $precip, humidity = $humid, wind = $wind, temp = $tempF" }
+			if (state?.showDebug) { log.debug "current triggers: precipitation = $precip, humidity = $humid, wind = $wind, temp = $tempF" }
 			myTrigger = settings?.myWeatherTriggers == "Chance of Precipitation (in/mm)" ? precip : settings?.myWeatherTriggers == "Wind Gust (MPH/kPH)" ? wind : settings?.myWeatherTriggers == "Humidity (%)" ? humid : settings?.myWeatherTriggers == "Temperature (F/C)" ? tempF : null
 		} else {
-			def cWeather = getWeatherFeature("conditions", parent?.wZipCode)
+			def cWeather = getWeatherFeature("conditions", state?.wZipCode)
 			def cTempC = cWeather?.current_observation?.temp_c?.toDouble()
 				int tempC = cTempC as Integer
 			def cRelativeHum = cWeather?.current_observation?.relative_humidity
@@ -2096,7 +2103,7 @@ def mGetWeatherTrigger() {
 		def myTriggerName = settings?.myWeatherTriggers == "Chance of Precipitation (in/mm)" ? "Precipitation" : settings?.myWeatherTriggers == "Wind Gust (MPH/kPH)" ? "Wind Gusts" : settings?.myWeatherTriggers == "Humidity (%)" ? "Humidity" : settings?.myWeatherTriggers == "Temperature (F/C)" ? "Temperature" : null
 		if (settings?.myWeatherTriggersS == "above" && state.cycleOnA == false) {
 			def var = myTrigger > settings?.myWeatherThreshold
-			if (parent?.debug) { log.debug  " myTrigger = $myTrigger, myWeatherThreshold = ${settings?.myWeatherThreshold}, myWeatherTriggersS = ${settings?.myWeatherTriggersS}, var = $var" }
+			if (state?.showDebug) { log.debug  " myTrigger = $myTrigger, myWeatherThreshold = ${settings?.myWeatherThreshold}, myWeatherTriggersS = ${settings?.myWeatherTriggersS}, var = $var" }
 			if (myTrigger > settings?.myWeatherThreshold) {
 				process = true
 				state.cycleOnA = process
@@ -2105,7 +2112,7 @@ def mGetWeatherTrigger() {
 		}
 		if (settings?.myWeatherTriggersS == "below" && state.cycleOnB == false) {
 			def var = myTrigger <= settings?.myWeatherThreshold
-			if (parent?.debug) { log.debug  " myTrigger = $myTrigger, myWeatherThreshold = ${settings?.myWeatherThreshold} myWeatherTriggersS = ${settings?.myWeatherTriggersS}, var = $var" }
+			if (state?.showDebug) { log.debug  " myTrigger = $myTrigger, myWeatherThreshold = ${settings?.myWeatherThreshold} myWeatherTriggersS = ${settings?.myWeatherTriggersS}, var = $var" }
 			if (myTrigger <= settings?.myWeatherThreshold) {
 				process = true
 				state.cycleOnA = false
@@ -2138,7 +2145,7 @@ def mGetWeatherAlerts() {
 	def data = [:]
 	try {
 		//if (getDayOk()==true && getModeOk()==true && getTimeOk()==true && getFrequencyOk()==true || getConditionOk()==true) { -- bobby 4/18/2017
-			def weather = getWeatherFeature("alerts", parent?.wZipCode)
+			def weather = getWeatherFeature("alerts", state?.wZipCode)
 			def type = weather?.alerts?.type[0]
 			def alert = weather?.alerts?.description[0]
 			def expire = weather?.alerts?.expires[0]
@@ -2153,7 +2160,7 @@ def mGetWeatherAlerts() {
 						data = [value: result, name: "weather alert", device:"weather"]
 						alertsHandler(data)
 					} else {
-						if (parent?.debug) { log.debug "new weather alert = ${alert}, expire = ${expire}" }
+						if (state?.showDebug) { log.debug "new weather alert = ${alert}, expire = ${expire}" }
 						def newAlert = result != state?.weatherAlert ? true : false
 						if (newAlert == true) {
 							state?.weatherAlert = result
@@ -2183,7 +2190,7 @@ def mGetCurrentWeather() {
 	try {
 		//if (getDayOk()==true && getModeOk()==true && getTimeOk()==true && getFrequencyOk()==true) { 4/18/2017 Bobby
 		//hourly updates
-			def cWeather = getWeatherFeature("hourly", parent?.wZipCode)
+			def cWeather = getWeatherFeature("hourly", state?.wZipCode)
 			def cWeatherCondition = cWeather?.hourly_forecast[0]?.condition
 			def cWeatherPrecipitation = cWeather?.hourly_forecast[0]?.pop + " percent"
 			def cWeatherWind = cWeather?.hourly_forecast[0]?.wspd?.english + " miles per hour"
@@ -2279,26 +2286,26 @@ def mGetWeatherElements(element) {
 	def result ="Current weather is not available at the moment, please try again later"
    	try {
 		//hourly updates
-		def cWeather = getWeatherFeature("hourly", parent?.wZipCode)
+		def cWeather = getWeatherFeature("hourly", state?.wZipCode)
 		def cWeatherCondition = cWeather?.hourly_forecast[0]?.condition
 		def cWeatherPrecipitation = cWeather?.hourly_forecast[0]?.pop + " percent"
 		def cWeatherWind = cWeather?.hourly_forecast[0]?.wspd?.english + " miles per hour"
 		def cWeatherHum = cWeather?.hourly_forecast[0]?.humidity + " percent"
 		def cWeatherUpdate = cWeather?.hourly_forecast[0]?.FCTTIME?.civil //forecast last updated time E.G "11:00 AM",
 		//current conditions
-		def condWeather = getWeatherFeature("conditions", parent?.wZipCode)
+		def condWeather = getWeatherFeature("conditions", state?.wZipCode)
 		def condTodayUV = condWeather?.current_observation?.UV
   		def currentT = condWeather?.current_observation?.temp_f
 			int currentNow = currentT
 		//forecast
-		def forecastT = getWeatherFeature("forecast", parent?.wZipCode)
+		def forecastT = getWeatherFeature("forecast", state?.wZipCode)
 		def fToday = forecastT?.forecast?.simpleforecast?.forecastday[0]
 		def high = fToday?.high?.fahrenheit?.toInteger()
 	   		int highNow = high
 		def low = fToday?.low?.fahrenheit?.toInteger()
 			int lowNow = low
 		//sunset, sunrise, moon, tide
-		def s = getWeatherFeature("astronomy", parent?.wZipCode)
+		def s = getWeatherFeature("astronomy", state?.wZipCode)
 		def sunriseHour = s?.moon_phase?.sunrise?.hour
 		def sunriseTime = s?.moon_phase?.sunrise?.minute
 		def sunrise = sunriseHour + ":" + sunriseTime
@@ -2319,7 +2326,7 @@ def mGetWeatherElements(element) {
 				def lowC = fToday?.low?.celsius
 					lowNow = currentTc
 			}
-		if (parent?.debug) { log.debug "cWeatherUpdate = ${cWeatherUpdate}, cWeatherCondition = ${cWeatherCondition}, cWeatherPrecipitation = ${cWeatherPrecipitation}, cWeatherWind = ${cWeatherWind},  cWeatherHum = ${cWeatherHum}, cWeatherHum = ${condTodayUV}" }
+		if (state?.showDebug) { log.debug "cWeatherUpdate = ${cWeatherUpdate}, cWeatherCondition = ${cWeatherCondition}, cWeatherPrecipitation = ${cWeatherPrecipitation}, cWeatherWind = ${cWeatherWind},  cWeatherHum = ${cWeatherHum}, cWeatherHum = ${condTodayUV}" }
 			if		(element == "precip" ) { result = cWeatherPrecipitation }
 			else if	(element == "wind") { result = cWeatherWind }
 			else if	(element == "uv") { result = condTodayUV }
@@ -2345,7 +2352,7 @@ def private mGetWeatherVar(var) {
 	state.pTryAgain = false
 	def result
 	try {
-		def weather = getWeatherFeature("forecast", parent?.wZipCode)
+		def weather = getWeatherFeature("forecast", state?.wZipCode)
 		def sTodayWeather = weather?.forecast?.simpleforecast?.forecastday[0]
 		if (var =="high") { result = sTodayWeather?.high?.fahrenheit }
 		if (var == "low") { result = sTodayWeather?.low?.fahrenheit }
@@ -2385,7 +2392,7 @@ def private mGetWeatherVar(var) {
 	CRON HANDLER
 ***********************************************************************************************************************/
 def cronHandler(var) {
-	if (parent?.debug) { log.debug " con var is $var" }
+	if (state?.showDebug) { log.debug " con var is $var" }
 	String cron = null
 	switch(var) {
 		case "Minutes":
@@ -2613,7 +2620,7 @@ Boolean getTimeOk() {
 		else if (settings?.endingX == "Sunset") { stop = s.sunset.time }
 		else if (settings?.ending) { stop = timeToday(settings?.ending, location.timeZone).time }
 		result = (start < stop ? currTime >= start && currTime <= stop : currTime <= stop || currTime >= start)
-		if (parent?.debug) { log.trace "getTimeOk = $result." }
+		if (state?.showDebug) { log.trace "getTimeOk = $result." }
 	}
 	log.debug "timeOk = $result"
 	return result
@@ -2663,23 +2670,23 @@ void settingRemove(name) {
 ***********************************************************************************************************************/
 private void sendtxt(message) {
 	def stamp = state.lastTime = new Date(now()).format("h:mm aa", location.timeZone)
-	if (parent?.debug) { log.debug "Request to send sms received with message: '${message}'" }
+	if (state?.showDebug) { log.debug "Request to send sms received with message: '${message}'" }
 	if (settings?.usePush) {
 		message = settings?.pushTimeStamp == true ? "${message} at ${stamp}" : message
 		sendPush(message)
-		if (parent?.debug) { log.debug "Sending push message" }
+		if (state?.showDebug) { log.debug "Sending push message" }
 	}
 	if(settings?.pushoverEnabled && settings?.pushoverDevices) {
 		Map msgObj = [:]
 		msgObj = [title: "${app?.getLabel()}", message: message, priority: (settings?.pushoverPriority?:0)]
 		if(settings?.pushoverSound) { msgObj?.sound = settings?.pushoverSound }
 		parent?.buildPushMessage(settings?.pushoverDevices, msgObj, true)
-		if (parent?.debug) { log.debug "Sending pushover message to selected ${settings?.pushoverDevices}" }
+		if (state?.showDebug) { log.debug "Sending pushover message to selected ${settings?.pushoverDevices}" }
 	}
 	if (settings?.smsNumbers) { sendText(settings?.smsNumbers, message) }
 	// if (settings?.notify) { //Note: Not sure where this was defined in V1?
 	// 	sendNotificationEvent(message)
-	// 	if (parent?.debug) { log.debug "Sending notification to mobile app" }
+	// 	if (state?.showDebug) { log.debug "Sending notification to mobile app" }
 	// }
 }
 
@@ -2688,7 +2695,7 @@ private void sendText(number, message) {
 		def phones = settings?.smsNumbers.split("\\,")
 		for (phone in phones) {
 			sendSms(phone?.trim(), message)
-			if (parent?.debug) { log.debug "Sending sms to selected phones ${phones}" }
+			if (state?.showDebug) { log.debug "Sending sms to selected phones ${phones}" }
 		}
 	}
 }
