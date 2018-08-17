@@ -27,7 +27,7 @@ definition(
 	iconX2Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png",
 	iconX3Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
 /**********************************************************************************************************************************************/
-private appVersion() { return "2.0.0e" }
+private appVersion() { return "2.0.0f" }
 private appDate() { return "08/17/2018" }
 private platform() { return "smartthings" }
 
@@ -1680,13 +1680,11 @@ def alertsHandler(evt) {
 			def today = new Date(now()).format("EEEE, MMMM d, yyyy", location.timeZone)
 			def last = state.lastEvent
 			if (settings?.playCustIntroSound) {
-				def lastPlay = state?.lastPlayed ?: now()
-				def elapsed = now() - lastPlay
-				log.warn "last play elapsed = $elapsed"
-				def sVolume = settings.mySonosVolume ?: 20
-				loadIntro()
-				//state.soundIntro =  [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume ]
-				playIntro() //settings?.mySonosDevices?.playTrackAndResume(state.soundIntro.uri, state.soundIntro.duration, sVolume)
+				// def lastPlay = state?.lastPlayed ?: now()
+				// def elapsed = now() - lastPlay
+				// log.warn "last play elapsed = $elapsed"
+				// def sVolume = settings.mySonosVolume ?: 20
+				playIntroSound()
 			}
 			if (evtName == "time of day" && settings?.reportMessage && !isTrigger()) {
 				eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDispName}")?.replace("&event", "time")?.replace("&action", "executed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : null
@@ -1861,7 +1859,7 @@ private takeAction(eTxt) {
 		currVolLevel = currVolLevel[0]
 		unmuteDevices(settings?.mySonosDevices)
 		sVolume = settings.mySonosVolume ?: 20
-		sVolume = (sVolume == 20 && currVolLevel == 0) ? sVolume : sVolume !=20 ? sVolume: currVolLevel
+		sVolume = (sVolume == 20 && currVolLevel == 0) ? sVolume : (sVolume !=20 ? sVolume : currVolLevel)
 		def sCommand = settings?.mySonosResume == true ? "playTrackAndResume" : "playTrackAndRestore"
 		if (!state?.lastPlayed) {
 			if (!settings?.mySonosDelay1) {
@@ -1871,6 +1869,7 @@ private takeAction(eTxt) {
 					state?.sound?.command = sCommand
 					state?.sound?.volume = sVolume
 					state?.lastPlayed = now()
+					playIntroSound()
 					runIn(sDelayFirst, sonosFirstDelayedMessage)
 				} else {
 					if (state?.showDebug) { log.info "playing first message" }
@@ -2765,12 +2764,7 @@ private loadSound() {
 	}
 }
 
-def playIntro() {
-	log.info "playing intro"
-	settings?.mySonosDevices?.playTrackAndRestore(state.soundIntro.uri, state.soundIntro.duration, state.soundIntro.volume)
-}
-
-private loadIntro() {
+private playIntroSound() {
 	log.info "loading intro ${settings?.custIntroSound}"
 	switch (settings?.custIntroSound) {
 		case "Soft Chime":
@@ -2787,6 +2781,8 @@ private loadIntro() {
 			state.soundIntro = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3"]
 			break;
 	}
+	log.info "playing intro"
+	settings?.mySonosDevices?.playTrackAndRestore(state.soundIntro.uri, state.soundIntro.duration, state.soundIntro.volume)
 }
 
 /******************************************************************************************************
