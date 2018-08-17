@@ -26,9 +26,8 @@ definition(
 	iconX3Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
 
 /**********************************************************************************************************************************************/
-private appVersion() { return "2.0.0d" }
+private appVersion() { return "2.0.0f" }
 private appDate() { return "08/17/2018" }
-private release() { return "R.0.0.13"}
 /**********************************************************************************************************************************************/
 
 preferences {
@@ -86,7 +85,7 @@ def uninstallPage() {
 ************************************************************************************************************/
 def installed() {
 	if (debug) { log.debug "Installed with settings: ${settings}" }
-	state.ParentRelease = release()
+	state.ParentRelease = appVersion()
 	initialize()
 }
 def updated() {
