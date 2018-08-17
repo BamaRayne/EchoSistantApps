@@ -27,7 +27,7 @@ definition(
 	iconX2Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png",
 	iconX3Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
 /**********************************************************************************************************************************************/
-private appVersion() { return "2.0.1" }
+private appVersion() { return "2.0.2" }
 private appDate() { return "08/17/2018" }
 private platform() { return "smartthings" }
 
@@ -370,16 +370,14 @@ def triggersPage() {
 			}
 		}
 
-		if (!isDefault()) {
+		if (!isDefault() && !isAdHoc()) {
 			section ("Location Events: ", hideWhenEmpty: true) {
 				input "myMode", "enum", title: "Modes", options: location.modes.name.sort(), multiple: true, required: false, submitOnChange: true, image: getAppImg("mode.png")
 				input "mySHM", "enum", title: "SHM status", options: ["Armed (Away)","Armed (Home)","Disarmed"], multiple: true, required: false, submitOnChange: true, image: getAppImg("alarm_disarm.png")
-				if (!isAdHoc()) {
-					input "myRoutine", "enum", title: "Routines", options: actions, multiple: true, required: false, submitOnChange: true, image: getAppImg("routine.png")
-					input "mySunState", "enum", title: "Sunrise or Sunset...", options: ["Sunrise", "Sunset"], multiple: false, required: false, submitOnChange: true, image: getAppImg("sun.png")
-					if (settings?.mySunState) {
-						input "sunOffset", "number", range: "*..*", title: "Offset trigger this number of minutes (+/-)", required: false, submitOnChange: true, image: getAppImg("offset_icon.png")
-					}
+				input "myRoutine", "enum", title: "Routines", options: actions, multiple: true, required: false, submitOnChange: true, image: getAppImg("routine.png")
+				input "mySunState", "enum", title: "Sunrise or Sunset...", options: ["Sunrise", "Sunset"], multiple: false, required: false, submitOnChange: true, image: getAppImg("sun.png")
+				if (settings?.mySunState) {
+					input "sunOffset", "number", range: "*..*", title: "Offset trigger this number of minutes (+/-)", required: false, submitOnChange: true, image: getAppImg("offset_icon.png")
 				}
 			}
 		}
@@ -1656,17 +1654,6 @@ def alertsHandler(evt) {
 			if (settings?.askAlexa && settings?.askAlexaMQs) { sendToAskAlexa(eTxt) }
 		} else if (ok2Proceed()) { // << Shouldn't this wrapp the whole thing... Is there anything that needs to run if all the shedule and condition checks don't pass?
 			// there is nothing preventing the intro sound to be played
-
-			
-			if (settings?.playCustIntroSound) {
-				def lastPlay = state?.lastPlayed ?: now()
-				def elapsed = now() - lastPlay
-				log.warn "last play elapsed = $elapsed"
-				def sVolume = settings.mySonosVolume ?: 20
-				loadIntro()
-				//state.soundIntro =  [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume ]
-				playIntro() //settings?.mySonosDevices?.playTrackAndResume(state.soundIntro.uri, state.soundIntro.duration, sVolume)
-			}
 			if (isTrigger() && settings?.myAdHocReport) {
 				eTxt = null
 				if (evtName == "routineExecuted" || evtName == "mode") {
@@ -1685,8 +1672,17 @@ def alertsHandler(evt) {
 			def stamp = state.lastTime = new Date(now()).format("h:mm aa", location.timeZone)
 			def today = new Date(now()).format("EEEE, MMMM d, yyyy", location.timeZone)
 			def last = state.lastEvent
-			if (getDayOk() && getModeOk() && getTimeOk() && getFrequencyOk() && getConditionOk()) {
-				if (evtName == "time of day" && settings?.reportMessage && !isTrigger()) {
+			//if (getDayOk() && getModeOk() && getTimeOk() && getFrequencyOk() && getConditionOk()) { - NO NEED to double check
+				if (settings?.playCustIntroSound) {
+					def lastPlay = state?.lastPlayed ?: now()
+					def elapsed = now() - lastPlay
+					log.warn "last play elapsed = $elapsed"
+					def sVolume = settings.mySonosVolume ?: 20
+					loadIntro()
+					//state.soundIntro =  [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume ]
+					playIntro() //settings?.mySonosDevices?.playTrackAndResume(state.soundIntro.uri, state.soundIntro.duration, sVolume)
+				}
+                if (evtName == "time of day" && settings?.reportMessage && !isTrigger()) {
 					eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDispName}")?.replace("&event", "time")?.replace("&action", "executed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : null
 					if (isCustTextWeather()) { eTxt = getWeatherVar(eTxt) }
 				}
@@ -1756,7 +1752,7 @@ def alertsHandler(evt) {
 						}
 					}
 				}
-			}
+			//}
 		}
 	}
 }
