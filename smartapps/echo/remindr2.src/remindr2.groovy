@@ -16,7 +16,7 @@
  *
 /**********************************************************************************************************************************************/
 definition(
-	name: "RemindR",
+	name: "RemindR2",
 	namespace: "Echo",
 	author: "JH/BD",
 	description: "Never miss an important event",
@@ -53,7 +53,7 @@ def mainPage() {
 		}
 		section("Reminders: (${childApps?.size()})") {
 			def i0 = "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png"
-			app(name: "profApp", appName: "RemindRProfiles", namespace: "Echo", title: "Create New Reminder", multiple: true, image: i0)
+			app(name: "profApp", appName: "RemindRProfiles2", namespace: "Echo", title: "Create New Reminder", multiple: true, image: i0)
 		}
 		if (atomicState?.activeRetriggers?.size()) {
 			section("Retriggers:"){

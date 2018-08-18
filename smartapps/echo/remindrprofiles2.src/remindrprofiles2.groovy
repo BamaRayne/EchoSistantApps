@@ -17,12 +17,12 @@
 /**********************************************************************************************************************************************/
 
 definition(
-	name: "RemindRProfiles",
+	name: "RemindRProfiles2",
 	namespace: "Echo",
 	author: "JH/BD",
 	description: "ReminRProfiles",
 	category: "My Apps",
-	parent: "Echo:RemindR",
+	parent: "Echo:RemindR2",
 	iconUrl: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR.png",
 	iconX2Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png",
 	iconX3Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
