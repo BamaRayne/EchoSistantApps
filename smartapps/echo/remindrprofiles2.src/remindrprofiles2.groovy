@@ -2022,14 +2022,14 @@ def retriggerHandler() {
 	}
 }
 
-void unscheduleRetrigger(updParent=true) {
+void unscheduleRetrigger() {
 	unschedule("retriggerHandler")
 	state?.retriggerSchedActive = false
 	state?.message = null
 	state?.originalMessage = null
 	state?.occurrences = 0
-	if(updParent) { parent?.updActiveRetrigger(app?.getId(), null) }
-	if (state?.showDebug && updParent) { log.warn "canceling reminders" }
+	parent?.updActiveRetrigger(app?.getId(), null)
+	if (state?.showDebug) { log.warn "canceling reminders" }
 }
 /***********************************************************************************************************************
 	CANCEL RETRIGGER
@@ -2040,7 +2040,7 @@ String retriveMessage() {
 }
 
 def cancelRetrigger() {
-	unscheduleRetrigger(false)
+	unscheduleRetrigger()
 	if (state?.showDebug) { log.warn "canceling retrigger as requested by other app" }
 	return "successful"
 }

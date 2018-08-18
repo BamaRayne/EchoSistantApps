@@ -191,7 +191,9 @@ Map getActiveRetriggers() {
 public updActiveRetrigger(String id, String msg) {
 	if(settings?.debug) { log.trace "updActiveRetrigger($id, $msg" }
 	Map items = getActiveRetriggers() ?: [:]
-	items[id] = msg
+	if(msg == null) {
+		items?.remove(it as String)
+	} else { items[id] = msg }
 	atomicState?.activeRetriggers = items
 }
 
@@ -237,42 +239,16 @@ public runReport(String profile) {
 /***********************************************************************************************************************
 	CANCEL RETRIGGER
 ***********************************************************************************************************************/
-def cancelRetrigger(String id, String msg) {
-	// log.trace "cancelRetrigger($id, $msg)"
-	String result = "failed"
-	if(id && msg) { 
-		def capp = getChildApps()?.find { it?.getId() == id }
-		if(capp) {
-			String cmsg = capp?.retriveMessage()
-			if(cmsg == msg) {
-				if (settings?.debug) { log.debug "Found a profile for the retrigger = ${capp?.getLabel()}" }
-				result = capp?.cancelRetrigger()
-			}	
-		} 
+public cancelRetriggers() {
+	log.trace "cancelling all retriggers..."
+	getChildApps()?.each { ca->
+		ca?.cancelRetrigger()
 	}
-	log.warn "retrigger cancelation was $result"
-	return result
-}
-
-public cancelAllRetriggers() {
-	Map items = getActiveRetriggers() ?: [:]
-	try {
-		items?.each { id,msg->
-			if(id && msg) {
-				def c = cancelRetrigger(id, msg)
-				log.debug "cancelRetrigger() = $c"
-				if(c == "successful") {
-					items.remove(id as String)
-				}
-			}
-		}
-	} catch (ex) { log.error "cancelAllRetriggers exception: ", ex }
-	atomicState?.activeRetriggers = items
 }
 
 def appHandler(evt) {
 	log.info "AppTouch Button Pressed..."
-	cancelAllRetriggers()
+	cancelRetriggers()
 }
 
 public static List stVoicesList() {
