@@ -159,7 +159,7 @@ def mainPage(params) {
 				}
 				section ("Play this...") {
 					if (!isTrigger()) {
-						input "reportMessage", "text", title: "Compose Message\n(tip: include &variables here)", required: false, multiple: false, defaultValue: "", submitOnChange: true, image: getAppImg("text_letter.png")
+						input "reportMessage", "text", title: "Compose Message\n(tip: include &variables here)", required: false, multiple: false, defaultValue: "", image: getAppImg("text_letter.png")
 					}
 					if (!isAdHoc()) {
 						input "playCustIntroSound", "bool", title: "Play Intro Sound", defaultValue: false, submitOnChange: true, image: getAppImg("sound.png")
@@ -175,7 +175,8 @@ def mainPage(params) {
 					}
 				}
 				if (settings?.reportMessage) {
-					section ("Preview Report with Current Data:") {
+                
+					section ("Generate Preview Report:", hideable: true, hidden: true, submitOnChange: true) {
 						paragraph "${runProfile("test")}"
 					}
 				}
@@ -1421,10 +1422,11 @@ def unlockedWithCodeHandler(evt) {
 	def eTxt = evtDispName + " was " + evtValue //evt.descriptionText
 	if (state?.showDebug) { log.info "unlocked event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName, evtDescText = $evtDescText, eTxt = $eTxt" }
 	if (evtValue == "unlocked" && myLocksSCode && event) {
-		def userCode = evt.data.replaceAll("\\D+","")
+		//this is no longer valid!!!!!!!!!!!!!!! Bobby 8/19/18
+        def userCode = evt.data.replaceAll("\\D+","")
 		userCode = userCode.toInteger()
 		int usedCode = userCode
-		if (myLocksSCode == usedCode) {
+	if (myLocksSCode == usedCode) {
 			eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDispName}")?.replace("&event", "time")?.replace("&action", "executed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : evtDescText
 			data = [value:eTxt, name:"unlocked with code", device:"lock"]
 			alertsHandler(data)
@@ -2523,7 +2525,7 @@ def scheduledTimeHandler(state) {
 Boolean ok2Proceed() {
 	return (getDayOk() && getModeOk() && getTimeOk() && getFrequencyOk() && getConditionOk())
 }
-
+//NEED TO ADD my devices back into the mix - Bobby 8/19/18
 Boolean getConditionOk() {
 	List devList = []
 	Boolean devcheck = ((settings?.rSwitch && settings?.rSwitchS) || (settings?.rMotion && settings?.rMotionS) || (settings?.rContact && settings?.rContactS) || (settings?.rPresence && settings?.rPresenceS))
