@@ -1640,8 +1640,8 @@ def alertsHandler(evt) {
 	def evtName = evt.name
 	def evtDevice = evt.device
 	def evtDeviceId = evt.deviceId
-	def evtDispName = evt.displayName()
-	def evtDescText = evt.descriptionText()
+	def evtDispName = evt.displayName
+	def evtDescText = evt.descriptionText
 	if (evtDispName == null) { evtDispName = evtDevice }
 	log.warn "occurrences number = ${state.occurrences}"
 	String eTxt = "$evtDispName is $evtValue"
