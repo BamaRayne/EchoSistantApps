@@ -1635,13 +1635,13 @@ def getDeviceCapName(evtName) {
 }
 
 def alertsHandler(evt) {
-	def event = evt?.getData()
-	def evtValue = evt?.getValue()
-	def evtName = evt?.getName()
-	def evtDevice = evt?.getDevice()
-	def evtDeviceId = evt?.getDeviceId()
-	def evtDispName = evt?.getDisplayName()
-	def evtDescText = evt?.getDescriptionText()
+	def event = evt.data
+	def evtValue = evt.value
+	def evtName = evt.name
+	def evtDevice = evt.device
+	def evtDeviceId = evt.deviceId
+	def evtDispName = evt.displayName()
+	def evtDescText = evt.descriptionText()
 	if (evtDispName == null) { evtDispName = evtDevice }
 	log.warn "occurrences number = ${state.occurrences}"
 	String eTxt = "$evtDispName is $evtValue"
@@ -1828,7 +1828,7 @@ private takeAction(eTxt) {
 	def sVolume
 	def sTxt
 	//int prevDuration
-	double prevDuration
+	Double prevDuration
 	if (state.sound) { prevDuration = state?.sound?.duration as Double }
 	if (settings?.mySonosDelay2 && prevDuration)	{ prevDuration = prevDuration + settings?.mySonosDelay2 }
 	//if (settings?.myProfile && !isTrigger()) { sendEvent(eTxt) } //retired mailbox 2/25/18
@@ -1873,26 +1873,9 @@ private takeAction(eTxt) {
 		def sCommand = settings?.mySonosResume == true ? "playTrackAndResume" : "playTrackAndRestore"
 		if (!state?.lastPlayed) {
 			if (!settings?.mySonosDelay1) {
-				if (settings?.playCustIntroSound) {
-					int sDelayFirst = 2
-					if (state?.showDebug) { log.info "delaying first message to play intro by $sDelayFirst" }
-					state?.sound?.command = sCommand
-					state?.sound?.volume = sVolume
-					state?.lastPlayed = now()
-					// playIntroSound()
-					runIn(sDelayFirst, sonosFirstDelayedMessage)
-				} else {
-					if (state?.showDebug) { log.info "playing first message" }
-					settings?.mySonosDevices?.each { d-> if(d?.hasCommand("${sCommand}")) { d?."${sCommand}"(sTxt?.uri, Math.max((sTxt?.duration as Integer),2), sVolume) } }
-					state?.lastPlayed = now()
-					state?.sound?.command = sCommand
-					state?.sound?.volume = sVolume
-				}
+				playSonosIntro(sCommand, sTxt, sVolume)
 			} else {
 				if (state?.showDebug) { log.info "delaying first message by ${settings?.mySonosDelay1}" }
-				state?.sound?.command = sCommand
-				state?.sound?.volume = sVolume
-				state?.lastPlayed = now()
 				runIn(settings?.mySonosDelay1, sonosFirstDelayedMessage)
 			}
 		} else {
@@ -1903,30 +1886,31 @@ private takeAction(eTxt) {
 				def delayNeeded = prevDuration - elapsedSec
 				if (delayNeeded > 0 ) { delayNeeded = delayNeeded + 2 }
 				log.error "message is already playing, delaying new message by $delayNeeded seconds (raw delay = $prevDuration, elapsed time = $elapsedSec)"
-				state?.sound?.command = sCommand
-				state?.sound?.volume = sVolume
-				state?.lastPlayed = now()
 				runIn(delayNeeded, delayedMessage)
-			} else {
-				if (settings?.playCustIntroSound) {
-					int sDelayFirst = 2
-					if (state?.showDebug) { log.info "delaying first message to play intro by $sDelayFirst" }
-					state?.sound?.command = sCommand
-					state?.sound?.volume = sVolume
-					state?.lastPlayed = now()
-					runIn(sDelayFirst, sonosFirstDelayedMessage)
-				} else {
-					if (state?.showDebug) { log.info "playing message without delay" }
-					settings?.mySonosDevices?.each {d-> if(d?.hasCommand("${sCommand}")) { d?."${sCommand}"(sTxt?.uri, Math.max((sTxt?.duration as Integer),2), sVolume) } }
-					state?.lastPlayed = now()
-					state?.sound?.command = sCommand
-					state?.sound?.volume = sVolume
-				}
-			}
+			} else { playSonosIntro(sCommand, sTxt, sVolume) }
 		}
+		state?.sound?.command = sCommand
+		state?.sound?.volume = sVolume
+		state?.lastPlayed = now()
 	}
 	retriggerSchedule(eTxt)
 }
+
+private playSonosIntro(cmd, msg, vol) {
+	if(cmd && msg && vol) {
+		if (settings?.playCustIntroSound) {
+			int sDelayFirst = 2
+			if (state?.showDebug) { log.info "delaying first message to play intro by $sDelayFirst" }
+			runIn(sDelayFirst, sonosFirstDelayedMessage)
+		} else {
+			if (state?.showDebug) { log.info "playing first message" }
+			settings?.mySonosDevices?.each { d-> 
+				if(d?.hasCommand("${cmd}")) { d?."${cmd}"(msg?.uri, Math.max((msg?.duration as Integer),2), vol) } 
+			}
+		}
+	}
+}
+
 
 private unmuteDevices(devs) {
 	if(!devs) { return }
