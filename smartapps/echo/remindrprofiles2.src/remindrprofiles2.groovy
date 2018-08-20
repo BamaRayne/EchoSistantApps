@@ -177,7 +177,6 @@ def mainPage(params) {
 					}
 				}
 				if (settings?.reportMessage) {
-                
 					section ("Generate Preview Report:", hideable: true, hidden: true, submitOnChange: true) {
 						paragraph "${runProfile("test")}"
 					}
@@ -1844,7 +1843,7 @@ private takeAction(eTxt) {
 		}
 		state.sound = sTxt
 	} else {
-		loadSound()
+		loadSoundState()
 		state?.lastPlayed = now()
 		sTxt = state?.sound
 	}
@@ -1856,7 +1855,7 @@ private takeAction(eTxt) {
 		sVolume = settings.mySpeechVolume ?: 30
 		if (!settings?.mySpeechDelay1) {
 			unmuteDevices(settings?.mySpeechDevices)
-			settings?.mySpeechDevices?.playTextAndResume(eTxt, sVolume)
+			settings?.mySpeechDevices?.each {d-> if(d?.hasCommand("playTextAndResume")) { d?.playTextAndResume(eTxt, sVolume) } }
 			state?.lastPlayed = now()
 			if (state?.showDebug) { log.info "Playing Message on Speech Synthesizer(s) '${settings?.mySpeechDevices}' at volume (${sVolume})" }
 		} else {
@@ -1884,7 +1883,7 @@ private takeAction(eTxt) {
 					runIn(sDelayFirst, sonosFirstDelayedMessage)
 				} else {
 					if (state?.showDebug) { log.info "playing first message" }
-					settings?.mySonosDevices?."${sCommand}"(sTxt.uri, Math.max((sTxt.duration as Integer),2), sVolume)
+					settings?.mySonosDevices?.each { d-> if(d?.hasCommand("${sCommand}")) { d?."${sCommand}"(sTxt?.uri, Math.max((sTxt?.duration as Integer),2), sVolume) } }
 					state?.lastPlayed = now()
 					state?.sound?.command = sCommand
 					state?.sound?.volume = sVolume
@@ -1918,7 +1917,7 @@ private takeAction(eTxt) {
 					runIn(sDelayFirst, sonosFirstDelayedMessage)
 				} else {
 					if (state?.showDebug) { log.info "playing message without delay" }
-					settings?.mySonosDevices?."${sCommand}"(sTxt.uri, Math.max((sTxt.duration as Integer),2), sVolume)
+					settings?.mySonosDevices?.each {d-> if(d?.hasCommand("${sCommand}")) { d?."${sCommand}"(sTxt?.uri, Math.max((sTxt?.duration as Integer),2), sVolume) } }
 					state?.lastPlayed = now()
 					state?.sound?.command = sCommand
 					state?.sound?.volume = sVolume
@@ -1929,7 +1928,7 @@ private takeAction(eTxt) {
 	retriggerSchedule(eTxt)
 }
 
-void unmuteDevices(devs) {
+private unmuteDevices(devs) {
 	if(!devs) { return }
 	devs?.each { dev->
 		def currMuteOn = (dev?.latestValue("mute") == "muted")
@@ -2692,66 +2691,63 @@ private void sendText(number, message) {
 /***********************************************************************************************************************
 	CUSTOM SOUNDS HANDLER
 ***********************************************************************************************************************/
-private loadSound() {
+private loadSoundState() {
 	switch (settings?.custSound) {
-		case "Bell 1":
-			state.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/bell1.mp3", duration: "10"]
-			break;
 		case "Bell 2":
 			state.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/bell2.mp3", duration: "10"]
-			break;
+			break
 		case "Dogs Barking":
 			state.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/dogs.mp3", duration: "10"]
-			break;
+			break
 		case "Fire Alarm":
 			state.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/alarm.mp3", duration: "17"]
-			break;
+			break
 		case "The mail has arrived":
 			state.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/the+mail+has+arrived.mp3", duration: "1"]
-			break;
+			break
 		case "A door opened":
 			state.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/a+door+opened.mp3", duration: "1"]
-			break;
+			break
 		case "There is motion":
 			state.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/there+is+motion.mp3", duration: "1"]
-			break;
+			break
 		case "Smartthings detected a flood":
 			state.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/smartthings+detected+a+flood.mp3", duration: "2"]
-			break;
+			break
 		case "Smartthings detected smoke":
 			state.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/smartthings+detected+smoke.mp3", duration: "1"]
-			break;
+			break
 		case "Someone is arriving":
 			state.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/someone+is+arriving.mp3", duration: "1"]
-			break;
+			break
 		case "Piano":
 			state.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/piano2.mp3", duration: "10"]
-			break;
+			break
 		case "Lightsaber":
 			state.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/lightsaber.mp3", duration: "10"]
-			break;
+			break
 		case "Alexa: Beep Beep":
 			state.sound = [uri: "https://images-na.ssl-images-amazon.com/images/G/01/mobile-apps/dex/ask-customskills/audio/speechcons/beep_beep._TTH_.mp3", duration: "10"]
-			break;
+			break
 		case "Alexa: Bada Bing Bada Boom":
 			state.sound = [uri: "https://images-na.ssl-images-amazon.com/images/G/01/mobile-apps/dex/ask-customskills/audio/speechcons/bada_bing_bada_boom._TTH_.mp3", duration: "10"]
-			break;
+			break
 		case "Alexa: Boing":
 			state.sound = [uri: "https://images-na.ssl-images-amazon.com/images/G/01/mobile-apps/dex/ask-customskills/audio/speechcons/boing._TTH_.mp3", duration: "10"]
-			break;
+			break
 		case "Alexa: Open Sesame":
 			state.sound = [uri: "https://images-na.ssl-images-amazon.com/images/G/01/mobile-apps/dex/ask-customskills/audio/speechcons/open_sesame._TTH_.mp3", duration: "10"]
-			break;
+			break
 		case "Soft Chime":
 			state.sound = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "10"]
-			break;
+			break
 		case "Custom URI":
 			def fDuration = settings?.custSoundDuration ?: "10"
 			state.sound = [uri: "${settings?.custSoundUrl}", duration: "${fDuration}"]
-			break;
+			break
 		default:
 			state?.sound = [uri: "http://s3.amazonaws.com/smartapp-media/sonos/bell1.mp3", duration: "10"]
-			break;
+			break
 	}
 }
 
@@ -2764,17 +2760,17 @@ private playIntroSound() {
 	switch (settings?.custIntroSound) {
 		case "Soft Chime":
 			state.soundIntro = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume]
-			break;
+			break
 		case "Water Droplet" :
 			state.soundIntro = [uri: "http://soundbible.com/mp3/Single Water Droplet-SoundBible.com-425249738.mp3", duration: "5", volume: sVolume]
-			break;
+			break
 		case "Custom URI":
 			def fDuration = settings?.custIntroSoundDuration ?: "10"
 			state.soundIntro = [uri: "${settings?.custIntroSoundUrl}", duration: "${settings?.fDuration}", volume: sVolume]
-			break;
+			break
 		default:
 			state.soundIntro = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume]
-			break;
+			break
 	}
 	settings?.mySonosDevices?.each { d->
 		log.info "playing intro on ${d?.displayName}"
