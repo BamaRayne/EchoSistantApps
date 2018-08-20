@@ -1643,7 +1643,7 @@ def alertsHandler(evt) {
 	def evtDispName = evt.displayName
 	def evtDescText = evt.descriptionText
 	if (evtDispName == null) { evtDispName = evtDevice }
-	log.warn "occurrences number = ${state.occurrences}"
+	log.warn "retrigger occurrences = ${state.occurrences}"
 	String eTxt = "$evtDispName is $evtValue"
 	if (state?.showDebug) { 
 		log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName, evtDescText = $evtDescText, eTxt = $eTxt"
@@ -1910,7 +1910,6 @@ private playSonosIntro(cmd, msg, vol) {
 		}
 	}
 }
-
 
 private unmuteDevices(devs) {
 	if(!devs) { return }
