@@ -107,13 +107,15 @@ private appMigration() {
 		"usePush":"bool", "pushTimeStamp":"bool", "askAlexaMQs":"enum", "askAlexaMsgExpiration":"number", "mySonosDevices":"capability.musicPlayer", "mySonosVolume":"number",
 		"mySonosResume":"bool", "mySonosDelay1":"number", "mySonosDelay2":"number", "mySpeechDevices":"capability.speechSynthesis", "mySpeechVolume":"number", "mySpeechDelay1":"number",
 		"ttsVoiceStyle":"enum", "retriggerSched":"enum", "retriggerCount":"number", "retriggerCancelOnChange":"bool", "custSoundUrl":"text", "custSoundDuration":"text",
-		"playCustIntroSound":"bool", "custIntroSoundUrl":"text", "custIntroSoundDuration":"text", "webCorePistons":"enum"
+		"playCustIntroSound":"bool", "custIntroSoundUrl":"text", "custIntroSoundDuration":"text", "webCorePistons":"enum", "myPowerThresholdStart":"number", "myPowerThresholdStop":"number",
+		"myButtonNum":"number"
 	]
 	def itemMap = ["offset":"sunOffset", "tv":"myNotifyDevice", "myWeatherCheck":"myWeatherCheckSched", "message":"reportMessage", "sms":"smsNumbers",
 		"push":"usePush", "timeStamp":"pushTimeStamp", "listOfMQs":"askAlexaMQs", "expiration":"askAlexaMsgExpiration", "sonos":"mySonosDevices", "sonosVolume":"mySonosVolume",
 		"resumePlaying":"mySonosResume", "sonosDelayFirst":"mySonosDelay1", "sonosDelay":"mySonosDelay2", "speechSynth":"mySpeechDevices", "speechVolume":"mySpeechVolume",
 		"delayFirst":"mySpeechDelay1", "stVoice":"ttsVoiceStyle", "retrigger":"retriggerSched", "howManyTimes":"retriggerCount", "continueOnChange":"retriggerCancelOnChange",
-		"cSound":"custSoundUrl", "cDuration":"custSoundDuration", "introSound":"playCustIntroSound", "iSound":"custIntroSoundUrl", "iDuration":"custIntroSoundDuration", "myPiston":"webCorePistons"
+		"cSound":"custSoundUrl", "cDuration":"custSoundDuration", "introSound":"playCustIntroSound", "iSound":"custIntroSoundUrl", "iDuration":"custIntroSoundDuration", "myPiston":"webCorePistons",
+		"threshold":"myPowerThresholdStart", "thresholdStop":"myPowerThresholdStop", "buttonNum":"myButtonNum"
 	]
 	if(settings?.actionType) {
 		state?.actionType = settings?.actionType
@@ -454,7 +456,7 @@ def actionDevicesPage() {
 			if (settings?.myButton && !isAdHoc()) {
 				input "myButtonS", "enum", title: "Notify when button is...", options: ["pushed", "held"], required: true, submitOnChange: true, image: "blank.png"
 				if (settings?.myButtonS) {
-					input "buttonNum", "number", title: "Button Number", range: "1..20", required: false, description: "number (optional - max 20)", submitOnChange: true, image: "blank.png"
+					input "myButtonNum", "number", title: "Button Number", range: "1..20", required: false, description: "number (optional - max 20)", submitOnChange: true, image: "blank.png"
 				}
 			}
 		}
@@ -499,7 +501,7 @@ def actionDevicesPage() {
 				}
 			}
 		}
-
+/*
 		section ("Garage Doors (Relay):", hideWhenEmpty: true) {
 			input "myRelay", "capability.switch", title: "Relay used as Garage Doors", multiple: true, required: false, submitOnChange: true, image: getAppImg("garage_door.png")
 			if (settings?.myRelay) {
@@ -512,7 +514,7 @@ def actionDevicesPage() {
 				}
 			}
 		}
-
+*/
 		section ("Valve Devices:", hideWhenEmpty: true) {
 			input "myValve", "capability.valve", title: "Water Valves", required: false, multiple: true, submitOnChange: true, image: getAppImg("valve.png")
 			if (settings?.myValve && !isAdHoc()) {
@@ -534,11 +536,11 @@ def sensorDevicesPage() {
 					input "myPowerS", "enum", title: "Notify when power is...", options: ["above threshold", "below threshold"], required: false, submitOnChange: true, image: "blank.png"
 				}
 				if (settings?.myPowerS) {
-					input "threshold", "number", title: "Wattage Threshold...", required: false, description: "in watts", submitOnChange: true, image: "blank.png"
+					input "myPowerThresholdStart", "number", title: "Wattage Threshold...", required: false, description: "in watts", submitOnChange: true, image: "blank.png"
 				}
-				if (settings?.threshold) {
+				if (settings?.myPowerThresholdStart) {
 					input "myPowerMinutes", "number", title: "Threshold Delay", required: false, description: "in minutes (optional)", submitOnChange: true, image: "blank.png"
-					input "thresholdStop", "number", title: "...but not ${settings?.myPowerS} this value", required: false, description: "in watts", submitOnChange: true, image: "blank.png"
+					input "myPowerThresholdStop", "number", title: "...but not ${settings?.myPowerS} this value", required: false, description: "in watts", submitOnChange: true, image: "blank.png"
 				}
 			}
 		}
@@ -956,6 +958,7 @@ private subscriber() {
 				subscribe(settings?.myGarage, "contact.closed", alertsHandler)
 			} else { subscribe(settings?.myGarage, "contact", alertsHandler) }
 		}
+		/* Bobby 8/20/18
 		if (settings?.myRelayContact) {
 			if (settings?.myRelayContactS == "open") {
 				subscribe(settings?.myRelayContact, "contact.open", alertsHandler)
@@ -963,6 +966,7 @@ private subscriber() {
 				subscribe(settings?.myRelayContact, "contact.closed", alertsHandler)
 			} else { subscribe(settings?.myRelayContact, "contact", alertsHandler) }
 		}
+		*/
 		if (settings?.myDoor) {
 			if (settings?.myDoorS == "open") {
 				subscribe(settings?.myDoor, "contact.open", alertsHandler)
@@ -1292,6 +1296,7 @@ String getVariable(var) {
 				devCnt = devCnt + settings?.myGarage?.size()
 				devList = devList + getDevsByAttrState(settings?.myGarage, "contact", "open")
 			}
+			/* Bobby 8/20/18
 			if (settings?.myRelayContact) {
 				devCnt = devCnt + settings?.myRelayContact?.size()
 				devList = devList + getDevsByAttrState(settings?.myRelayContact, "contact", "open")
@@ -1299,7 +1304,7 @@ String getVariable(var) {
 			def closedDoors = devCnt - devList?.size()
 			result = varResultBuilder(devList, " garage door is open", " of the Garage doors are open and ${closedDoor} closed", "no garage doors are open")
 			break
-
+			*/
 		case "shades":
 			if (settings?.myShades) {
 				devList = getDevsByAttrState(settings?.myShades, "contact", "open")
@@ -1344,8 +1349,8 @@ def meterHandler(evt) {
 	int delay = settings?.myPowerMinutes ?: 0
 	int meterValueRaw = evt.value as double
 	int meterValue = meterValueRaw ?: 0 as int
-	int thresholdValue = settings?.threshold == null ? 0 : settings?.threshold as int
-	int thresholdStopValue = settings?.thresholdStop == null ? 0 : settings?.thresholdStop as int
+	int thresholdValue = settings?.myPowerThresholdStart == null ? 0 : settings?.myPowerThresholdStart as int
+	int thresholdStopValue = settings?.myPowerThresholdStop == null ? 0 : settings?.myPowerThresholdStop as int
 	def cycleOnHigh = state.cycleOnH
 	def cycleOnLow = state.cycleOnL
 	if (settings?.myPowerS == "above threshold") {
@@ -1392,7 +1397,7 @@ def meterHandler(evt) {
 def bufferPendingH() {
 	def meterValueRaw = settings?.myPower.currentValue("power") as double
 	int meterValue = meterValueRaw ?: 0 as int
-	def thresholdValue = settings?.threshold == null ? 0 : settings?.threshold as int
+	def thresholdValue = settings?.myPowerThresholdStart == null ? 0 : settings?.myPowerThresholdStart as int
 	if (meterValue >= thresholdValue) {
 		if (state?.showDebug) { log.debug "sending notification (above)" }
 		alertsHandler([value:"above threshold", name:"power", device:"power meter"])
@@ -1402,7 +1407,7 @@ def bufferPendingH() {
 def bufferPendingL() {
 	def meterValueRaw = settings?.myPower.currentValue("power") as double
 	int meterValue = meterValueRaw ?: 0 as int
-	def thresholdValue = settings?.threshold == null ? 0 : settings?.threshold as int
+	def thresholdValue = settings?.myPowerThresholdStart == null ? 0 : settings?.myPowerThresholdStart as int
 	if (meterValue <= thresholdValue) {
 		if (state?.showDebug) { log.debug "sending notification (below)" }
 		alertsHandler([value:"below threshold", name:"power", device:"power meter"])
@@ -1452,7 +1457,7 @@ def buttonNumHandler(evt) {
 		buttonNumUsed = buttonNumUsed.toInteger()
 	   	int butNum = buttonNumUsed
 		log.warn "button num = $butNum, value = $evtValue"
-		bTN = settings.buttonNum ?: 1
+		bTN = settings.myButtonNum ?: 1
 		if (bTN == butNum) {
 			eTxt = settings?.reportMessage ? settings?.reportMessage?.replace("&device", "${evtDispName}")?.replace("&event", "time")?.replace("&action", "executed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : evtDescText
 			alertsHandler([value:evtValue, name:evtName, device:evtDispName])
@@ -1631,36 +1636,38 @@ def getDeviceCapName(evtName) {
 }
 
 def alertsHandler(evt) {
-	def event = evt.data
-	def evtValue = evt.value
-	def evtName = evt.name
-	def evtDevice = evt.device
-	def evtDispName = evt.displayName
-	def evtDescText = evt.descriptionText
+	def event = evt?.getData()
+	def evtValue = evt?.getValue()
+	def evtName = evt?.getName()
+	def evtDevice = evt?.getDevice()
+	def evtDeviceId = evt?.getDeviceId()
+	def evtDispName = evt?.getDisplayName()
+	def evtDescText = evt?.getDescriptionText()
 	if (evtDispName == null) { evtDispName = evtDevice }
 	log.warn "occurrences number = ${state.occurrences}"
-	// state?.occurrences = 0
 	String eTxt = "$evtDispName is $evtValue"
-	if (state?.showDebug) { log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName, evtDescText = $evtDescText, eTxt = $eTxt" }
-	if (state?.showDebug) { log.warn "version number = ${appVersion()}" }
+	if (state?.showDebug) { 
+		log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName, evtDescText = $evtDescText, eTxt = $eTxt"
+		log.warn "version number = ${appVersion()}" 
+	}
 	String dCapability = getDeviceCapName(evtName)
 	Integer delayMinutes = (dCapability && settings["${dCapability}Minutes"]) ? settings["${dCapability}Minutes"] : null
 	if (dCapability && delayMinutes && evtName != "delay") {
-		Map data = [deviceName: evtDevice.label, attributeName: evtValue, capabilityName: "${evtName}", type: dCapability ]
+		Map data = [deviceName: evtDevice.label, attributeName: evtValue, capabilityName: "${evtName}", inputName: dCapability]
 		log.warn "scheduling delay with data: $data"
 		state.lastEvent = new Date(now()).format("h:mm aa", location.timeZone)
-		runIn(delayMinutes*60, checkEvent, [data: data])
+		runIn(delayMinutes * 60, getDevicesOk, [data: data])
 	} else {
 		//FAST LANE AUDIO DELIVERY METHOD
 		if (isDefault()) {
 			if (settings?.mySpeechDevices) {
-				settings?.mySpeechDevices?.playTextAndResume(eTxt)
+				settings?.mySpeechDevices?.each { d->  if(d?.hasCommand("playTextAndResume")) { d?.playTextAndResume(eTxt) } }
 			} else {
 				if (settings?.mySonosDevices) {
 					def sCommand = settings?.mySonosResume == true ? "playTrackAndResume" : "playTrackAndRestore"
 					def sTxt = textToSpeech(eTxt instanceof List ? eTxt[0] : eTxt, settings?.ttsVoiceStyle.substring(6))
 					def sVolume = settings.mySonosVolume ?: 20
-					settings?.mySonosDevices?."${sCommand}"(sTxt?.uri, sTxt?.duration, sVolume)
+					settings?.mySonosDevices?.each { d-> if(d?.hasCommand("${sCommand}")) { d?."${sCommand}"(sTxt?.uri, sTxt?.duration, sVolume) } }
 				}
 			}
 			if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) { sendtxt(eTxt) }
@@ -1686,10 +1693,6 @@ def alertsHandler(evt) {
 			def today = new Date(now()).format("EEEE, MMMM d, yyyy", location.timeZone)
 			def last = state.lastEvent
 			if (settings?.playCustIntroSound) {
-				// def lastPlay = state?.lastPlayed ?: now()
-				// def elapsed = now() - lastPlay
-				// log.warn "last play elapsed = $elapsed"
-				// def sVolume = settings.mySonosVolume ?: 20
 				playIntroSound()
 			}
 			if (evtName == "time of day" && settings?.reportMessage && !isTrigger()) {
@@ -1762,53 +1765,55 @@ def alertsHandler(evt) {
 					}
 				}
 			}
-			
 		}
 	}
 }
 
-def checkEvent(data) {
-	def deviceName = data.deviceName
-	def deviceAttribute = data.attributeName
-	def deviceCapability = data.capabilityName
-	def deviceType = data.type
-	def deviceD
-	def r
-	log.warn "received runIn data: device = $deviceName, attribute = $deviceAttribute, capability = $deviceCapability, type = $deviceType"
-	switch(deviceType) {
-		case "mySwitch":
-			deviceD = mySwitch.find {d -> d.label == deviceName}
-			r = deviceD?.currentValue(deviceCapability).contains("${deviceAttribute}")
-			break
-		case "myMotion":
-			deviceD = myMotion.find {d -> d.label == deviceName}
-			r = deviceD?.currentValue(deviceCapability).contains("${deviceAttribute}")
-			break
-		case "myContact":
-			deviceD = myContact.find {d -> d.label == deviceName}
-			if (deviceD == null) {
-				deviceD = myRelayContactS.find {d -> d.label == deviceName}
-			}
-			r = deviceD?.currentValue(deviceCapability).contains("${deviceAttribute}")
-			break
-		case "myValve":
-			deviceD = myValve.find {d -> d.label == deviceName}
-			r = deviceD?.currentValue(deviceCapability).contains("${deviceAttribute}")
-			break
-		case "myGarage":
-			deviceD = myValve.find {d -> d.label == deviceName}
-			r = deviceD?.currentValue(deviceCapability).contains("${deviceAttribute}")
-			break
-		case "myLocks":
-			deviceD = myLocks.find {d -> d.label == deviceName}
-			r = deviceD?.currentValue(deviceCapability).contains("${deviceAttribute}")
-			break
+Boolean getDevicesOk(data) {
+	Boolean send = true
+	def dev = null
+	log.warn "received runIn data: device = ${data?.deviceName}, attribute = ${data?.attributeName}, capability = ${data?.capabilityName}, type = ${data?.inputName}"
+	if(data?.inputName) {
+		dev = settings?."${data?.inputName}"?.find {d -> d?.displayName == data?.deviceName}
+		if(dev && dev?.hasAttribute(data?.capabilityName)) {
+			String compVal = settings?."${data?.inputName}S" ?: data?.attributeName
+			send = (dev?.currentState(data?.capabilityName as String)?.stringValue == compVal)
+		}
 	}
-	log.warn "r = $r"
-	if (r) {
+	if (send) {
 		if (state?.showDebug) { log.debug "pushing notification after delay" }
-		alertsHandler([value: deviceAttribute, name: "delay", device: deviceName])
+		alertsHandler([value: data?.attributeName, name: "delay", device: data?.deviceName])
 	}
+	return send
+}
+
+Boolean getConditionsOk() {
+	List devList = []
+	Boolean devcheck = ((settings?.rSwitch && settings?.rSwitchS) || (settings?.rMotion && settings?.rMotionS) || (settings?.rContact && settings?.rContactS) || (settings?.rPresence && settings?.rPresenceS))
+	Integer devCnts = ((settings?.rSwitch?.size()?:0) + (settings?.rMotion?.size()?:0) + (settings?.rContact?.size()?:0) + (settings?.rPresence?.size()?:0))
+	if (settings?.rSwitch && settings?.rSwitchS) {
+		List devs = getDevsByAttrState(settings?.rSwitch, "switch", settings?.rSwitchS)
+		devList = devList + devs
+		log.warn "rSwitch list is ${devs} for state ${settings?.rSwitchS}"
+	}
+	if (settings?.rMotion && settings?.rMotionS) {
+		List devs = getDevsByAttrState(settings?.rMotion, "motion", settings?.rMotionS)
+		devList = devList + devs
+		log.warn "rMotion list is ${devs} for state ${settings?.rMotionS}"
+	}
+	if (settings?.rContact && settings?.rContactS) {
+		List devs = getDevsByAttrState(settings?.rContact, "contact", settings?.rContactS)
+		devList = devList + devs
+		log.warn "rContact list is ${devs} for state ${settings?.rContactS}"
+	}
+	if (settings?.rPresence && settings?.rPresenceS) {
+		List devs = getDevsByAttrState(settings?.rPresence, "presence", settings?.rPresenceS)
+		devList = devList + devs
+		log.warn "rPresence list is ${devs} for state ${settings?.rPresenceS}"
+	}
+	Boolean result = devcheck ? (devList?.size() == devCnts) : true
+	log.debug "getConditionsOk = ${result} | devcheck: ${devcheck} | devList: ${devList}"
+	return result
 }
 
 /***********************************************************************************************************************
@@ -1875,7 +1880,7 @@ private takeAction(eTxt) {
 					state?.sound?.command = sCommand
 					state?.sound?.volume = sVolume
 					state?.lastPlayed = now()
-					playIntroSound()
+					// playIntroSound()
 					runIn(sDelayFirst, sonosFirstDelayedMessage)
 				} else {
 					if (state?.showDebug) { log.info "playing first message" }
@@ -1952,9 +1957,13 @@ def delayedFirstMessage() {
 }
 
 def sonosFirstDelayedMessage() {
-	if(state?.sound) {
-		settings?.mySonosDevices?."${state?.sound?.command}"(state?.sound?.uri, Math.max((state?.sound?.duration as Integer),2), state?.sound?.volume)
-		if (state?.showDebug) { log.info "Playing first message delayed" }
+	if(state?.sound && state?.sound?.command && state?.sound?.duration && state?.sound?.volume) {
+		settings?.mySonosDevices?.each { d->
+			if(d?.hasCommand("${state?.sound?.command}")) {
+				d?."${state?.sound?.command}"(state?.sound?.uri, Math.max((state?.sound?.duration as Integer),2), state?.sound?.volume)
+				if (state?.showDebug) { log.info "Playing first message delayed on (${d?.displayName})" }
+			} else { if(state?.showDebug) {log.error "sonosFirstDelayedMessage() Skipping... Device ${d?.displayName} does not support ${state?.sound?.command} command!!!"} }
+		}
 	} else { if(state?.showDebug) {log.warn "sonosFirstDelayedMessage() Skipping... Sound state not available!!!"} }
 }
 /***********************************************************************************************************************
@@ -2009,7 +2018,7 @@ def retriggerHandler() {
 	if (settings?.retriggerCancelOnChange == false) {
 		send = true
 	} else {
-		if(getDayOk() && getModeOk() && getTimeOk() && getFrequencyOk() && getConditionOk()) {
+		if(getDayOk() && getModeOk() && getTimeOk() && getFrequencyOk() && getConditionsOk()) {
 			send = true
 		} else {
 			if(state?.retriggerSchedActive) { unscheduleRetrigger() }
@@ -2153,7 +2162,7 @@ def mGetWeatherAlerts() {
 	} else { result = "There are no weather alerts for your area" }
 	def data = [:]
 	try {
-		//if (getDayOk()==true && getModeOk()==true && getTimeOk()==true && getFrequencyOk()==true || getConditionOk()==true) { -- bobby 4/18/2017
+		//if (getDayOk()==true && getModeOk()==true && getTimeOk()==true && getFrequencyOk()==true || getConditionsOk()==true) { -- bobby 4/18/2017
 			def weather = getWeatherFeature("alerts", state?.wZipCode)
 			def type = weather?.alerts?.type[0]
 			def alert = weather?.alerts?.description[0]
@@ -2523,37 +2532,9 @@ def scheduledTimeHandler(state) {
 	RESTRICTIONS HANDLER
 ***********************************************************************************************************************/
 Boolean ok2Proceed() {
-	return (getDayOk() && getModeOk() && getTimeOk() && getFrequencyOk() && getConditionOk())
+	return (getDayOk() && getModeOk() && getTimeOk() && getFrequencyOk() && getConditionsOk())
 }
-//NEED TO ADD my devices back into the mix - Bobby 8/19/18
-Boolean getConditionOk() {
-	List devList = []
-	Boolean devcheck = ((settings?.rSwitch && settings?.rSwitchS) || (settings?.rMotion && settings?.rMotionS) || (settings?.rContact && settings?.rContactS) || (settings?.rPresence && settings?.rPresenceS))
-	Integer devCnts = ((settings?.rSwitch?.size()?:0) + (settings?.rMotion?.size()?:0) + (settings?.rContact?.size()?:0) + (settings?.rPresence?.size()?:0))
-	if (settings?.rSwitch && settings?.rSwitchS) {
-		List devs = getDevsByAttrState(settings?.rSwitch, "switch", settings?.rSwitchS)
-		devList = devList + devs
-		log.warn "rSwitch list is ${devs} for state ${settings?.rSwitchS}"
-	}
-	if (settings?.rMotion && settings?.rMotionS) {
-		List devs = getDevsByAttrState(settings?.rMotion, "motion", settings?.rMotionS)
-		devList = devList + devs
-		log.warn "rMotion list is ${devs} for state ${settings?.rMotionS}"
-	}
-	if (settings?.rContact && settings?.rContactS) {
-		List devs = getDevsByAttrState(settings?.rContact, "contact", settings?.rContactS)
-		devList = devList + devs
-		log.warn "rContact list is ${devs} for state ${settings?.rContactS}"
-	}
-	if (settings?.rPresence && settings?.rPresenceS) {
-		List devs = getDevsByAttrState(settings?.rPresence, "presence", settings?.rPresenceS)
-		devList = devList + devs
-		log.warn "rPresence list is ${devs} for state ${settings?.rPresenceS}"
-	}
-	Boolean result = devcheck ? (devList?.size() == devCnts) : true
-	log.debug "getConditionOk = ${result} | devcheck: ${devcheck} | devList: ${devList}"
-	return result
-}
+
 
 Boolean getFrequencyOk() {
 	def lastPlayed = state?.lastPlayed
@@ -2776,34 +2757,29 @@ private loadSound() {
 
 private playIntroSound() {
 	log.info "loading intro ${settings?.custIntroSound}"
+	def lastPlay = state?.lastPlayed ?: now()
+	def elapsed = now() - lastPlay
+	log.warn "last play elapsed = $elapsed"
+	def sVolume = settings?.mySonosVolume ?: 20
 	switch (settings?.custIntroSound) {
 		case "Soft Chime":
-			state.soundIntro = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3"]
+			state.soundIntro = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume]
 			break;
 		case "Water Droplet" :
-			state.soundIntro = [uri: "http://soundbible.com/mp3/Single Water Droplet-SoundBible.com-425249738.mp3", duration: "5"]
+			state.soundIntro = [uri: "http://soundbible.com/mp3/Single Water Droplet-SoundBible.com-425249738.mp3", duration: "5", volume: sVolume]
 			break;
 		case "Custom URI":
 			def fDuration = settings?.custIntroSoundDuration ?: "10"
-			state.soundIntro = [uri: "${settings?.custIntroSoundUrl}", duration: "${settings?.fDuration}"]
+			state.soundIntro = [uri: "${settings?.custIntroSoundUrl}", duration: "${settings?.fDuration}", volume: sVolume]
 			break;
 		default:
-			state.soundIntro = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3"]
+			state.soundIntro = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume]
 			break;
 	}
-	log.info "playing intro"
-	settings?.mySonosDevices?.playTrackAndRestore(state.soundIntro.uri, state.soundIntro.duration, state.soundIntro.volume)
-}
-
-/******************************************************************************************************
-   PARENT STATUS CHECKS
-******************************************************************************************************/
-def checkRelease() {
-	return state.NotificationRelease
-}
-
-def getStateVal(var) {
-	return state[var] ?: null
+	settings?.mySonosDevices?.each { d->
+		log.info "playing intro on ${d?.displayName}"
+		d?.playTrackAndRestore(state?.soundIntro?.uri, state?.soundIntro?.duration, state?.soundIntro?.volume)
+	}
 }
 
 /******************************************************************************************************
@@ -2862,6 +2838,10 @@ def pushSendDesc() {
 	str += (settings?.pushoverEnabled && settings?.pushoverDevices) ? "${str != "" ? "\n" : ""} • Pushover (${settings?.pushoverDevices?.size()} Devices)" : ""
 	str += (settings?.askAlexa && settings?.askAlexaMQs) ? "${str != "" ? "\n" : ""} • Ask Alexa (${settings?.askAlexaMQs?.size()} Queues)" : ""
 	return str == "" ? "Tap to Configure" : str
+}
+
+def getStateVal(var) {
+	return state[var] ?: null
 }
 
 def restrictPageSettings() {
