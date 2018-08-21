@@ -1,7 +1,13 @@
 {
     "customSounds": {
-        "Bell 1": { "uri": "http://s3.amazonaws.com/smartapp-media/sonos/bell1.mp3", "duration": "10" },
-        "Bell 2": { "uri": "http://s3.amazonaws.com/smartapp-media/sonos/bell2.mp3", "duration": "10" },
+        "Bell 1": {
+            "uri": "http://s3.amazonaws.com/smartapp-media/sonos/bell1.mp3",
+            "duration": "10"
+        },
+        "Bell 2": {
+            "uri": "http://s3.amazonaws.com/smartapp-media/sonos/bell2.mp3",
+            "duration": "10"
+        },
         "Dogs Barking": {
             "uri": "http://s3.amazonaws.com/smartapp-media/sonos/dogs.mp3",
             "duration": "10"
@@ -10,18 +16,75 @@
             "uri": "http://s3.amazonaws.com/smartapp-media/sonos/alarm.mp3",
             "duration": "17"
         },
-        "The mail has arrived": { "uri": "http://s3.amazonaws.com/smartapp-media/sonos/the+mail+has+arrived.mp3", "duration": "1" },
-        "A door opened": { "uri": "http://s3.amazonaws.com/smartapp-media/sonos/a+door+opened.mp3", "duration": "1" },
-        "There is motion": { "uri": "http://s3.amazonaws.com/smartapp-media/sonos/there+is+motion.mp3", "duration": "1" },
-        "Smartthings detected a flood": { "uri": "http://s3.amazonaws.com/smartapp-media/sonos/smartthings+detected+a+flood.mp3", "duration": "2" },
-        "Smartthings detected smoke": { "uri": "http://s3.amazonaws.com/smartapp-media/sonos/smartthings+detected+smoke.mp3", "duration": "1" },
-        "Someone is arriving": { "uri": "http://s3.amazonaws.com/smartapp-media/sonos/someone+is+arriving.mp3", "duration": "1" },
-        "Piano": { "uri": "http://s3.amazonaws.com/smartapp-media/sonos/piano2.mp3", "duration": "10" },
-        "Lightsaber": { "uri": "http://s3.amazonaws.com/smartapp-media/sonos/lightsaber.mp3", "duration": "10" },
-        "Alexa: Beep Beep": { "uri": "https://images-na.ssl-images-amazon.com/images/G/01/mobile-apps/dex/ask-customskills/audio/speechcons/beep_beep._TTH_.mp3", "duration": "10" },
-        "Alexa: Bada Bing Bada Boom": { "uri": "https://images-na.ssl-images-amazon.com/images/G/01/mobile-apps/dex/ask-customskills/audio/speechcons/bada_bing_bada_boom._TTH_.mp3", "duration": "10" },
-        "Alexa: Boing": { "uri": "https://images-na.ssl-images-amazon.com/images/G/01/mobile-apps/dex/ask-customskills/audio/speechcons/boing._TTH_.mp3", "duration": "10" },
-        "Alexa: Open Sesame": { "uri": "https://images-na.ssl-images-amazon.com/images/G/01/mobile-apps/dex/ask-customskills/audio/speechcons/open_sesame._TTH_.mp3", "duration": "10" },
-        "Soft Chime": { "uri": "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", "duration": "10" }
+        "The mail has arrived": {
+            "uri": "http://s3.amazonaws.com/smartapp-media/sonos/the+mail+has+arrived.mp3",
+            "duration": "1"
+        },
+        "A door opened": {
+            "uri": "http://s3.amazonaws.com/smartapp-media/sonos/a+door+opened.mp3",
+            "duration": "1"
+        },
+        "There is motion": {
+            "uri": "http://s3.amazonaws.com/smartapp-media/sonos/there+is+motion.mp3",
+            "duration": "1"
+        },
+        "Smartthings detected a flood": {
+            "uri": "http://s3.amazonaws.com/smartapp-media/sonos/smartthings+detected+a+flood.mp3",
+            "duration": "2"
+        },
+        "Smartthings detected smoke": {
+            "uri": "http://s3.amazonaws.com/smartapp-media/sonos/smartthings+detected+smoke.mp3",
+            "duration": "1"
+        },
+        "Someone is arriving": {
+            "uri": "http://s3.amazonaws.com/smartapp-media/sonos/someone+is+arriving.mp3",
+            "duration": "1"
+        },
+        "Piano": {
+            "uri": "http://s3.amazonaws.com/smartapp-media/sonos/piano2.mp3",
+            "duration": "10"
+        },
+        "Lightsaber": {
+            "uri": "http://s3.amazonaws.com/smartapp-media/sonos/lightsaber.mp3",
+            "duration": "10"
+        },
+        "Alexa: Beep Beep": {
+            "uri": "https://images-na.ssl-images-amazon.com/images/G/01/mobile-apps/dex/ask-customskills/audio/speechcons/beep_beep._TTH_.mp3",
+            "duration": "10"
+        },
+        "Alexa: Bada Bing Bada Boom": {
+            "uri": "https://images-na.ssl-images-amazon.com/images/G/01/mobile-apps/dex/ask-customskills/audio/speechcons/bada_bing_bada_boom._TTH_.mp3",
+            "duration": "10"
+        },
+        "Alexa: Boing": {
+            "uri": "https://images-na.ssl-images-amazon.com/images/G/01/mobile-apps/dex/ask-customskills/audio/speechcons/boing._TTH_.mp3",
+            "duration": "10"
+        },
+        "Alexa: Open Sesame": {
+            "uri": "https://images-na.ssl-images-amazon.com/images/G/01/mobile-apps/dex/ask-customskills/audio/speechcons/open_sesame._TTH_.mp3",
+            "duration": "10"
+        },
+        "Soft Chime": {
+            "uri": "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3",
+            "duration": "10"
+        },
+        "Custom URI": {
+            "uri": "",
+            "duration": ""
+        }
+    },
+    "introSounds": {
+        "Soft Chime": {
+            "uri": "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3",
+            "duration": "3"
+        },
+        "Water Droplet": {
+            "uri": "http://soundbible.com/mp3/Single Water Droplet-SoundBible.com-425249738.mp3",
+            "duration": "5"
+        },
+        "Custom URI": {
+            "uri": "",
+            "duration": ""
+        }
     }
 }

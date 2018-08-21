@@ -138,14 +138,18 @@ def mainPage(params) {
  	dynamicPage (name: "mainPage", nextPage: "reviewPage", install: false, uninstall: false) {
 		appInfoSect(true)
 		if(state?.actionType) {
+			Map appData = parent?.getAppFileData()
 			section ("Using These ${!isAdHoc() ? "Trigger(s)" : "Device(s)"}") {
 				def t0 = triggersDesc()
 				href "triggersPage", title: "Select ${!isAdHoc() ? "Trigger(s):" : "Device(s) Events:"}", description: (t0 ? t0 : "Tap to configure"), state: (t0 ? "complete" : ""), image: getAppImg((!isAdHoc() ? "trigger.png" : "devices.png"))
 			}
-
 			if (isCustSound()) {
 				section ("Play this sound...") {
+					List sndItems = appData?.customSounds?.collect { it?.key }?.sort()
 					input "custSound", "enum", title: "Choose a Sound", required: false, defaultValue: "Bell 1", submitOnChange: true, options: parent?.custSoundList(), image: getAppImg("sound.png")
+					// if(settings?.custSound && settings?.custSound != "Custom URI") {
+					// 	state?.customSoundData = appData?.customSounds[settings?.custSound]
+					// } else { state?.customSoundData = null }
 					if (settings?.custSound == "Custom URI") {
 						input "custSoundUrl", "text", title: "Use this URL", required: true, multiple: false, defaultValue: "", submitOnChange: true, image: "blank.png"
 						if (settings?.custSoundUrl) {
@@ -166,7 +170,11 @@ def mainPage(params) {
 					if (!isAdHoc()) {
 						input "playCustIntroSound", "bool", title: "Play Intro Sound", defaultValue: false, submitOnChange: true, image: getAppImg("sound.png")
 						if (settings?.playCustIntroSound) {
+							List introItems = appData?.customIntos?.collect { it?.key }?.sort()
 							input "custIntroSound", "enum", title: "Choose a Sound", required: false, defaultValue: "Soft Chime", submitOnChange: true, options: ["Custom URI", "Soft Chime", "Water Droplet"], image: "blank.png"
+							// if(settings?.custIntroSound && settings?.custIntroSound != "Custom URI") {
+							// 	state?.customIntroData = appData?.customIntros[settings?.custIntroSound]
+							// } else { state?.customIntroData = null }
 						}
 						if (settings?.custIntroSound == "Custom URI") {
 							input "custIntroSoundUrl", "text", title: "Use this URI", required: false, multiple: false, defaultValue: "", submitOnChange: true, image: "blank.png"
@@ -884,6 +892,7 @@ def updated() {
 
 def initialize() {
 	stateCleanup()
+	clearRetrigger()
 	subscriber()
 }
 
@@ -893,6 +902,10 @@ public setDebugVal(val) {
 
 public setZipCode(val) {
 	state?.wZipCode = val
+}
+
+private clearRetrigger() {
+	parent?.updActiveRetrigger(app?.getId(), null)
 }
 
 private subscriber() {

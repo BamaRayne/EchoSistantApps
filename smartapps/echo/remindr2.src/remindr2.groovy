@@ -192,7 +192,9 @@ public updActiveRetrigger(String id, String msg) {
 	if(settings?.debug) { log.trace "updActiveRetrigger($id, $msg" }
 	Map items = getActiveRetriggers() ?: [:]
 	if(msg == null) {
-		items?.remove(it as String)
+		log.trace "updActiveRetrigger... Before: ${items}"
+		items?.remove(id)
+		log.trace "updActiveRetrigger... After: ${items}"
 	} else { items[id] = msg }
 	atomicState?.activeRetriggers = items
 }
@@ -249,6 +251,24 @@ public cancelRetriggers() {
 def appHandler(evt) {
 	log.info "AppTouch Button Pressed..."
 	cancelRetriggers()
+}
+
+Map getAppFileData() {
+	log.trace "getAppFileData..."
+	Map result = [:]
+	def params = [ uri: "https://raw.githubusercontent.com/BamaRayne/EchoSistantApps/master/appData.json", contentType: 'application/json' ]
+	try {
+		httpGet(params) { resp ->
+			result = resp?.data
+		}
+	} catch (ex) {
+		if(ex instanceof groovyx.net.http.HttpResponseException) {
+			log.warn "appData.json file not found"
+		} else {
+			log.error "getAppFileData Exception:", ex
+		}
+	}
+	return result
 }
 
 public static List stVoicesList() {
