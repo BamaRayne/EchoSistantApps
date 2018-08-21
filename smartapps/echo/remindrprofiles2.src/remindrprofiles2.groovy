@@ -27,7 +27,7 @@ definition(
 	iconX2Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png",
 	iconX3Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
 /**********************************************************************************************************************************************/
-private appVersion() { return "2.0.0h" }
+private appVersion() { return "2.0.0i" }
 private appDate() { return "08/20/2018" }
 private platform() { return "smartthings" }
 
@@ -171,7 +171,7 @@ def mainPage(params) {
 						input "playCustIntroSound", "bool", title: "Play Intro Sound", defaultValue: false, submitOnChange: true, image: getAppImg("sound.png")
 						if (settings?.playCustIntroSound) {
 							List introItems = appData?.customIntos?.collect { it?.key }?.sort()
-							input "custIntroSound", "enum", title: "Choose a Sound", required: false, defaultValue: "Soft Chime", submitOnChange: true, options: ["Custom URI", "Soft Chime", "Water Droplet"], image: "blank.png"
+							input "custIntroSound", "enum", title: "Choose a Sound", required: false, defaultValue: "Soft Chime", submitOnChange: true, options: ["Custom URI", "Soft Chime", "Text Message Alert","Water Droplet"], image: "blank.png"
 							// if(settings?.custIntroSound && settings?.custIntroSound != "Custom URI") {
 							// 	state?.customIntroData = appData?.customIntros[settings?.custIntroSound]
 							// } else { state?.customIntroData = null }
@@ -458,16 +458,18 @@ def actionDevicesPage() {
 			}
 		}
 
-		section ("Buttons:", hideWhenEmpty: true) {
-			input "myButton", "capability.button", title: "Button", required: false, multiple: true, submitOnChange: true, image: getAppImg("push_button.png")
-			if (settings?.myButton && !isAdHoc()) {
-				input "myButtonS", "enum", title: "Notify when button is...", options: ["pushed", "held"], required: true, submitOnChange: true, image: "blank.png"
-				if (settings?.myButtonS) {
-					input "myButtonNum", "number", title: "Button Number", range: "1..20", required: false, description: "number (optional - max 20)", submitOnChange: true, image: "blank.png"
-				}
-			}
+		if (!isAdHoc()) {
+            section ("Buttons:", hideWhenEmpty: true) {
+                input "myButton", "capability.button", title: "Button", required: false, multiple: true, submitOnChange: true, image: getAppImg("push_button.png")
+                if (settings?.myButton && !isAdHoc()) {
+                    input "myButtonS", "enum", title: "Notify when button is...", options: ["pushed", "held"], required: true, submitOnChange: true, image: "blank.png"
+                    if (settings?.myButtonS) {
+                        input "myButtonNum", "number", title: "Button Number", range: "1..20", required: false, description: "number (optional - max 20)", submitOnChange: true, image: "blank.png"
+                    }
+                }
+            }
 		}
-
+        
 		section ("Locks:", hideWhenEmpty: true) {
 			input "myLocks", "capability.lock", title: "Locks", required: false, multiple: true, submitOnChange: true, image: getAppImg("lock.png")
 			if (settings?.myLocks && !isAdHoc()) {
@@ -1313,10 +1315,11 @@ String getVariable(var) {
 				devCnt = devCnt + settings?.myRelayContact?.size()
 				devList = devList + getDevsByAttrState(settings?.myRelayContact, "contact", "open")
 			}
+            */
 			def closedDoors = devCnt - devList?.size()
 			result = varResultBuilder(devList, " garage door is open", " of the Garage doors are open and ${closedDoor} closed", "no garage doors are open")
 			break
-			*/
+
 		case "shades":
 			if (settings?.myShades) {
 				devList = getDevsByAttrState(settings?.myShades, "contact", "open")
@@ -2738,7 +2741,13 @@ private loadSoundState() {
 		case "Soft Chime":
 			state.sound = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "10"]
 			break
-		case "Custom URI":
+		case "Water Droplet":
+			state.sound = [uri: "http://soundbible.com/mp3/Single Water Droplet-SoundBible.com-425249738.mp3", duration: "5"]
+			break
+ 		case "Text Message Alert":
+			state.sound = [uri: "http://soundbible.com/mp3/sms-alert-5-daniel_simon.mp3", duration: "5"]
+			break	           
+        case "Custom URI":
 			def fDuration = settings?.custSoundDuration ?: "10"
 			state.sound = [uri: "${settings?.custSoundUrl}", duration: "${fDuration}"]
 			break
@@ -2758,10 +2767,13 @@ private playIntroSound() {
 		case "Soft Chime":
 			state.soundIntro = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume]
 			break
-		case "Water Droplet" :
+		case "Water Droplet":
 			state.soundIntro = [uri: "http://soundbible.com/mp3/Single Water Droplet-SoundBible.com-425249738.mp3", duration: "5", volume: sVolume]
 			break
-		case "Custom URI":
+		case "Text Message Alert":
+			state.soundIntro = [uri: "http://soundbible.com/mp3/sms-alert-5-daniel_simon.mp3", duration: "5", volume: sVolume]
+			break
+        case "Custom URI":
 			def fDuration = settings?.custIntroSoundDuration ?: "10"
 			state.soundIntro = [uri: "${settings?.custIntroSoundUrl}", duration: "${settings?.fDuration}", volume: sVolume]
 			break
