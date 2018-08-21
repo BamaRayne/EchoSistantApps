@@ -1438,15 +1438,17 @@ def unlockedWithCodeHandler(evt) {
 	def evtDevice = evt.device
 	def evtDispName = evt.displayName
 	def evtDescText = evt.descriptionText
-	def data = [:]
+	def eData = parseJson(evt.data)
+    def data = [:]
 	def eTxt = evtDispName + " was " + evtValue //evt.descriptionText
 	if (state?.showDebug) { log.info "unlocked event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName, evtDescText = $evtDescText, eTxt = $eTxt" }
 	if (evtValue == "unlocked" && myLocksSCode && event) {
 		//this is no longer valid!!!!!!!!!!!!!!! Bobby 8/19/18
-        def userCode = evt.data.replaceAll("\\D+","")
-		userCode = userCode.toInteger()
+        //def userCode = evt.data.replaceAll("\\D+","")
+		def userCode = eData?.usedCode
+        userCode = userCode.toInteger()
 		int usedCode = userCode
-	if (myLocksSCode == usedCode) {
+    if (myLocksSCode == usedCode) {
 			eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDispName}")?.replace("&event", "time")?.replace("&action", "executed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : evtDescText
 			data = [value:eTxt, name:"unlocked with code", device:"lock"]
 			alertsHandler(data)
