@@ -1699,7 +1699,7 @@ def alertsHandler(evt) {
 					}
 				} else { eTxt = parent.runReport(settings?.myAdHocReport) }
 			}
-			def eProfile = app.label
+			def eProfile = app?.getLabel()
 			def nRoutine = false
 			def stamp = state.lastTime = new Date(now()).format("h:mm aa", location.timeZone)
 			def today = new Date(now()).format("EEEE, MMMM d, yyyy", location.timeZone)
@@ -1914,6 +1914,7 @@ private playSonosIntro(cmd, msg, vol) {
 		if (settings?.playCustIntroSound) {
 			int sDelayFirst = 2
 			if (state?.showDebug) { log.info "delaying first message to play intro by $sDelayFirst" }
+			playIntroSound()
 			runIn(sDelayFirst, sonosFirstDelayedMessage)
 		} else {
 			if (state?.showDebug) { log.info "playing first message" }
