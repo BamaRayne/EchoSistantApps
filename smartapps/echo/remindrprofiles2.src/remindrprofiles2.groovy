@@ -27,7 +27,7 @@ definition(
 	iconX2Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png",
 	iconX3Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
 /**********************************************************************************************************************************************/
-private appVersion() { return "2.0.0i" }
+private appVersion() { return "2.0.0j" }
 private appDate() { return "08/20/2018" }
 private platform() { return "smartthings" }
 
@@ -1446,9 +1446,9 @@ def unlockedWithCodeHandler(evt) {
 		//this is no longer valid!!!!!!!!!!!!!!! Bobby 8/19/18
         //def userCode = evt.data.replaceAll("\\D+","")
 		def userCode = eData?.usedCode
-        userCode = userCode.toInteger()
+        userCode = userCode?.isNumber() ? userCode as Integer : null //userCode.toInteger()
 		int usedCode = userCode
-    if (myLocksSCode == usedCode) {
+    if (settings?.myLocksSCode == usedCode) {
 			eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDispName}")?.replace("&event", "time")?.replace("&action", "executed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : evtDescText
 			data = [value:eTxt, name:"unlocked with code", device:"lock"]
 			alertsHandler(data)
