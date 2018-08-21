@@ -771,19 +771,19 @@ def notifyPage() {
 		section("Pushover Support:") {
 			input ("pushoverEnabled", "bool", title: "Use Pushover Integration", required: false, submitOnChange: true, image: getAppImg("pushover_icon.png"))
 			if(settings?.pushoverEnabled == true) {
-				if(atomicState?.isInstalled) {
-					if(!atomicState?.pushoverManager) {
-						paragraph "If this is the first time enabling Pushover than leave this page and come back if the devices list is empty"
-						pushover_init()
-					} else {
-						input "pushoverDevices", "enum", title: "Select Pushover Devices", description: "Tap to select", groupedOptions: parent?.getPushoverDevices(), multiple: true, required: false, submitOnChange: true, image: getAppImg("select_icon.png")
-						if(settings?.pushoverDevices) {
-							def t0 = [(-2):"Lowest", (-1):"Low", 0:"Normal", 1:"High", 2:"Emergency"]
-							input "pushoverPriority", "enum", title: "Notification Priority (Optional)", description: "Tap to select", defaultValue: 0, required: false, multiple: false, submitOnChange: true, options: t0, image: getAppImg("priority.png")
-							input "pushoverSound", "enum", title: "Notification Sound (Optional)", description: "Tap to select", defaultValue: "pushover", required: false, multiple: false, submitOnChange: true, options: parent?.getPushoverSounds(), image: getAppImg("sound.png")
-						}
+				def poDevices = parent?.getPushoverDevices()
+				if(!poDevices) {
+					parent?.pushover_init()
+					paragraph "If this is the first time enabling Pushover than leave this page and come back if the devices list is empty"
+				} else {
+					input "pushoverDevices", "enum", title: "Select Pushover Devices", description: "Tap to select", groupedOptions: poDevices, multiple: true, required: false, submitOnChange: true, image: getAppImg("select_icon.png")
+					if(settings?.pushoverDevices) {
+						def t0 = [(-2):"Lowest", (-1):"Low", 0:"Normal", 1:"High", 2:"Emergency"]
+						input "pushoverPriority", "enum", title: "Notification Priority (Optional)", description: "Tap to select", defaultValue: 0, required: false, multiple: false, submitOnChange: true, options: t0, image: getAppImg("priority.png")
+						input "pushoverSound", "enum", title: "Notification Sound (Optional)", description: "Tap to select", defaultValue: "pushover", required: false, multiple: false, submitOnChange: true, options: parent?.getPushoverSounds(), image: getAppImg("sound.png")
 					}
-				} else { paragraph "New Install Detected!!!\n\n1. Press Done to Finish the Install.\n2. Goto the Automations Tab at the Bottom\n3. Tap on the SmartApps Tab above\n4. Select ${app?.getLabel()} and Resume configuration", state: "complete" }
+				}
+				// } else { paragraph "New Install Detected!!!\n\n1. Press Done to Finish the Install.\n2. Goto the Automations Tab at the Bottom\n3. Tap on the SmartApps Tab above\n4. Select ${app?.getLabel()} and Resume configuration", state: "complete" }
 			}
 		}
 		section("Ask Alexa Support:") {
