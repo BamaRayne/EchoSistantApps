@@ -209,8 +209,8 @@ def mainPage(params) {
 								"runEvery1Day": "Every Day"
 							]
 						if (settings?.retriggerSched) {
-							input "retriggerCount", "number", title: "...remind you how many times", required: true, description: "number of reminders", defaultValue: 3, submitOnChange: true, image: "blank.png"
-							input "retriggerCancelOnChange", "bool", title: "Cancel reminders after condition changes?", required: true, defaultValue: false, submitOnChange: true, image: "blank.png"
+							input "retriggerCount", "number", title: "...remind you how many times", required: true, description: "number of reminders", defaultValue: 3, submitOnChange: true, image: getAppImg("reminder.png")
+							input "retriggerCancelOnChange", "bool", title: "Cancel reminders after condition changes?", required: true, defaultValue: false, submitOnChange: true, image: getAppImg("cancel.png")
 						}
 					}
 				}
