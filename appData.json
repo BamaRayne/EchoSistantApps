@@ -75,12 +75,12 @@
     },
     "introSounds": {
         "Soft Chime": {
-            "uri": "",
-            "duration": ""
+            "uri": "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3",
+            "duration": "3"
         },
         "Water Droplet": {
-            "uri": "",
-            "duration": ""
+            "uri": "http://soundbible.com/mp3/Single Water Droplet-SoundBible.com-425249738.mp3",
+            "duration": "5"
         },
         "Custom URI": {
             "uri": "",
