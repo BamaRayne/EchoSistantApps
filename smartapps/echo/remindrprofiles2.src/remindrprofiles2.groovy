@@ -27,8 +27,8 @@ definition(
 	iconX2Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png",
 	iconX3Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
 /**********************************************************************************************************************************************/
-private appVersion() { return "2.0.0j" }
-private appDate() { return "08/20/2018" }
+private appVersion() { return "2.0.0k" }
+private appDate() { return "08/21/2018" }
 private platform() { return "smartthings" }
 
 preferences {
@@ -54,19 +54,19 @@ def appInfoSect(showType=false)	{
 		paragraph title: "${app?.name} (V${appVersion()})", str, image: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png"
 		if(showType) {
 			def i0 = actionTypesMap()[state?.actionType]?.image
-			paragraph title: "Report Configuration", "${state?.actionType?.toString()?.capitalize()}", image: getAppImg(i0)
+			paragraph title: "Message Configuration", "Selected Type: ${state?.actionType?.toString()?.capitalize()}", image: getAppImg(i0)
 		}
 	}
 }
 
 Map actionTypesMap() {
 	return [
-		"Ad-Hoc Report":[desc:"This is an ad-hoc report", image:"adhoc.png"],
-		"Default":[desc:"This is the default report", image:"report.png"],
-		"Custom Sound":[desc:"This is the custom sound report", image:"sound.png"],
-		"Custom Text":[desc:"This is the custom text report", image:"text_letter.png"],
-		"Custom Text with Weather":[desc:"This is the custom text w/weather report", image:"weather.png"],
-		"Triggered Report":[desc:"This is the triggered report", image:"trigger.png"]
+		"Ad-Hoc Report":[desc:"Select this option to create an ad-hoc report that can later be triggered", image:"adhoc.png"],
+		"Default":[desc:"Select this option to define quick notifications based on various events (quick settings)", image:"report.png"],
+		"Custom Sound":[desc:"Select this option to define sound notifications (no text)", image:"sound.png"],
+		"Custom Text":[desc:"Select this option to customize text and sound (advanced settings)", image:"text_letter.png"],
+		"Custom Text with Weather":[desc:"Select this option if you'd like to use weather elements with your custom text", image:"weather.png"],
+		"Triggered Report":[desc:"Select this option to trigger Ad-Hoc reports", image:"trigger.png"]
 	]
 }
 
