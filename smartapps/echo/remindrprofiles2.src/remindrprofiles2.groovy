@@ -1095,7 +1095,7 @@ private subscriber() {
 }
 
 void stateCleanup() {
-	["lastPlayed","lastEvent","sound", "soundIntro","speechSound","lastTime","lastWeather","lastWeatherCheck","lastAlert","message","speechVolume", "mySpeechSound", "retriggerSchedActive"]?.each { if(state?.containsKey(it as String)) { state?.remove(it) } }
+	["lastPlayed","lastEvent","sound", "soundIntro","speechSound","lastTime","lastWeather","lastWeatherCheck","lastAlert","message","speechVolume", "mySpeechSound", "retriggerSchedActive", "lastEventData"]?.each { if(state?.containsKey(it as String)) { state?.remove(it) } }
 	["cycleOnH","cycleOnL","cycleOnA","cycleOnB","savedOffset","cycleTh","cycleTl","cycleSh","cycleSl","cycleHh","cycleHl","cycleCO2h","cycleCO2l"]?.each { state[it as String] = false	}
 	state?.occurrences = 0
 }
@@ -1671,9 +1671,10 @@ def alertsHandler(evt) {
 	Integer delayMinutes = (dCapability && settings["${dCapability}Minutes"]) ? settings["${dCapability}Minutes"] : null
 	if (dCapability && delayMinutes && evtName != "delay") {
 		Map data = [deviceName: evtDevice.label, attributeName: evtValue, capabilityName: "${evtName}", inputName: dCapability]
+		state?.lastEventData = data
 		log.warn "scheduling delay with data: $data"
 		state.lastEvent = new Date(now()).format("h:mm aa", location.timeZone)
-		runIn(delayMinutes * 60, getDevicesOk, [data: data])
+		runIn(delayMinutes * 60, checkDevices)
 	} else {
 		//FAST LANE AUDIO DELIVERY METHOD
 		if (isDefault()) {
@@ -1786,22 +1787,25 @@ def alertsHandler(evt) {
 	}
 }
 
-Boolean getDevicesOk(data) {
-	Boolean send = true
-	def dev = null
+private checkDevices() {
+	Map data = state?.lastEventData
 	log.warn "received runIn data: device = ${data?.deviceName}, attribute = ${data?.attributeName}, capability = ${data?.capabilityName}, type = ${data?.inputName}"
-	if(data?.inputName) {
-		dev = settings?."${data?.inputName}"?.find {d -> d?.displayName == data?.deviceName}
-		if(dev && dev?.hasAttribute(data?.capabilityName)) {
-			String compVal = settings?."${data?.inputName}S" ?: data?.attributeName
-			send = (dev?.currentState(data?.capabilityName as String)?.stringValue == compVal)
-		}
-	}
-	if (send) {
+	if (data?.size() && getDevicesOk(data)) {
 		if (state?.showDebug) { log.debug "pushing notification after delay" }
 		alertsHandler([value: data?.attributeName, name: "delay", device: data?.deviceName])
 	}
-	return send
+}
+
+Boolean getDevicesOk(Map data) {
+	Boolean devOk = true
+	if(data?.size() && data?.inputName) {
+		def dev = settings?."${data?.inputName}"?.find {d -> d?.displayName == data?.deviceName}
+		if(dev && dev?.hasAttribute(data?.capabilityName)) {
+			String compVal = settings?."${data?.inputName}S" ?: data?.attributeName
+			devOk = (dev?.currentState(data?.capabilityName as String)?.stringValue == compVal)
+		}
+	}
+	return devOk
 }
 
 Boolean getConditionsOk() {
@@ -2019,7 +2023,7 @@ def retriggerHandler() {
 	if (settings?.retriggerCancelOnChange == false) {
 		send = true
 	} else {
-		if(getDayOk() && getModeOk() && getTimeOk() && getFrequencyOk() && getConditionsOk()) {
+		if(ok2Proceed()) {
 			send = true
 		} else {
 			if(state?.retriggerSchedActive) { unscheduleRetrigger() }
@@ -2528,7 +2532,7 @@ def scheduledTimeHandler(state) {
 	RESTRICTIONS HANDLER
 ***********************************************************************************************************************/
 Boolean ok2Proceed() {
-	return (getDayOk() && getModeOk() && getTimeOk() && getFrequencyOk() && getConditionsOk())
+	return (getDayOk() && getModeOk() && getTimeOk() && getFrequencyOk() && getConditionsOk() && getDevicesOk(state?.lastEventData))
 }
 
 
