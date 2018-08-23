@@ -27,8 +27,8 @@ definition(
 	iconX2Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png",
 	iconX3Url: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/app-RemindR@2x.png")
 /**********************************************************************************************************************************************/
-private appVersion() { return "2.0.0k" }
-private appDate() { return "08/21/2018" }
+private appVersion() { return "2.0.0l" }
+private appDate() { return "08/23/2018" }
 private platform() { return "smartthings" }
 
 preferences {
