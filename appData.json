@@ -4,7 +4,7 @@
             "uri": "http://s3.amazonaws.com/smartapp-media/sonos/bell1.mp3",
             "duration": "10"
         },
-        "Bell 2": {
+        "Bell 2": { 
             "uri": "http://s3.amazonaws.com/smartapp-media/sonos/bell2.mp3",
             "duration": "10"
         },
