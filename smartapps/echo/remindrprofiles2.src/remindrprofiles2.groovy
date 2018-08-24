@@ -947,30 +947,35 @@ private subscriber() {
 		if (settings?.myMode) 	{ subscribe(location, "mode", alertsHandler) }
 		if (settings?.mySHM) 	{ subscribe(location, "alarmSystemStatus", alertsHandler) }
 		if (settings?.mySwitch) {
-			if (settings?.mySwitchS == "on") {
-				subscribe(settings?.mySwitch, "switch.on", alertsHandler)
-			} else if (settings?.mySwitchS == "off") {
-				subscribe(settings?.mySwitch, "switch.off", alertsHandler)
-			} else { subscribe(settings?.mySwitch, "switch", alertsHandler) }
+			// if (settings?.mySwitchS == "on") {
+			// 	subscribe(settings?.mySwitch, "switch.on", alertsHandler)
+			// } else if (settings?.mySwitchS == "off") {
+			// 	subscribe(settings?.mySwitch, "switch.off", alertsHandler)
+			// } else { subscribe(settings?.mySwitch, "switch", alertsHandler) }
+			subscribe(settings?.mySwitch, "switch", alertsHandler)
 		}
 		if (settings?.myButton) {
 			if (settings?.myButtonS == "held") {
 				subscribe(settings?.myButton, "button.held", buttonNumHandler)
-			} else if (settings?.myButtonS == "pushed") { subscribe(settings?.myButton, "button.pushed", buttonNumHandler) }
+			} else if (settings?.myButtonS == "pushed") { 
+				subscribe(settings?.myButton, "button.pushed", buttonNumHandler) 
+			}
 		}
 		if (settings?.myContact) {
-			if (settings?.myContactS == "open") {
-				subscribe(settings?.myContact, "contact.open", alertsHandler)
-			} else if (settings?.myContactS == "closed")	{
-				subscribe(settings?.myContact, "contact.closed", alertsHandler)
-			} else { subscribe(settings?.myContact, "contact", alertsHandler) }
+			// if (settings?.myContactS == "open") {
+			// 	subscribe(settings?.myContact, "contact.open", alertsHandler)
+			// } else if (settings?.myContactS == "closed")	{
+			// 	subscribe(settings?.myContact, "contact.closed", alertsHandler)
+			// } else { subscribe(settings?.myContact, "contact", alertsHandler) }
+			subscribe(settings?.myContact, "contact", alertsHandler)
 		}
 		if (settings?.myGarage) {
-			if (settings?.myGarageS == "open") {
-				subscribe(settings?.myGarage, "contact.open", alertsHandler)
-			} else if (settings?.myGarageS == "closed") {
-				subscribe(settings?.myGarage, "contact.closed", alertsHandler)
-			} else { subscribe(settings?.myGarage, "contact", alertsHandler) }
+			// if (settings?.myGarageS == "open") {
+			// 	subscribe(settings?.myGarage, "contact.open", alertsHandler)
+			// } else if (settings?.myGarageS == "closed") {
+			// 	subscribe(settings?.myGarage, "contact.closed", alertsHandler)
+			// } else { subscribe(settings?.myGarage, "contact", alertsHandler) }
+			subscribe(settings?.myGarage, "contact", alertsHandler)
 		}
 		/* Bobby 8/20/18
 		if (settings?.myRelayContact) {
@@ -982,55 +987,62 @@ private subscriber() {
 		}
 		*/
 		if (settings?.myDoor) {
-			if (settings?.myDoorS == "open") {
-				subscribe(settings?.myDoor, "contact.open", alertsHandler)
-			} else if (settings?.myDoorS == "closed") {
-				subscribe(settings?.myDoor, "contact.closed", alertsHandler)
-			} else { subscribe(settings?.myDoor, "contact", alertsHandler) }
+			// if (settings?.myDoorS == "open") {
+			// 	subscribe(settings?.myDoor, "contact.open", alertsHandler)
+			// } else if (settings?.myDoorS == "closed") {
+			// 	subscribe(settings?.myDoor, "contact.closed", alertsHandler)
+			// } else { subscribe(settings?.myDoor, "contact", alertsHandler) }
+			subscribe(settings?.myDoor, "contact", alertsHandler)
 		}
 		if (settings?.myWindow) {
-			if (settings?.myWindowS == "open") {
-				subscribe(settings?.myWindow, "contact.open", alertsHandler)
-			} else if (settings?.myWindowS == "closed") {
-				subscribe(settings?.myWindow, "contact.closed", alertsHandler)
-			} else { subscribe(settings?.myWindow, "contact", alertsHandler) }
+			// if (settings?.myWindowS == "open") {
+			// 	subscribe(settings?.myWindow, "contact.open", alertsHandler)
+			// } else if (settings?.myWindowS == "closed") {
+			// 	subscribe(settings?.myWindow, "contact.closed", alertsHandler)
+			// } else { subscribe(settings?.myWindow, "contact", alertsHandler) }
+			subscribe(settings?.myWindow, "contact", alertsHandler)
 		}
 		if (settings?.myValve) {
-			if (settings?.myValveS == "open") {
-				subscribe(settings?.myValve, "valve.open", alertsHandler)
-			} else if (settings?.myValveS == "closed") {
-				subscribe(settings?.myValve, "valve.closed", alertsHandler)
-			} else { subscribe(settings?.myValve, "valve", alertsHandler) }
+			// if (settings?.myValveS == "open") {
+			// 	subscribe(settings?.myValve, "valve.open", alertsHandler)
+			// } else if (settings?.myValveS == "closed") {
+			// 	subscribe(settings?.myValve, "valve.closed", alertsHandler)
+			// } else { subscribe(settings?.myValve, "valve", alertsHandler) }
+			subscribe(settings?.myValve, "valve", alertsHandler)
 		}
 		if (settings?.myShades) {
-			if (settings?.myShadesS == "open") {
-				subscribe(settings?.myShades, "contact.open", alertsHandler)
-			} else if (settings?.myShadesS == "closed") {
-				subscribe(settings?.myShades, "contact.closed", alertsHandler)
-			} else { subscribe(settings?.myShades, "contact", alertsHandler) }
+			// if (settings?.myShadesS == "open") {
+			// 	subscribe(settings?.myShades, "contact.open", alertsHandler)
+			// } else if (settings?.myShadesS == "closed") {
+			// 	subscribe(settings?.myShades, "contact.closed", alertsHandler)
+			// } else { subscribe(settings?.myShades, "contact", alertsHandler) }
+			subscribe(settings?.myShades, "contact", alertsHandler)
 		}
 		if (settings?.myMotion) {
-			if (settings?.myMotionS == "active") {
-				subscribe(settings?.myMotion, "motion.active", alertsHandler)
-			} else if (settings?.myMotionS == "inactive") {
-				subscribe(settings?.myMotion, "motion.inactive", alertsHandler)
-			} else { subscribe(settings?.myMotion, "motion", alertsHandler) }
+			// if (settings?.myMotionS == "active") {
+			// 	subscribe(settings?.myMotion, "motion.active", alertsHandler)
+			// } else if (settings?.myMotionS == "inactive") {
+			// 	subscribe(settings?.myMotion, "motion.inactive", alertsHandler)
+			// } else { subscribe(settings?.myMotion, "motion", alertsHandler) }
+			subscribe(settings?.myMotion, "motion", alertsHandler)
 		}
 		if (settings?.myLocks) {
-			if (settings?.myLocksS == "locked") {
-				subscribe(settings?.myLocks, "lock.locked", alertsHandler)
-			} else if (settings?.myLocksS == "unlocked") {
-				if (settings?.myLocksSCode) {
-					subscribe(settings?.myLocks, "lock", unlockedWithCodeHandler)
-				} else { subscribe(settings?.myLocks, "lock.unlocked", alertsHandler) }
-			} else { subscribe(settings?.myLocks, "lock", alertsHandler) }
+			// if (settings?.myLocksS == "locked") {
+			// 	subscribe(settings?.myLocks, "lock.locked", alertsHandler)
+			// } else if (settings?.myLocksS == "unlocked") {
+			// 	if (settings?.myLocksSCode) {
+			// 		subscribe(settings?.myLocks, "lock", unlockedWithCodeHandler)
+			// 	} else { subscribe(settings?.myLocks, "lock.unlocked", alertsHandler) }
+			// } else { subscribe(settings?.myLocks, "lock", alertsHandler) }
+			subscribe(settings?.myLocks, "lock", alertsHandler)
 		}
 		if (settings?.myPresence) {
-			if (settings?.myPresenceS == "present") {
-				subscribe(settings?.myPresence, "presence.present", alertsHandler) }
-			else if (settings?.myPresenceS == "not present"){
-				subscribe(settings?.myPresence, "presence.not present", alertsHandler)
-			} else { subscribe(settings?.myPresence, "presence", alertsHandler)	}
+			// if (settings?.myPresenceS == "present") {
+			// 	subscribe(settings?.myPresence, "presence.present", alertsHandler) }
+			// else if (settings?.myPresenceS == "not present"){
+			// 	subscribe(settings?.myPresence, "presence.not present", alertsHandler)
+			// } else { subscribe(settings?.myPresence, "presence", alertsHandler)	}
+			subscribe(settings?.myPresence, "presence", alertsHandler)
 		}
 		if (settings?.myTstat) {
 			if (settings?.myTstatS == "cooling") {
@@ -1041,37 +1053,42 @@ private subscriber() {
 				subscribe(settings?.myTstat, "coolingSetpoint", alertsHandler)
 				subscribe(settings?.myTstat, "heatingSetpoint", alertsHandler)
 			}
-			if (settings?.myTstatM == "auto") {
-				subscribe(settings?.myTstat, "thermostatMode.auto", alertsHandler)
-			} else if (settings?.myTstatM == "cool") {
-				subscribe(settings?.myTstat, "thermostatMode.cool", alertsHandler)
-			} else if (settings?.myTstatM == "heat") {
-				subscribe(settings?.myTstat, "thermostatMode.heat", alertsHandler)
-			} else if (settings?.myTstatM == "off") {
-				subscribe(settings?.myTstat, "thermostatMode.off", alertsHandler)
-			} else { subscribe(settings?.myTstat, "thermostatMode", alertsHandler) }
+			
+			// if (settings?.myTstatM == "auto") {
+			// 	subscribe(settings?.myTstat, "thermostatMode.auto", alertsHandler)
+			// } else if (settings?.myTstatM == "cool") {
+			// 	subscribe(settings?.myTstat, "thermostatMode.cool", alertsHandler)
+			// } else if (settings?.myTstatM == "heat") {
+			// 	subscribe(settings?.myTstat, "thermostatMode.heat", alertsHandler)
+			// } else if (settings?.myTstatM == "off") {
+			// 	subscribe(settings?.myTstat, "thermostatMode.off", alertsHandler)
+			// } else { subscribe(settings?.myTstat, "thermostatMode", alertsHandler) }
+			subscribe(settings?.myTstat, "thermostatMode", alertsHandler)
 
-			if (settings?.myTstatOS == "cooling") {
-				subscribe(settings?.myTstat, "thermostatOperatingState.cooling", alertsHandler)
-			} else if (settings?.myTstatOS == "heating") {
-				subscribe(settings?.myTstat, "thermostatOperatingState.heating", alertsHandler)
-			} else if (settings?.myTstatOS == "idle") {
-				subscribe(settings?.myTstat, "thermostatOperatingState.idle", alertsHandler)
-			} else { subscribe(settings?.myTstat, "thermostatOperatingState", alertsHandler) }
+			// if (settings?.myTstatOS == "cooling") {
+			// 	subscribe(settings?.myTstat, "thermostatOperatingState.cooling", alertsHandler)
+			// } else if (settings?.myTstatOS == "heating") {
+			// 	subscribe(settings?.myTstat, "thermostatOperatingState.heating", alertsHandler)
+			// } else if (settings?.myTstatOS == "idle") {
+			// 	subscribe(settings?.myTstat, "thermostatOperatingState.idle", alertsHandler)
+			// } else { subscribe(settings?.myTstat, "thermostatOperatingState", alertsHandler) }
+			subscribe(settings?.myTstat, "thermostatOperatingState", alertsHandler)
 		}
 		if (settings?.mySmoke) {
-			if (settings?.mySmokeS == "detected") {
-				subscribe(settings?.mySmoke, "smoke.detected", alertsHandler)
-			} else if (settings?.mySmokeS == "clear") {
-				subscribe(settings?.mySmoke, "smoke.clear", alertsHandler)
-			} else { subscribe(settings?.mySmoke, "smoke", alertsHandler) }
+			// if (settings?.mySmokeS == "detected") {
+			// 	subscribe(settings?.mySmoke, "smoke.detected", alertsHandler)
+			// } else if (settings?.mySmokeS == "clear") {
+			// 	subscribe(settings?.mySmoke, "smoke.clear", alertsHandler)
+			// } else { subscribe(settings?.mySmoke, "smoke", alertsHandler) }
+			subscribe(settings?.mySmoke, "smoke", alertsHandler)
 		}
 		if (settings?.myWater) {
-			if (settings?.myWaterS == "wet") {
-				subscribe(settings?.myWater, "water.wet", alertsHandler)
-			} else if (settings?.myWaterS == "dry") {
-				subscribe(settings?.myWater, "water.dry", alertsHandler)
-			} else { subscribe(settings?.myWater, "water", alertsHandler) }
+			// if (settings?.myWaterS == "wet") {
+			// 	subscribe(settings?.myWater, "water.wet", alertsHandler)
+			// } else if (settings?.myWaterS == "dry") {
+			// 	subscribe(settings?.myWater, "water.dry", alertsHandler)
+			// } else {  }
+			subscribe(settings?.myWater, "water", alertsHandler)
 		}
 		if (settings?.myTemperature) { subscribe(settings?.myTemperature, "temperature", tempHandler) }
 		if (settings?.myCO2) { subscribe(settings?.myCO2, "carbonDioxide", carbonDioxideHandler) }
@@ -1664,126 +1681,130 @@ def alertsHandler(evt) {
 	log.warn "retrigger occurrences = ${state.occurrences}"
 	String eTxt = "$evtDispName is $evtValue"
 	if (state?.showDebug) { 
-		log.info "event received: event = $event, evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName, evtDescText = $evtDescText, eTxt = $eTxt"
+		log.info "event received: evtValue = $evtValue, evtName = $evtName, evtDevice = $evtDevice, evtDispName = $evtDispName, evtDescText = $evtDescText, eTxt = $eTxt"
 		log.warn "version number = ${appVersion()}" 
 	}
 	String dCapability = getDeviceCapName(evtName)
 	Integer delayMinutes = (dCapability && settings["${dCapability}Minutes"]) ? settings["${dCapability}Minutes"] : null
-	if (dCapability && delayMinutes && evtName != "delay") {
-		Map data = [deviceName: evtDevice.label, attributeName: evtValue, capabilityName: "${evtName}", inputName: dCapability]
-		state?.lastEventData = data
-		log.warn "scheduling delay with data: $data"
-		state.lastEvent = new Date(now()).format("h:mm aa", location.timeZone)
-		runIn(delayMinutes * 60, checkDevices)
-	} else {
-		//FAST LANE AUDIO DELIVERY METHOD
-		if (isDefault()) {
-			if (settings?.mySpeechDevices) {
-				settings?.mySpeechDevices?.each { d->  if(d?.hasCommand("playTextAndResume")) { d?.playTextAndResume(eTxt) } }
-			} else {
-				if (settings?.mySonosDevices) {
-					def sCommand = settings?.mySonosResume == true ? "playTrackAndResume" : "playTrackAndRestore"
-					def sTxt = textToSpeech(eTxt instanceof List ? eTxt[0] : eTxt, settings?.ttsVoiceStyle.substring(6))
-					def sVolume = settings.mySonosVolume ?: 20
-					settings?.mySonosDevices?.each { d-> if(d?.hasCommand("${sCommand}")) { d?."${sCommand}"(sTxt?.uri, sTxt?.duration, sVolume) } }
+	Map data = [deviceName: evtDevice.label, attributeName: evtValue, capabilityName: "${evtName}", inputName: dCapability]
+	state?.lastEventData = data
+	if(ok2Proceed()) {
+		if (dCapability && delayMinutes && evtName != "delay") {	
+			log.warn "scheduling delay with data: $data"
+			state.lastEvent = new Date(now()).format("h:mm aa", location.timeZone)
+			runIn(delayMinutes * 60, checkDevices)
+		} else {
+			//FAST LANE AUDIO DELIVERY METHOD
+			if (isDefault()) {
+				if (settings?.mySpeechDevices) {
+					settings?.mySpeechDevices?.each { d->  if(d?.hasCommand("playTextAndResume")) { d?.playTextAndResume(eTxt) } }
+				} else {
+					if (settings?.mySonosDevices) {
+						def sCommand = settings?.mySonosResume == true ? "playTrackAndResume" : "playTrackAndRestore"
+						def sTxt = textToSpeech(eTxt instanceof List ? eTxt[0] : eTxt, settings?.ttsVoiceStyle.substring(6))
+						def sVolume = settings.mySonosVolume ?: 20
+						settings?.mySonosDevices?.each { d-> if(d?.hasCommand("${sCommand}")) { d?."${sCommand}"(sTxt?.uri, sTxt?.duration, sVolume) } }
+					}
 				}
-			}
-			if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) { sendtxt(eTxt) }
-			if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
-			if (settings?.askAlexa && settings?.askAlexaMQs) { sendToAskAlexa(eTxt) }
-		} else if (ok2Proceed()) { 
-			if (isTrigger() && settings?.myAdHocReport) {
-				eTxt = null
-				if (evtName == "routineExecuted" || evtName == "mode") {
-					if (evtName == "routineExecuted" && settings?.myRoutine) {
-						def deviceMatch = settings?.myRoutine?.find {r -> r == evtDispName}
-						if (deviceMatch != null) { eTxt = parent.runReport(settings?.myAdHocReport) }
-					}
-					if (evtName == "mode" && settings?.myMode) {
-						def deviceMatch = settings?.myMode?.find {m -> m == evtValue}
-						if (deviceMatch) { eTxt = parent.runReport(settings?.myAdHocReport) }
-					}
-				} else { eTxt = parent.runReport(settings?.myAdHocReport) }
-			}
-			def eProfile = app?.getLabel()
-			def nRoutine = false
-			def stamp = state.lastTime = new Date(now()).format("h:mm aa", location.timeZone)
-			def today = new Date(now()).format("EEEE, MMMM d, yyyy", location.timeZone)
-			def last = state.lastEvent
-			if (settings?.playCustIntroSound) {
-				playIntroSound()
-			}
-			if (evtName == "time of day" && settings?.reportMessage && !isTrigger()) {
-				eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDispName}")?.replace("&event", "time")?.replace("&action", "executed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : null
-				if (isCustTextWeather()) { eTxt = getWeatherVar(eTxt) }
-			}
-			if (evtName == "coolingSetpoint" || evtName == "heatingSetpoint") {
-				evtValue = evt.value.toFloat()
-				evtValue = Math.round(evtValue)
-			}
-			if (evtName == "routineExecuted" && settings?.myRoutine && !isTrigger()) {
-				def deviceMatch = settings?.myRoutine?.find {r -> r == evtDispName}
-				if (deviceMatch) {
-					eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDispName}")?.replace("&event", "routine")?.replace("&action", "executed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : null
-					if (isCustTextWeather()) { eTxt = getWeatherVar(eTxt) }
-					if (settings?.reportMessage) {
-						if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) {
-							sendtxt(eTxt)
+				if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) { sendtxt(eTxt) }
+				if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
+				if (settings?.askAlexa && settings?.askAlexaMQs) { sendToAskAlexa(eTxt) }
+			} else {
+				if (isTrigger() && settings?.myAdHocReport) {
+					eTxt = null
+					if (evtName == "routineExecuted" || evtName == "mode") {
+						if (evtName == "routineExecuted" && settings?.myRoutine) {
+							def rtMatch = settings?.myRoutine?.find {r -> r == evtDispName}
+							if (rtMatch != null) { eTxt = parent.runReport(settings?.myAdHocReport) }
 						}
-						if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(message) }
-						takeAction(eTxt)
-					} else {
-						eTxt = "routine was executed"
-						takeAction(eTxt)
-					}
+						if (evtName == "mode" && settings?.myMode) {
+							def mdMatch = settings?.myMode?.find {m -> m == evtValue}
+							if (mdMatch) { eTxt = parent.runReport(settings?.myAdHocReport) }
+						}
+					} else { eTxt = parent.runReport(settings?.myAdHocReport) }
 				}
-			} else {
-				if (evtName == "mode" && settings?.myMode && !isTrigger()) {
-					def deviceMatch = settings?.myMode?.find {m -> m == evtValue}
+				def eProfile = app?.getLabel()
+				def nRoutine = false
+				def stamp = state.lastTime = new Date(now()).format("h:mm aa", location.timeZone)
+				def today = new Date(now()).format("EEEE, MMMM d, yyyy", location.timeZone)
+				def last = state.lastEvent
+				if (settings?.playCustIntroSound) {
+					playIntroSound()
+				}
+				if (evtName == "time of day" && settings?.reportMessage && !isTrigger()) {
+					eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDispName}")?.replace("&event", "time")?.replace("&action", "executed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : null
+					if (isCustTextWeather()) { eTxt = getWeatherVar(eTxt) }
+				}
+				if (evtName == "coolingSetpoint" || evtName == "heatingSetpoint") {
+					evtValue = evt.value.toFloat()
+					evtValue = Math.round(evtValue)
+				}
+				if (evtName == "routineExecuted" && settings?.myRoutine && !isTrigger()) {
+					def deviceMatch = settings?.myRoutine?.find {r -> r == evtDispName}
 					if (deviceMatch) {
-						eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtValue}")?.replace("&event", "${evtName}")?.replace("&action", "changed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : null
+						eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDispName}")?.replace("&event", "routine")?.replace("&action", "executed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : null
 						if (isCustTextWeather()) { eTxt = getWeatherVar(eTxt) }
 						if (settings?.reportMessage) {
 							if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) {
 								sendtxt(eTxt)
 							}
-							if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
+							if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(message) }
 							takeAction(eTxt)
 						} else {
-							eTxt = "location mode has changed"
+							eTxt = "routine was executed"
 							takeAction(eTxt)
 						}
 					}
 				} else {
-					if (settings?.reportMessage || isTrigger()) {
-						if (settings?.reportMessage) {
-							eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDevice}")?.replace("&event", "${evtName}")?.replace("&action", "${evtValue}")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}")?.replace("&last", "${last}") : null
+					if (evtName == "mode" && settings?.myMode && !isTrigger()) {
+						def deviceMatch = settings?.myMode?.find {m -> m == evtValue}
+						if (deviceMatch) {
+							eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtValue}")?.replace("&event", "${evtName}")?.replace("&action", "changed")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}") : null
 							if (isCustTextWeather()) { eTxt = getWeatherVar(eTxt) }
-						}
-						if (eTxt) {
-							if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) { sendtxt(eTxt) }
-							if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
-							takeAction(eTxt)
+							if (settings?.reportMessage) {
+								if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) {
+									sendtxt(eTxt)
+								}
+								if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
+								takeAction(eTxt)
+							} else {
+								eTxt = "location mode has changed"
+								takeAction(eTxt)
+							}
 						}
 					} else {
-						if (evtDevice == "weather") {
-							if (evtDispName == "weather alert") {
-								eTxt = evtValue
-							} else { eTxt = evtDispName + " is " + evtValue }
-						}
-						if (eTxt) {
-							if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) {
-								// if (state?.showDebug) { log.info "sending sms" }
-								sendtxt(eTxt)
+						if (settings?.reportMessage || isTrigger()) {
+							if (settings?.reportMessage) {
+								eTxt = settings?.reportMessage ? settings?.reportMessage.replace("&device", "${evtDevice}")?.replace("&event", "${evtName}")?.replace("&action", "${evtValue}")?.replace("&date", "${today}")?.replace("&time", "${stamp}")?.replace("&profile", "${eProfile}")?.replace("&last", "${last}") : null
+								if (isCustTextWeather()) { eTxt = getWeatherVar(eTxt) }
 							}
-							if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
-							if (state?.showDebug) { log.info "processing eTxt = $eTxt" }
-							takeAction(eTxt)
+							if (eTxt) {
+								if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) { sendtxt(eTxt) }
+								if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
+								takeAction(eTxt)
+							}
+						} else {
+							if (evtDevice == "weather") {
+								if (evtDispName == "weather alert") {
+									eTxt = evtValue
+								} else { eTxt = evtDispName + " is " + evtValue }
+							}
+							if (eTxt) {
+								if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings.pushoverEnabled && settings?.pushoverDevices)) {
+									// if (state?.showDebug) { log.info "sending sms" }
+									sendtxt(eTxt)
+								}
+								if (settings?.myNotifyDevice) { settings?.myNotifyDevice.deviceNotification(settings?.reportMessage) }
+								if (state?.showDebug) { log.info "processing eTxt = $eTxt" }
+								takeAction(eTxt)
+							}
 						}
 					}
 				}
 			}
 		}
+	} else { 
+		unscheduleRetrigger() 
 	}
 }
 
@@ -1833,7 +1854,7 @@ Boolean getConditionsOk() {
 		log.warn "rPresence list is ${devs} for state ${settings?.rPresenceS}"
 	}
 	Boolean result = devcheck ? (devList?.size() == devCnts) : true
-	log.debug "getConditionsOk = ${result} | devcheck: ${devcheck} | devList: ${devList}"
+	// log.debug "getConditionsOk = ${result} | devcheck: ${devcheck} | devList: ${devList}"
 	return result
 }
 
@@ -1845,7 +1866,7 @@ private takeAction(eTxt) {
 	def data = [args: eTxt]
 	sendLocationEvent(name:"echoSistantProfile",value: app.getLabel(), isStateChange: true, displayed: false, data: data)
 	//sendLocationEvent([name:i,value:app.label,isStateChange:true,displayed:false,data:data])
-	if (state?.showDebug) { log.debug "sendNotificationEvent sent to 3rd party as ${app.label} was active" }
+	// if (state?.showDebug) { log.debug "sendNotificationEvent sent to 3rd party as ${app.label} was active" }
 	state.savedOffset = false
 	def sVolume
 	def sTxt
@@ -1996,15 +2017,15 @@ Integer retriggerConvMap(String val) {
 void retriggerSchedule(eTxt) { //Called by takeAction()
 	if (settings?.retriggerSched != null) {
 		Integer seconds = retriggerConvMap(settings?.retriggerSched)
-		Integer curCnt = state?.occurrences ?: 0
+		Integer curCnt = state?.occurrences ?: 1
 		Integer stopCnt = (settings?.retriggerCount ?: 3)
 		if (state?.showDebug) { log.info "curCnt = $curCnt; stopCnt = $stopCnt" }
-		if (curCnt == 0) {
+		if (curCnt == 1) {
 			if (state?.showDebug) { log.warn "saving message" }
 			state?.message = eTxt
 			state?.originalMessage = eTxt
 		}
-		if (!curCnt || (curCnt < stopCnt) && seconds) {
+		if (curCnt < stopCnt && seconds) {
 			if (state?.showDebug) { log.warn "scheduling reminders" }
 			runIn(seconds, retriggerHandler)
 			state?.retriggerSchedActive = true
@@ -2017,16 +2038,15 @@ void retriggerSchedule(eTxt) { //Called by takeAction()
 }
 
 def retriggerHandler() {
-	def message = "In case you misssed it ${state?.message}"
+	def message = "In case you misssed it: ${state?.message}"
 	Integer curCnt = state?.occurrences
 	Boolean send = false
+	log.debug "retriggerHandler: | retriggerCancelOnChange: ${settings?.retriggerCancelOnChange}"
 	if (settings?.retriggerCancelOnChange == false) {
 		send = true
 	} else {
 		if(ok2Proceed()) {
 			send = true
-		} else {
-			if(state?.retriggerSchedActive) { unscheduleRetrigger() }
 		}
 	}
 	if(send) {
@@ -2035,6 +2055,9 @@ def retriggerHandler() {
 		if (settings?.smsNumbers?.toString()?.length()>=10 || settings?.usePush || (settings?.pushoverEnabled && settings?.pushoverDevices)) { sendtxt(message) }
 		if (settings?.myNotifyDevice) { settings?.myNotifyDevice?.deviceNotification(message) }
 		takeAction(message)
+	} else { 
+		if(state?.showDebug) { log.info "retriggerHandler | Retrigger Conditions now invalid.  Unscheduling Retrigger..."}
+		unscheduleRetrigger()
 	}
 }
 
@@ -2043,6 +2066,7 @@ void unscheduleRetrigger() {
 	state?.retriggerSchedActive = false
 	state?.message = null
 	state?.originalMessage = null
+	state?.lastEventData = null
 	state?.occurrences = 0
 	parent?.updActiveRetrigger(app?.getId(), null)
 	if (state?.showDebug) { log.warn "canceling reminders" }
@@ -2532,6 +2556,7 @@ def scheduledTimeHandler(state) {
 	RESTRICTIONS HANDLER
 ***********************************************************************************************************************/
 Boolean ok2Proceed() {
+	log.trace "ok2Proceed | getDayOk(): ${getDayOk()} | getModeOk(): ${getModeOk()} | getTimeOk(): ${getTimeOk()} | getFrequencyOk(): ${getFrequencyOk()} | getConditionsOk(): ${getConditionsOk()} | getDevicesOk(): ${getDevicesOk(state?.lastEventData)}"
 	return (getDayOk() && getModeOk() && getTimeOk() && getFrequencyOk() && getConditionsOk() && getDevicesOk(state?.lastEventData))
 }
 
@@ -2765,21 +2790,18 @@ private playIntroSound() {
 	log.warn "last play elapsed = $elapsed"
 	def sVolume = settings?.mySonosVolume ?: 20
 	switch (settings?.custIntroSound) {
-		case "Soft Chime":
-			state.soundIntro = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "4", volume: sVolume]
-			break
 		case "Water Droplet":
-			state.soundIntro = [uri: "http://soundbible.com/mp3/Single Water Droplet-SoundBible.com-425249738.mp3", duration: "5", volume: sVolume]
+			state.soundIntro = [uri: "https://cdn.rawgit.com/BamaRayne/EchoSistantApps/master/Content/Audio/Single_Water_Droplet.mp3", duration: "5", volume: sVolume]
 			break
 		case "Text Message Alert":
-			state.soundIntro = [uri: "http://soundbible.com/mp3/sms-alert-5-daniel_simon.mp3", duration: "5", volume: sVolume]
+			state.soundIntro = [uri: "https://cdn.rawgit.com/BamaRayne/EchoSistantApps/master/Content/Audio/sms_alert_5.mp3", duration: "5", volume: sVolume]
 			break
         case "Custom URI":
 			def fDuration = settings?.custIntroSoundDuration ?: "10"
 			state.soundIntro = [uri: "${settings?.custIntroSoundUrl}", duration: "${settings?.fDuration}", volume: sVolume]
 			break
 		default:
-			state.soundIntro = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume]
+			state.soundIntro = [uri: "https://cdn.rawgit.com/BamaRayne/EchoSistantApps/master/Content/Audio/Electronic_Chime.mp3", duration: "4", volume: sVolume]
 			break
 	}
 	settings?.mySonosDevices?.each { d->
