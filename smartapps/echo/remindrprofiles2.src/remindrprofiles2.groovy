@@ -2766,7 +2766,7 @@ private playIntroSound() {
 	def sVolume = settings?.mySonosVolume ?: 20
 	switch (settings?.custIntroSound) {
 		case "Soft Chime":
-			state.soundIntro = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "3", volume: sVolume]
+			state.soundIntro = [uri: "http://soundbible.com/mp3/Electronic_Chime-KevanGC-495939803.mp3", duration: "4", volume: sVolume]
 			break
 		case "Water Droplet":
 			state.soundIntro = [uri: "http://soundbible.com/mp3/Single Water Droplet-SoundBible.com-425249738.mp3", duration: "5", volume: sVolume]
