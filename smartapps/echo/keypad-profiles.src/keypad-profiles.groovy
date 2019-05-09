@@ -1,7 +1,8 @@
 /* 
  * KeyPad CoOrdinator - Child app 
  ************************************ FOR INTERNAL USE ONLY ******************************************************
-							
+
+ *		5/08/2019		Version:1.0 R.0.0.2		ST back-end change killed app. Fixed and updated
  *		7/18/2017		Version:1.0 R.0.0.1a	Initial Release
  *		6/24/2017		Version:1.0 R.0.0.1		Beta Release
  * 
@@ -29,7 +30,7 @@ definition(
 	iconX3Url		: "https://raw.githubusercontent.com/BamaRayne/Echosistant/master/smartapps/bamarayne/echosistant.src/Keypad@2x.png")
 /**********************************************************************************************************************************************/
 private release() {
-	def text = "R.0.0.1a"
+	def text = "R.0.0.2"
 }
 /**********************************************************************************************************************************************/
 preferences {
@@ -463,59 +464,76 @@ def updated() {
 }
 
 def initialize() {
+	log.trace "The activation event is: $evt"
 	if (sLocksVP) { subscribe(sLocksVP, "codeEntered", codeEntryHandler) }
     if (sLocksGarage) { subscribe(sLocksGarage, "codeEntered", codeEntryHandler) }
     if (tempKeypad) { subscribe(tempKeypad, "codeEntered", tempHandler) }
     if (chimeContact) { subscribe (chimeContact, "contact.open", chimeHandler) }
-    if (panicKeypad) { subscribe (panicKeypad, "contact.open", panicHandler) }
-    if (actionsKeypad) { subscribe (actionsKeypad, "codeEntered", codeEntryHandler) }
+    if (actionsKeypad) { subscribe (actionsKeypad, "event.codeEntered", codeEntryHandler) }
     if (switchKeypad) { subscribe (switchKeypad, "codeEntered", codeEntryHandler) }
 	if (panicKeypad) { subscribe (panicKeypad, "button.pushed", panicButtonHandler) }
     if (mKeypad) { subscribe (mKeypad, "codeEntered", codeEntryHandler) }
 //initialize keypad to correct state
 }
 
-
 def codeEntryHandler(evt) {
-    def codeEntered = evt.value as String
-    def data = evt.data as String
-    def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone) 
+	
+    def str = evt.value.split("[/]");
+	def codeEntered = str[0].toInteger()
+	def data = str[1].toInteger() 
+
+    
+    
+/*    log.info "codeEntryHandler called by $evt.device"
+    def value = evt.value.replaceAll("\\b/.*\\b", "") 
+	def data = evt.value.replaceAll("\\b${value}/\\b", "") 
+    value = value.toInteger()
+    data = data.toInteger()
+    def codeEntered = value //as String
+*/    
+
+	def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone) 
     def armMode = ''
     if (data == '0') armMode = 'off'
     else if (data == '3') armMode = 'away'
     else if (data == '1') armMode = 'stay'
     else if (data == '2') armMode = 'stay'	//Currently no separate night mode for SHM, set to 'stay'
+    log.warn "value is: $value and data is: $data"
     
-    if ("${codeEntered}" == "${vpCode}") {
+    
+    if (codeEntered == vpCode) {
         pVirToggle(data, codeEntered, evt)
         if (vpMode || vpModeD || vpRoutine || vpRoutineD) {
         	vpAction(data, codeEntered, evt)
         }    
     }
-    if ("${codeEntered}" == "${doorCode1}" ||"${codeEntered}" == "${doorCode2}" || "${codeEntered}" == "${doorCode3}") {
+    if (codeEntered == doorCode1 ||codeEntered == doorCode2 || codeEntered == doorCode3) {
+        log.warn "the garage is being activated"
         if (getDayOk()==true && getModeOk()==true && getTimeOk()==true) {
         pGarage(data, codeEntered, evt)
     	}
     }
-    if ("${codeEntered}" == "0000") {
+    if (codeEntered== 0) {
     	if (getDayOk()==true && getModeOk()==true && getTimeOk()==true) {
         deviceControl(data) 
     	}
     }    
-   	if ("${codeEntered}" == "${mCode}") {
+   	if (codeEntered == mCode) {
    		if (getDayOk()==true && getModeOk()==true && getTimeOk()==true) {
         momentaryDeviceHandler(data, codeEntered, evt, mOff)
     	}
     }    
-    if ("${codeEntered}" == "${shmCode}") {
+    if (codeEntered == shmCode) {
         pSHM(data, codeEntered, evt, armMode, armDelay)
     }
-    if ("${codeEntered}" == "${actionsCode}" && data == "3") {
+    if (codeEntered == actionsCode && data == 3) {
         if (getDayOk()==true && getModeOk()==true && getTimeOk()==true) { 
         takeAction(data, codeEntered, evt)
-    }
+    	}
     }
 }
+
+
 /************************************************************************************************************
 		Virtual Person Actions Handler
 ************************************************************************************************************/    
@@ -575,10 +593,11 @@ private pVirToggle(data, codeEntered, evt) {
 		Garage Door Handler
 ************************************************************************************************************/    
 private pGarage(data, codeEntered, evt) {
+	log.warn "data is: $data, codeEntered is: $codeEntered"
     def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone) 
     def message = ""
-    if ("${data}" == "0") {
-        if ("${codeEntered}" == "${doorCode1}") {
+    if (data == 0) {
+        if (codeEntered == doorCode1) {
             if (sDoor1 != null) {
                 sDoor1.close()
                 location.helloHome?.execute(gd1CloseRoutines)
@@ -586,7 +605,7 @@ private pGarage(data, codeEntered, evt) {
                 sendG1txt(message)
             }
         }    
-        if ("${codeEntered}" == "${doorCode2}") {
+        if (codeEntered == doorCode2) {
             if (sDoor2 != null) {
                 sDoor2.close() 
                 location.helloHome?.execute(gd2CloseRoutines)
@@ -594,7 +613,7 @@ private pGarage(data, codeEntered, evt) {
                 sendG2txt(message)
             }
         }
-        if ("${codeEntered}" == "${doorCode3}") {            
+        if (codeEntered == doorCode3) {            
             if (sDoor3 != null) {
                 sDoor3.close() 
                 location.helloHome?.execute(gd3CloseRoutines)
@@ -604,8 +623,9 @@ private pGarage(data, codeEntered, evt) {
         }
         log.info "${message}"
     }    
-    if ("${data}" == "3") {
-        if ("${codeEntered}" == "${doorCode1}") {            
+    if (data == 3) {
+    	if (codeEntered == doorCode1) {
+        	log.warn "codeEntered is: $codeEntered and doorCode1 is: $doorCode1"
             if (sDoor1 != null) {
                 sDoor1.open() 
                 location.helloHome?.execute(gd1OpenRoutines)
@@ -613,7 +633,7 @@ private pGarage(data, codeEntered, evt) {
                 sendG1txt(message)
             }
         }
-        if ("${codeEntered}" == "${doorCode2}") {            
+        if (codeEntered == doorCode2) {            
             if (sDoor2 != null) {
                 sDoor2.open() 
                 location.helloHome?.execute(gd2OpenRoutines)
@@ -621,7 +641,7 @@ private pGarage(data, codeEntered, evt) {
                 sendG2txt(message)
             }
         }
-        if ("${codeEntered}" == "${doorCode3}") {            
+        if (codeEntered == doorCode3) {            
             if (sDoor3 != null) {
                 sDoor3.open() 
                 location.helloHome?.execute(gd3OpenRoutines)
@@ -648,17 +668,19 @@ def turnOff() {
 		Smart Home Monitor Handler
 ************************************************************************************************************/    
 private pSHM(data, codeEntered, evt, armMode, armDelay) {
+log.warn "SHM method activated"
 	def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone)
     def message = ""
-    if (data == "0") {
+    if (data == 0) {
         sLocksSHM?.each() { it.acknowledgeArmRequest(0) } 
         message = "${app.label} disarmed SHM using ${evt.displayName} at ${stamp} "
     	sendDisarmCommand()
+        unschedule(sendArmAwayCommand)
     		    if (notifySHMArm) {
     				sendSHMtxt(message)
 			}
         }
-    else if (data == "1") {
+    else if (data == 1) {
         sLocksSHM?.each() { it.acknowledgeArmRequest(1) }
         message = "${app.label} set SHM to Armed-Stay using ${evt.displayName} at ${stamp} "
     	sendStayCommand()
@@ -666,7 +688,7 @@ private pSHM(data, codeEntered, evt, armMode, armDelay) {
     				sendSHMtxt(message)
 			}
         }
-    else if (data == "3") {
+    else if (data == 3) {
         if (armDelay != null || armDelay > 0) {
         	sLocksSHMstatus?.setExitDelay(armDelay) 
         	runIn(armDelay, "sendArmAwayCommand")
@@ -932,12 +954,13 @@ private void sendG3Text(number, message) {
   Device Control Handlers for press of 'ON' and 'PARTIAL' buttons
 ************************************************************************************************************/
 def deviceControl(data) {  //// Turns switches on and off
-    if (data == "3") {
+	log.info "deviceControl called with data: $data"
+    if (data == 3) {
         bSwitches?.on()
         toggle()
         flashLights()
     }
-    if (data == "1") {
+    if (data == 1) {
         bSwitches?.off()
     }
 } 
@@ -995,8 +1018,12 @@ private flashLights() {  //// Flashes switches
    Thermostat Handler
 ************************************************************************************************************/
 def tempHandler(evt) {
-    def codeEntered = evt.value as String
-    if ("${codeEntered}".startsWith("01")) {
+    def str = evt.value.split("[/]");
+	def codeEntered = str[0].toInteger()
+	def data = str[1].toInteger() 
+
+//    def codeEntered = value as String
+    if (codeEntered.startsWith("01")) {
         def newSetPoint = codeEntered
         newSetPoint = newSetPoint.replaceAll(/01/,"")
         log.info "Changing the cooling to ${newSetPoint} degrees"
@@ -1016,18 +1043,22 @@ def panicButtonHandler(evt) {
 	def event = evt.data
     def eVal = evt.value
     def eName = evt.name
+    log.warn "ename is: $eName"
     def eDev = evt.device
 	def stamp = state.lastTime = new Date(now()).format("h:mm aa, dd-MMMM-yyyy", location.timeZone)
     log.info "The panic button was pressed on the ${evt.displayName} at " + stamp
-		def buttonNumUsed = evt.data.replaceAll("\\D+","")
-        buttonNumUsed = buttonNumUsed.toInteger()
-       	int butNum = buttonNumUsed 
+//		def buttonNumUsed = event.replaceAll("\\D+","")
+//        buttonNumUsed = buttonNumUsed.toInteger()
+//       	int butNum = buttonNumUsed 
+//    if (eName.contains("panic button")) {
     if (panicSwitches) { panicSwitches.on() }
     if (panicFlash) { panicFlasher() }
 	if (panicText) { sendPanicText(panicText) }
     if (panicSynthDevice) { panicTTS(panicText) }
     if (panicSonosDevice) { panicTTS(panicText) }
-}
+	}
+//}    
+
 
 private panicFlasher() {  //// Flashes switches
     if (parent.debug) log.debug "The Panic Button Flash Switches Option has been activated"
